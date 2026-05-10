@@ -1,20 +1,21 @@
 // ==UserScript==
 // @name         JCC Cattenom → CEA URSSAF Autofill
 // @namespace    https://github.com/gaelc08/jccattenom-app
-// @version      2.2.0
+// @version      2.3.0
 // @description  Lit la synthèse du mois depuis l'app JCC Cattenom et pré-remplit le portail CEA URSSAF
 // @author       Gaël CANTARERO
-// @match        https://www.cea.urssaf.fr/*
-// @match        https://cea.urssaf.fr/*
+// @match        *://*/*
 // @grant        none
 // ==/UserScript==
 
 (function () {
   'use strict';
 
+  // Ne s'exécute que sur le portail CEA
+  if (!location.hostname.includes('cea.urssaf.fr')) return;
+
   const STORAGE_KEY = 'jcc_cea_payload';
 
-  // Stockage : localStorage avec fallback mémoire (si localStorage bloqué)
   let _memStore = null;
   function storageGet() {
     try { return localStorage.getItem(STORAGE_KEY); } catch(e) { return _memStore; }
@@ -24,7 +25,6 @@
     _memStore = val;
   }
 
-  // Injection CSS native
   const style = document.createElement('style');
   style.textContent = `
     #jcc-panel {
