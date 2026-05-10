@@ -78,7 +78,7 @@ export function createExportUI({
     return issues;
   }
 
-  function __showMileagePreviewModal(html, fileName, downloadHtml = html, modalTitle = 'Aperçu note de frais') {
+  function __showMileagePreviewModal(html, modalTitle = 'Aperçu') {
     let modal = document.getElementById('mileagePreviewModal');
     if (!modal) {
       modal = document.createElement('div');
@@ -86,13 +86,12 @@ export function createExportUI({
       modal.className = 'modal export-preview-modal';
       modal.innerHTML = `
         <div class="modal-content export-preview-content">
-          <h2 id="previewModalTitle">Aperçu note de frais</h2>
+          <h2 id="previewModalTitle"></h2>
           <div class="export-preview-toolbar">
             <button id="previewPrintBtn" class="btn-primary">🖨️ Imprimer / PDF</button>
-            <button id="previewDownloadBtn" class="btn-secondary">💾 Télécharger HTML</button>
             <button id="previewCloseBtn" class="btn-danger">Fermer</button>
           </div>
-          <iframe id="mileagePreviewFrame" class="export-preview-frame" title="Aperçu note de frais"></iframe>
+          <iframe id="mileagePreviewFrame" class="export-preview-frame" title="Aperçu"></iframe>
         </div>
       `;
       document.body.appendChild(modal);
@@ -105,41 +104,21 @@ export function createExportUI({
 
     const iframe = modal.querySelector('#mileagePreviewFrame');
     const printBtn = modal.querySelector('#previewPrintBtn');
-    const downloadBtn = modal.querySelector('#previewDownloadBtn');
 
     if (printBtn) printBtn.disabled = true;
     if (iframe) {
-      iframe.onload = () => { if (printBtn) printBtn.disabled = false; };
-      iframe.srcdoc = html;
-    } else if (printBtn) {
-      printBtn.disabled = false;
-    }
-    if (printBtn) {
-      printBtn.onclick = () => {
-        // Ouvrir le HTML complet dans un nouvel onglet et imprimer — plus fiable sur mobile
-        const blob = new Blob([downloadHtml], { type: 'text/html;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const win = window.open(url, '_blank');
-        if (win) {
-          win.onload = () => {
-            setTimeout(() => { win.print(); URL.revokeObjectURL(url); }, 300);
-          };
-        } else {
-          // Fallback si les popups sont bloquées
+      iframe.onload = () => {
+        if (printBtn) printBtn.disabled = false;
+        printBtn.onclick = () => {
           try {
-            iframe?.contentWindow?.focus();
-            iframe?.contentWindow?.print();
+            iframe.contentWindow?.focus();
+            iframe.contentWindow?.print();
           } catch {
-            alert("Activez les popups pour imprimer, ou utilisez Télécharger HTML.");
+            alert("Impossible d'imprimer. Essayez d'ouvrir la page dans un nouvel onglet.");
           }
-        }
+        };
       };
-    }
-    if (downloadBtn) {
-      downloadBtn.onclick = () => {
-        const blob = new Blob([downloadHtml], { type: 'text/html;charset=utf-8;' });
-        downloadBlob(blob, fileName);
-      };
+      iframe.srcdoc = html;
     }
     modal.classList.add('active');
   }
@@ -378,7 +357,7 @@ export function createExportUI({
     const safeName = String(currentCoach.name || 'intervenant').replace(/[^a-z0-9_\-]/gi, '_');
     const fileName = `note_de_frais_${safeName}_${currentMonth}.html`;
     if (usePreviewModal) {
-      __showMileagePreviewModal(renderHtml({ embeddedPreview: true }), fileName, renderHtml({ embeddedPreview: false, includeCloseButton: false }));
+      __showMileagePreviewModal(renderHtml({ embeddedPreview: true }), 'Aperçu note de frais');
     } else {
       const blob = new Blob([renderHtml({ embeddedPreview: false })], { type: 'text/html;charset=utf-8;' });
       downloadBlob(blob, fileName);
@@ -440,9 +419,7 @@ export function createExportUI({
     const noPrintBlock = '<div class="no-print" style="margin-bottom:10px;text-align:center"><button class="print-button" onclick="window.print()">🖨 Imprimer / Enregistrer en PDF</button><button class="print-button close-button" onclick="window.close()">✖ Fermer</button></div>';
     const makeTimesheetHtml = (timesheetNoPrint) => `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Relevé d'heures - ${esc(currentCoach.name)} - ${month}/${year}</title><style>*{box-sizing:border-box}@media print{@page{size:A4 portrait;margin:8mm}*{box-shadow:none!important;text-shadow:none!important;filter:none!important}html,body{width:194mm;margin:0;padding:0;background:white;-webkit-print-color-adjust:exact;print-color-adjust:exact}.no-print{display:none}.page-shell{box-shadow:none;border:none;margin:0;width:194mm;max-width:194mm;min-height:0!important;display:flex;border-radius:0}.page-inner{padding:0;min-height:0!important;display:flex;flex-direction:column}.header,.header-brand{display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:space-between!important;gap:12px!important}.document-badge{text-align:right!important;min-width:180px!important}.info-grid,.summary-grid,.signature{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important}.info-row{grid-template-columns:120px 1fr!important}.summary-card.total{grid-column:1/-1!important}}body{margin:0;padding:10px;background:#eef3f9;color:#243447;font-family:Inter,Arial,sans-serif}.page-shell{width:194mm;max-width:194mm;min-height:245mm;margin:0 auto;background:#fff;border:none;border-radius:0;box-shadow:none;display:flex;overflow:hidden}.page-inner{padding:14px 16px 16px;min-height:245mm;display:flex;flex-direction:column}.print-button{margin:0 0 10px;padding:8px 14px;background:linear-gradient(135deg,#0f3460,#145da0);color:white;border:none;border-radius:999px;cursor:pointer;font-size:.82rem;font-weight:700}.close-button{margin-left:8px;background:linear-gradient(135deg,#c0392b,#922b21)}.header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;border-bottom:2px solid #d8e2ef;padding-bottom:10px;margin-bottom:10px}.header-brand{display:flex;align-items:flex-start;gap:12px}.header-logo{width:160px;height:160px;flex:0 0 auto;display:flex;align-items:flex-start;justify-content:center}.header-logo img{max-width:144px;max-height:144px}.header-text{text-align:center}.header-text h1{margin:0 0 4px;font-size:1.1rem;color:#0f3460}.header-text p{margin:1px 0;color:#526274;font-size:.72rem}.document-badge{text-align:right;min-width:180px}.document-badge .label{display:inline-block;padding:5px 10px;border-radius:999px;background:#eaf2ff;color:#145da0;font-weight:700;font-size:.68rem;letter-spacing:.03em;text-transform:uppercase}.document-badge h2{margin:6px 0 2px;font-size:1rem;color:#0f3460}.document-badge p{margin:0;color:#66788a;font-size:.75rem}.info-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:10px}.info-card,.summary-card,.note{border:1px solid #d8e2ef;border-radius:16px;background:#f9fbfe}.info-card{padding:10px 12px}.info-card h3,.summary-section h3,.details-section h3{margin:0 0 8px;color:#0f3460;font-size:.86rem}.info-list{display:grid;gap:5px}.info-row{display:grid;grid-template-columns:120px 1fr;gap:6px;font-size:.74rem}.info-row .label{color:#66788a;font-weight:600}.info-row .value{color:#243447;font-weight:600}.summary-section{margin-bottom:10px}.summary-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.summary-card{padding:9px 10px;background:linear-gradient(180deg,#fbfdff 0%,#f1f6fc 100%)}.summary-card .label{display:block;color:#66788a;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px}.summary-card .value{font-size:.94rem;font-weight:800;color:#0f3460}.summary-card.total{grid-column:1/-1;background:linear-gradient(135deg,#0f3460,#145da0);border-color:transparent}.summary-card.total .label,.summary-card.total .value{color:#fff}.details-section{margin-top:4px}.table-wrap{width:100%;border:1px solid #d8e2ef;border-radius:12px;overflow:hidden}table{border-collapse:separate;border-spacing:0;width:100%;table-layout:fixed;background:#fff}th,td{border-bottom:1px solid #e4ebf3;padding:6px 8px;font-size:.7rem;text-align:left;vertical-align:top;line-height:1.3}thead th{background:#0f3460;color:#fff;font-weight:700}tbody tr:nth-child(even){background:#f9fbfe}.amount,.number{text-align:right;font-variant-numeric:tabular-nums}.total-row td{font-weight:800;background:#edf4ff;color:#0f3460;border-bottom:none}.signature{margin-top:auto;padding-top:20px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;page-break-inside:avoid}.signature>div{min-height:46px;border-top:2px solid #243447;padding-top:6px;text-align:center;font-weight:600;font-size:.7rem}th:nth-child(1),td:nth-child(1){width:16%}th:nth-child(2),td:nth-child(2){width:14%}th:nth-child(3),td:nth-child(3){width:14%}th:nth-child(4),td:nth-child(4){width:18%}th:nth-child(5),td:nth-child(5){width:18%}th:nth-child(6),td:nth-child(6){width:20%}</style></head><body>${timesheetNoPrint}<div class="page-shell"><div class="page-inner"><div class="header"><div class="header-brand"><div class="header-logo"><img src="${logoUrl}" alt="Judo Club Cattenom-Rodemack"/></div><div class="header-text"><h1>Judo Club de Cattenom Rodemack</h1><p>Maison des arts martiaux</p><p>57570 Cattenom</p><p>judoclubcattenom@gmail.com</p></div></div><div class="document-badge"><span class="label">Relevé d'heures mensuel</span><h2>${month}/${year}</h2><p>Édité le ${today}</p></div></div><div class="info-grid"><div class="info-card"><h3>Informations ${esc(profileLabel)}</h3><div class="info-list"><div class="info-row"><span class="label">Nom complet</span><span class="value">${esc(coachDisplayName)}</span></div><div class="info-row"><span class="label">Email</span><span class="value">${esc(currentCoach.email, '-')}</span></div><div class="info-row"><span class="label">Statut</span><span class="value">${esc(profileLabel)}</span></div></div></div><div class="info-card"><h3>Paramètres du mois</h3><div class="info-list"><div class="info-row"><span class="label">Mois / Année</span><span class="value">${month}/${year}</span></div><div class="info-row"><span class="label">Taux horaire</span><span class="value">${hourlyRate.toFixed(2)} €</span></div><div class="info-row"><span class="label">Indemnité compétition</span><span class="value">${dailyAllowance.toFixed(2)} €</span></div></div></div></div><div class="summary-section"><h3>Récapitulatif</h3><div class="summary-grid"><div class="summary-card"><span class="label">Total Heures</span><span class="value">${totalHours}</span></div><div class="summary-card"><span class="label">Jours compétition</span><span class="value">${competitionDays}</span></div><div class="summary-card"><span class="label">Indemnités compétition</span><span class="value">${totalCompetitionAllowance.toFixed(2)} €</span></div><div class="summary-card total"><span class="label">Total à payer</span><span class="value">${totalAmount.toFixed(2)} €</span></div></div></div><div class="details-section"><h3>Détail des heures et compétitions</h3><div class="table-wrap"><table><thead><tr><th>Date</th><th class="number">Durée (h)</th><th class="amount">Taux</th><th class="amount">Montant heures</th><th class="amount">Indemnité compétition</th><th class="amount">Total ligne</th></tr></thead><tbody>${tableRows}<tr class="total-row"><td>Total</td><td class="number">${totalHours}</td><td class="amount">-</td><td class="amount">${totalTrainingAmount.toFixed(2)} €</td><td class="amount">${totalCompetitionAllowance.toFixed(2)} €</td><td class="amount">${totalAmount.toFixed(2)} €</td></tr></tbody></table></div></div><div class="signature"><div>${esc(signatureLabel)}</div><div>Pour le club (Trésorier / Président)</div></div></div></div></body></html>`;
 
-    const htmlForPreview = makeTimesheetHtml('');
-    const htmlForDownload = makeTimesheetHtml(noPrintBlock);
-    __showMileagePreviewModal(htmlForPreview, `fiche_presence_${String(currentCoach.name || 'intervenant').replace(/[^a-z0-9_\-]/gi, '_')}_${currentMonth}.html`, htmlForDownload, 'Aperçu pointage mensuel');
+    __showMileagePreviewModal(makeTimesheetHtml(''), 'Aperçu pointage mensuel');
     await logAuditEvent('export.timesheet_html', 'export', buildMonthlyAuditPayload({ coach: currentCoach, entityId: `${currentCoach.id}-${currentMonth}`, metadata: { total_hours: totalHours, competition_days: competitionDays } }));
   }
 
@@ -592,7 +569,7 @@ export function createExportUI({
       </table>
     </body></html>`;
 
-    __showMileagePreviewModal(html, `synthese_${currentMonth}.html`);
+    __showMileagePreviewModal(html, 'Aperçu synthèse du mois');
   }
 
   // ─────────────────────────────────────────────────────────────────
