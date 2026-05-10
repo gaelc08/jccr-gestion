@@ -9,7 +9,7 @@ import {
   setCoaches, setTimeData, setFrozenMonths,
 } from './app-context.js';
 import { isCurrentUserAdminDB } from './admin-service.js';
-import { getProfileLabel } from './profile-utils.js';
+import { getProfileLabel, getCoachDisplayName } from './profile-utils.js';
 
 let _restSelect = null;
 export function initDataLoader({ restSelect }) {
@@ -29,7 +29,7 @@ export function loadCoaches() {
       const opt = document.createElement('option');
       opt.value = coach.id;
       const label = getProfileLabel(coach, { capitalized: true });
-      const displayName = coach.name || coach.email || coach.id;
+      const displayName = getCoachDisplayName(coach) || coach.name || coach.email || coach.id;
       opt.textContent = `${displayName} (${label})`;
       s.appendChild(opt);
     });
