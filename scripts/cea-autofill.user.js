@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         JC Cattenom → CEA URSSAF Autofill
 // @namespace    https://github.com/gaelc08/jccattenom-app
-// @version      2.9.0
+// @version      2.10.0
 // @description  Lit la synthèse du mois depuis l'app JC Cattenom et pré-remplit le portail CEA URSSAF
 // @author       Gaël CANTARERO
 // @match        *://*/*
@@ -80,12 +80,12 @@
       document.getElementById('inPayeSalaire')
     ) return 'step3';
 
-    // Étape 2 : que des radios + bouton Suivant (pas de select ni d'input text)
-    const hasOnlyRadios = document.getElementById('btnSuivant') &&
+    // Étape 2 : que des radios + btnSuivant, pas de select ni champs rémunération
+    if (
+      document.getElementById('btnSuivant') &&
       document.getElementById('prestation.salaire1') &&
-      !document.getElementById('inRemunerationEuro') &&
-      !document.querySelector('select');
-    if (hasOnlyRadios) return 'step2';
+      !document.querySelector('select')
+    ) return 'step2';
 
     // Étape 1 : select salarié ou inputs date
     const hasSelectOrDate = !!(
@@ -111,7 +111,7 @@
     return fillInput(el, String(value).replace('.', ','));
   }
 
-  // Convertit des heures décimales (ex: 42.5) ou un nombre entier en format hhh:mn
+  // Convertit des heures décimales (ex: 42.5) en format hhh:mn
   function toHHMN(heures) {
     const total = parseFloat(String(heures).replace(',', '.'));
     if (isNaN(total)) return String(heures);
@@ -123,22 +123,9 @@
   // 1er jour du mois suivant au format dd/mm/yyyy
   function datePaiement(mois) {
     const [year, month] = mois.split('-').map(Number);
-    const next = new Date(year, month, 1); // month est déjà 0-indexé + 1 = mois suivant
+    const next = new Date(year, month, 1); // month non décalé = mois suivant en Date JS
     const pad = n => String(n).padStart(2, '0');
     return `${pad(next.getDate())}/${pad(next.getMonth() + 1)}/${next.getFullYear()}`;
-  }
-
-  function findInputNearLabel(labelText) {
-    for (const el of document.querySelectorAll('td, th, label, span, div')) {
-      if (el.textContent.trim().toLowerCase().includes(labelText.toLowerCase())) {
-        const input =
-          el.nextElementSibling?.querySelector('input') ||
-          el.closest('tr')?.querySelector('input') ||
-          el.closest('td')?.nextElementSibling?.querySelector('input');
-        if (input) return input;
-      }
-    }
-    return null;
   }
 
   const CIVILITES = ['MR', 'MME', 'M.', 'MME.', 'DR', 'DR.', 'MLLE'];
@@ -200,10 +187,7 @@
   // Étape 2 : tout laisser par défaut, juste cliquer Suivant
   function fillStep2() {
     const btn = document.getElementById('btnSuivant');
-    if (btn) {
-      setTimeout(() => btn.click(), 300);
-      return true;
-    }
+    if (btn) { setTimeout(() => btn.click(), 300); return true; }
     return false;
   }
 
@@ -216,29 +200,21 @@
   function fillStep3(data) {
     let filled = 0;
 
-    // Date de paiement = 1er du mois suivant
-    if (data.mois) {
-      const dp = datePaiement(data.mois);
-      // Chercher un input date de paiement (inPayeSalaire ou label proche)
-      const inPaye = document.getElementById('inPayeSalaire');
-      if (inPaye) {
-        // Si le champ attend une date (placeholder ou label contient "paiement"/"versement")
-        const label = inPaye.closest('tr')?.querySelector('td:first-child')?.textContent || '';
-        if (/paiement|versement|date/i.test(label + inPaye.name + inPaye.id)) {
-          fillInput(inPaye, dp); filled++;
-        } else {
-          // Sinon c'est le salaire brut
-          fillNumeric(inPaye, data.salaireBrut); filled++;
-        }
-      }
-      // Chercher un input date de paiement générique
-      const datePaieInput = findInputNearLabel('paiement') || findInputNearLabel('versement');
-      if (datePaieInput && datePaieInput !== document.getElementById('inPayeSalaire')) {
-        fillInput(datePaieInput, dp); filled++;
-      }
+    // --- Date de paiement : 1er du mois suivant dans inPayeSalaire ---
+    const inPaye = document.getElementById('inPayeSalaire');
+    if (inPaye && data.mois) {
+      fillInput(inPaye, datePaiement(data.mois));
+      filled++;
     }
 
-    // Rémunération euros + centimes
+    // --- Radio : sélectionner NET (remunerationBrut2) ---
+    const radioNet = document.getElementById('prestation.remunerationBrut2');
+    if (radioNet && !radioNet.checked) {
+      radioNet.checked = true;
+      radioNet.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    // --- Rémunération : euros + centimes séparés ---
     const inEuro = document.getElementById('inRemunerationEuro');
     const inCent = document.getElementById('inRemunerationCent');
     if ((inEuro || inCent) && data.salaireBrut != null) {
@@ -247,24 +223,17 @@
       if (inCent) { fillInput(inCent, cents); filled++; }
     }
 
-    // Radio remunerationBrut : cocher option 1 (brut)
-    const radioBrut = document.getElementById('prestation.remunerationBrut1');
-    if (radioBrut && !radioBrut.checked) {
-      radioBrut.checked = true;
-      radioBrut.dispatchEvent(new Event('change', { bubbles: true }));
-    }
-
-    // Nombre d'heures au format hhh:mn
+    // --- Nombre d'heures au format hhh:mn ---
     const inHeures = document.getElementById('inNombreHeures');
     if (inHeures && data.heures != null) {
       fillInput(inHeures, toHHMN(data.heures));
       filled++;
     }
 
-    // Manifestations (compétitions)
+    // --- Manifestations (compétitions) ---
     const inNbManif = document.getElementById('inNombreManifestation');
     const inMtManif = document.getElementById('inMontantManifestation');
-    if (inNbManif && data.joursComp != null)  { fillNumeric(inNbManif, data.joursComp);  filled++; }
+    if (inNbManif && data.joursComp  != null) { fillNumeric(inNbManif, data.joursComp);   filled++; }
     if (inMtManif && data.salaireComp != null) { fillNumeric(inMtManif, data.salaireComp); filled++; }
 
     return filled;
@@ -370,13 +339,13 @@
     const rows = [
       ['Coach',             payload.nomCoach],
       ['Mois',              payload.mois],
+      ['Date paiement',     payload.mois ? datePaiement(payload.mois) : '—'],
       ['Heures',            payload.heures != null ? toHHMN(payload.heures) : '—'],
       ['Taux horaire',      payload.tauxHoraire != null ? payload.tauxHoraire + ' €' : '—'],
       ['Salaire formation', payload.salaireFormation != null ? payload.salaireFormation + ' €' : '—'],
       ['Jours compét.',     payload.joursComp != null ? payload.joursComp + ' j' : '—'],
       ['Salaire compét.',   payload.salaireComp != null ? payload.salaireComp + ' €' : '—'],
-      ['Total brut',        payload.salaireBrut != null ? payload.salaireBrut + ' €' : '—'],
-      ['Date paiement',     payload.mois ? datePaiement(payload.mois) : '—'],
+      ['Total net',         payload.salaireBrut != null ? payload.salaireBrut + ' €' : '—'],
     ];
     t.innerHTML = rows.map(([l,v]) => `<tr><td>${l}</td><td>${v ?? '—'}</td></tr>`).join('');
   }
