@@ -3,6 +3,11 @@ export function getCoachDisplayName(coach) {
   const firstName = String(coach.first_name || '').trim();
   const lastName = String(coach.name || '').trim();
   return [lastName, firstName].filter(Boolean).join(' ').trim();
+
+  export function getCoachCivilite(coach) {
+  if (!coach) return 'MR';
+  return coach.civilite || 'MR';
+
 }
 
 export function getCurrentUserDisplayName(user, {
