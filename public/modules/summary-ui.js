@@ -1,6 +1,7 @@
 // summary-ui.js
 // Monthly summary display, freeze management, and current profile UI.
 // Exports: updateSummary, updateCurrentProfileUI, updateFreezeUI, toggleFreezeMonth, isCurrentMonthFrozen
+// + bouton "Copier pour CEA" pour alimenter le script Tampermonkey cea-autofill
 
 import { supabaseUrl, supabaseKey } from './env.js';
 import { __normalizeMonth, __escapeHtml } from './shared-utils.js';
@@ -33,10 +34,10 @@ export function updateFreezeUI() {
   if (banner) banner.style.display = frozen ? 'block' : 'none';
   if (btn) {
     if (frozen) {
-      btn.textContent = '🔓 Dégeler la fiche';
+      btn.textContent = '\uD83D\uDD13 Dégeler la fiche';
       btn.classList.add('frozen');
     } else {
-      btn.textContent = '🔒 Geler la fiche';
+      btn.textContent = '\uD83D\uDD12 Geler la fiche';
       btn.classList.remove('frozen');
     }
   }
@@ -125,7 +126,7 @@ export function updateSummary() {
   if (!currentCoach || !currentMonth) {
     ['totalHours','hourlyRate','trainingPayment','compDays','compPayment',
      'totalKm','kmPayment','tollPayment','hotelPayment','purchasePayment',
-     'urssafTotalPayment','reimbursementTotalPayment'].forEach(id => setVal(id, '—'));
+     'urssafTotalPayment','reimbursementTotalPayment'].forEach(id => setVal(id, '\u2014'));
     return;
   }
 
@@ -192,8 +193,64 @@ export function updateSummary() {
   setVal('urssafTotalPayment',    currencyDisplay(totalGross));
   setVal('reimbursementTotalPayment', currencyDisplay(totalReimbursement));
 
+  // Met à jour le bouton CEA avec les valeurs calculées
+  _updateCEAButton({
+    nomCoach:         currentCoach.name || currentCoach.prenom || currentCoach.id,
+    mois:             currentMonth,
+    heures:           totalHours,
+    tauxHoraire:      hourlyRate,
+    salaireFormation: salaryHours,
+    joursComp:        competitionDays,
+    salaireComp:      salaryCompetition,
+    salaireBrut:      totalGross,
+  });
+
   updateFreezeUI();
   updateCurrentProfileUI();
+}
+
+// ===== Bouton "Copier pour CEA" =====
+// Injecte un bouton dans le bloc synthèse pour copier les données dans le presse-papier.
+// Ces données sont ensuite importées dans le script Tampermonkey cea-autofill
+// sur le portail cea.urssaf.fr.
+
+let _ceaPayload = null;
+
+function _updateCEAButton(payload) {
+  _ceaPayload = payload;
+  const btn = document.getElementById('cea-copy-btn');
+  if (btn) btn.disabled = false;
+}
+
+export function initCEACopyButton() {
+  if (document.getElementById('cea-copy-btn')) return;
+
+  const btn = document.createElement('button');
+  btn.id = 'cea-copy-btn';
+  btn.type = 'button';
+  btn.disabled = true;
+  btn.innerHTML = '\uD83D\uDCCB Copier pour CEA';
+  btn.title = 'Copie les données du mois dans le presse-papier pour le script Tampermonkey CEA URSSAF';
+  btn.classList.add('btn-cea-copy'); // stylez via style.css si besoin
+
+  btn.addEventListener('click', async () => {
+    if (!_ceaPayload) return;
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(_ceaPayload, null, 2));
+      btn.innerHTML = '\u2705 Copié !';
+      setTimeout(() => { btn.innerHTML = '\uD83D\uDCCB Copier pour CEA'; }, 2500);
+    } catch {
+      alert('Impossible d\'accéder au presse-papier. Vérifiez les permissions du navigateur.');
+    }
+  });
+
+  // Insertion après le bloc synthèse (adapte le sélecteur si l'ID change dans index.html)
+  const target =
+    document.getElementById('summarySection') ||
+    document.getElementById('summary') ||
+    document.querySelector('[id*="summary"], .synthese-block');
+
+  if (target) target.appendChild(btn);
 }
 
 // Expose globally for backwards compat (called from calendar-ui etc.)
@@ -201,3 +258,4 @@ window.updateSummary = updateSummary;
 window.updateFreezeUI = updateFreezeUI;
 window.isCurrentMonthFrozen = isCurrentMonthFrozen;
 window.toggleFreezeMonth = toggleFreezeMonth;
+window.initCEACopyButton = initCEACopyButton;
