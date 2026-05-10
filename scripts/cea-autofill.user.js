@@ -1,13 +1,12 @@
 // ==UserScript==
 // @name         JCC Cattenom → CEA URSSAF Autofill
 // @namespace    https://github.com/gaelc08/jccattenom-app
-// @version      2.1.0
-// @description  Lit la synthèse du mois depuis l'app JCC Cattenom et pré-remplit le portail CEA URSSAF (étape 1 : salarié+période, étape 3 : rémunération)
+// @version      2.2.0
+// @description  Lit la synthèse du mois depuis l'app JCC Cattenom et pré-remplit le portail CEA URSSAF
 // @author       Gaël CANTARERO
 // @match        https://www.cea.urssaf.fr/*
 // @match        https://cea.urssaf.fr/*
-// @grant        GM_getValue
-// @grant        GM_setValue
+// @grant        none
 // ==/UserScript==
 
 (function () {
@@ -15,7 +14,17 @@
 
   const STORAGE_KEY = 'jcc_cea_payload';
 
-  // ── Injection CSS native (remplace GM_addStyle incompatible) ─────────────
+  // Stockage : localStorage avec fallback mémoire (si localStorage bloqué)
+  let _memStore = null;
+  function storageGet() {
+    try { return localStorage.getItem(STORAGE_KEY); } catch(e) { return _memStore; }
+  }
+  function storageSet(val) {
+    try { localStorage.setItem(STORAGE_KEY, val); } catch(e) {}
+    _memStore = val;
+  }
+
+  // Injection CSS native
   const style = document.createElement('style');
   style.textContent = `
     #jcc-panel {
@@ -41,12 +50,9 @@
     }
     #jcc-import-btn  { background: #2d4a3e; color: #7ec8a0; }
     #jcc-import-btn:hover { background: #3a5e4f; }
-    #jcc-step1-btn   { background: #1a6fa8; color: white; }
-    #jcc-step1-btn:hover { background: #1e84c8; }
-    #jcc-step1-btn:disabled { background: #555; cursor: default; }
-    #jcc-fill-btn    { background: #1a6fa8; color: white; }
-    #jcc-fill-btn:hover { background: #1e84c8; }
-    #jcc-fill-btn:disabled { background: #555; cursor: default; }
+    #jcc-step1-btn, #jcc-fill-btn { background: #1a6fa8; color: white; }
+    #jcc-step1-btn:hover, #jcc-fill-btn:hover { background: #1e84c8; }
+    #jcc-step1-btn:disabled, #jcc-fill-btn:disabled { background: #555; cursor: default; }
     #jcc-status { margin-top: 6px; font-size: 11px; color: #7ec8a0; min-height: 16px; text-align: center; }
     #jcc-status.error { color: #f08080; }
     .jcc-badge { background: #e67e22; color: white; border-radius: 9999px; padding: 1px 7px; font-size: 11px; font-weight: 700; }
@@ -57,22 +63,20 @@
   let payload = null;
 
   function loadPayload() {
-    try {
-      const r = GM_getValue(STORAGE_KEY, null);
-      if (r) payload = JSON.parse(r);
-    } catch(e) { payload = null; }
+    try { const r = storageGet(); if (r) payload = JSON.parse(r); } catch(e) { payload = null; }
   }
-  function savePayload(data) { payload = data; GM_setValue(STORAGE_KEY, JSON.stringify(data)); }
+  function savePayload(data) {
+    payload = data;
+    storageSet(JSON.stringify(data));
+  }
 
-  // ── Détecte sur quelle étape on est ──────────────────────────────────────
   function detectStep() {
-    const title = document.title + ' ' + document.body.innerText.slice(0, 500);
-    if (/salarié.*période|choix du salarié|choix de la période/i.test(title)) return 'step1';
-    if (/rémunération/i.test(title)) return 'step3';
+    const txt = document.title + ' ' + document.body.innerText.slice(0, 500);
+    if (/salarié.*période|choix du salarié|choix de la période/i.test(txt)) return 'step1';
+    if (/rémunération/i.test(txt)) return 'step3';
     return 'other';
   }
 
-  // ── Utilitaire : remplir un <input> ou <select> ───────────────────────────
   function fillInput(el, value) {
     if (!el || value == null) return false;
     el.value = String(value);
@@ -99,31 +103,24 @@
     return null;
   }
 
-  // ── Étape 1 : Salarié + Période ───────────────────────────────────────────
   function fillStep1(data) {
     let filled = 0;
-
     const nom = (data.nomCoach || '').toLowerCase();
-    const selects = document.querySelectorAll('select');
-    for (const sel of selects) {
+
+    for (const sel of document.querySelectorAll('select')) {
       for (const opt of sel.options) {
         if (opt.text.toLowerCase().includes(nom)) {
           sel.value = opt.value;
           sel.dispatchEvent(new Event('change', { bubbles: true }));
-          filled++;
-          break;
+          filled++; break;
         }
       }
     }
 
-    // Fallback champ texte salarié (portail CEA utilise parfois un input autocomplete)
     if (filled === 0 && nom) {
-      const inputs = document.querySelectorAll('input[type="text"]');
-      for (const inp of inputs) {
+      for (const inp of document.querySelectorAll('input[type="text"]')) {
         if (/salar|nom|prénom|prenom/i.test(inp.name + inp.id + inp.placeholder)) {
-          fillInput(inp, data.nomCoach);
-          filled++;
-          break;
+          fillInput(inp, data.nomCoach); filled++; break;
         }
       }
     }
@@ -136,62 +133,58 @@
       const dateFin   = `${pad(lastDay)}/${pad(month)}/${year}`;
 
       const dateInputs = Array.from(document.querySelectorAll('input[type="text"]'))
-        .filter(i => /date|du|au|période|debut|fin/i.test(i.name + i.id + i.placeholder + (i.closest('td')?.previousElementSibling?.textContent || '')));
+        .filter(i => /date|du|au|période|debut|fin/i.test(
+          i.name + i.id + i.placeholder +
+          (i.closest('td')?.previousElementSibling?.textContent || '')));
 
       if (dateInputs.length >= 2) {
         fillInput(dateInputs[0], dateDebut) && filled++;
         fillInput(dateInputs[1], dateFin)   && filled++;
       } else {
-        const allText = Array.from(document.querySelectorAll('input[type="text"]'));
-        if (allText[0]) fillInput(allText[0], dateDebut) && filled++;
-        if (allText[1]) fillInput(allText[1], dateFin)   && filled++;
+        const all = Array.from(document.querySelectorAll('input[type="text"]'));
+        if (all[0]) fillInput(all[0], dateDebut) && filled++;
+        if (all[1]) fillInput(all[1], dateFin)   && filled++;
       }
     }
-
     return filled;
   }
 
-  // ── Étape 3 : Rémunération ────────────────────────────────────────────────
   function fillStep3(data) {
     let filled = 0;
-
-    const trySelector = (selector, value) => {
-      const el = document.querySelector(selector);
-      return el ? (fillNumeric(el, value) ? (filled++, true) : false) : false;
+    const try$ = (sel, val) => {
+      const el = document.querySelector(sel);
+      return el ? (fillNumeric(el, val) ? (filled++, true) : false) : false;
     };
 
-    if (!trySelector('input[name="salairebrut"]',     data.salaireBrut))
-    if (!trySelector('input[id*="salairebrut"]',      data.salaireBrut))
-    if (!trySelector('input[id*="salaireBrut"]',      data.salaireBrut))
-    if (!trySelector('input[id*="remunerationBrute"]',data.salaireBrut)) {
+    if (!try$('input[name="salairebrut"]',      data.salaireBrut))
+    if (!try$('input[id*="salairebrut"]',       data.salaireBrut))
+    if (!try$('input[id*="salaireBrut"]',       data.salaireBrut))
+    if (!try$('input[id*="remunerationBrute"]', data.salaireBrut)) {
       const el = findInputNearLabel('salaire brut');
       if (el) { fillNumeric(el, data.salaireBrut); filled++; }
     }
 
-    if (!trySelector('input[name="nbheures"]',  data.heures))
-    if (!trySelector('input[id*="nbHeures"]',   data.heures))
-    if (!trySelector('input[id*="heures"]',     data.heures)) {
-      const el = findInputNearLabel("heures");
+    if (!try$('input[name="nbheures"]', data.heures))
+    if (!try$('input[id*="nbHeures"]',  data.heures))
+    if (!try$('input[id*="heures"]',    data.heures)) {
+      const el = findInputNearLabel('heures');
       if (el) { fillNumeric(el, data.heures); filled++; }
     }
 
-    if (!trySelector('input[name="tauxhoraire"]', data.tauxHoraire))
-    if (!trySelector('input[id*="tauxHoraire"]',  data.tauxHoraire)) {
-      const el = findInputNearLabel("taux horaire");
+    if (!try$('input[name="tauxhoraire"]', data.tauxHoraire))
+    if (!try$('input[id*="tauxHoraire"]',  data.tauxHoraire)) {
+      const el = findInputNearLabel('taux horaire');
       if (el) { fillNumeric(el, data.tauxHoraire); filled++; }
     }
-
     return filled;
   }
 
-  // ── Panel UI ──────────────────────────────────────────────────────────────
   function buildPanel() {
     loadPayload();
     const step = detectStep();
 
     const panel = document.createElement('div');
     panel.id = 'jcc-panel';
-
     panel.innerHTML = `
       <div id="jcc-panel-header">
         <span>🥋 JCC Cattenom → CEA</span>
@@ -200,65 +193,59 @@
       <div id="jcc-panel-body">
         <button class="jcc-btn" id="jcc-import-btn">📋 Coller les données depuis l'app</button>
         <table id="jcc-data-table"></table>
-        ${step === 'step1' ? `
+        ${ step === 'step1' ? `
           <div class="jcc-step-label">📍 Étape 1 — Salarié &amp; Période</div>
           <button class="jcc-btn" id="jcc-step1-btn">▶ Remplir salarié + période</button>
         ` : step === 'step3' ? `
           <div class="jcc-step-label">📍 Étape 3 — Rémunération</div>
           <button class="jcc-btn" id="jcc-fill-btn">▶ Remplir salaire &amp; heures</button>
         ` : `
-          <div class="jcc-step-label" style="color:#e67e22">Navigue vers l'étape 1 ou 3</div>
+          <div class="jcc-step-label" style="color:#e67e22">Étape non reconnue — navigue vers étape 1 ou 3</div>
         `}
         <div id="jcc-status"></div>
       </div>
     `;
-
     document.body.appendChild(panel);
 
     panel.querySelector('#jcc-panel-header').addEventListener('click', () => {
-      const body = panel.querySelector('#jcc-panel-body');
-      body.style.display = body.style.display === 'none' ? '' : 'none';
+      const b = panel.querySelector('#jcc-panel-body');
+      b.style.display = b.style.display === 'none' ? '' : 'none';
     });
 
     panel.querySelector('#jcc-import-btn').addEventListener('click', async () => {
       try {
         const text = await navigator.clipboard.readText();
         const data = JSON.parse(text);
-        if (data.salaireBrut == null && data.heures == null) throw new Error('Format invalide');
-        savePayload(data);
-        renderTable();
+        if (data.salaireBrut == null && data.heures == null) throw new Error('invalide');
+        savePayload(data); renderTable();
         setStatus('✅ Données importées !');
       } catch(e) {
         setStatus('❌ Clipboard invalide — utilisez "Copier pour CEA" dans l\'app.', true);
       }
     });
 
-    const s1btn = panel.querySelector('#jcc-step1-btn');
-    if (s1btn) {
-      s1btn.addEventListener('click', () => {
-        if (!payload) { setStatus('⚠ Importez d\'abord les données.', true); return; }
-        const n = fillStep1(payload);
-        setStatus(n > 0 ? `✅ ${n} champ(s) rempli(s) — vérifiez puis cliquez Suivant` : '⚠ Aucun champ trouvé. Vérifiez DevTools.');
-      });
-    }
+    const s1 = panel.querySelector('#jcc-step1-btn');
+    if (s1) s1.addEventListener('click', () => {
+      if (!payload) { setStatus('⚠ Importez d\'abord les données.', true); return; }
+      const n = fillStep1(payload);
+      setStatus(n > 0 ? `✅ ${n} champ(s) rempli(s) — vérifiez puis Suivant` : '⚠ Aucun champ trouvé.');
+    });
 
-    const s3btn = panel.querySelector('#jcc-fill-btn');
-    if (s3btn) {
-      s3btn.addEventListener('click', () => {
-        if (!payload) { setStatus('⚠ Importez d\'abord les données.', true); return; }
-        const n = fillStep3(payload);
-        setStatus(n > 0 ? `✅ ${n} champ(s) rempli(s)` : '⚠ Aucun champ trouvé sur cette page.');
-      });
-    }
+    const s3 = panel.querySelector('#jcc-fill-btn');
+    if (s3) s3.addEventListener('click', () => {
+      if (!payload) { setStatus('⚠ Importez d\'abord les données.', true); return; }
+      const n = fillStep3(payload);
+      setStatus(n > 0 ? `✅ ${n} champ(s) rempli(s)` : '⚠ Aucun champ trouvé.');
+    });
 
     renderTable();
   }
 
   function renderTable() {
-    const table = document.getElementById('jcc-data-table');
-    if (!table) return;
+    const t = document.getElementById('jcc-data-table');
+    if (!t) return;
     if (!payload) {
-      table.innerHTML = '<tr><td colspan="2" style="color:#8bacc8;font-style:italic;text-align:center;padding:8px">Aucune donnée chargée</td></tr>';
+      t.innerHTML = '<tr><td colspan="2" style="color:#8bacc8;font-style:italic;text-align:center;padding:8px">Aucune donnée chargée</td></tr>';
       return;
     }
     const rows = [
@@ -271,7 +258,7 @@
       ['Salaire compét.',   payload.salaireComp != null ? payload.salaireComp + ' €' : '—'],
       ['Total brut',        payload.salaireBrut != null ? payload.salaireBrut + ' €' : '—'],
     ];
-    table.innerHTML = rows.map(([l,v]) => `<tr><td>${l}</td><td>${v ?? '—'}</td></tr>`).join('');
+    t.innerHTML = rows.map(([l,v]) => `<tr><td>${l}</td><td>${v ?? '—'}</td></tr>`).join('');
   }
 
   function setStatus(msg, isError = false) {
@@ -279,7 +266,7 @@
     if (!s) return;
     s.textContent = msg;
     s.className = isError ? 'error' : '';
-    setTimeout(() => { if (s) s.textContent = ''; }, 5000);
+    setTimeout(() => { if(s) s.textContent = ''; }, 5000);
   }
 
   if (document.readyState === 'loading') {
