@@ -193,7 +193,7 @@ export function updateSummary() {
   setVal('urssafTotalPayment',    currencyDisplay(totalGross));
   setVal('reimbursementTotalPayment', currencyDisplay(totalReimbursement));
 
-  // Met à jour le bouton CEA avec les valeurs calculées
+  // Met à jour le payload CEA avec les valeurs calculées
   _updateCEAButton({
     nomCoach:         currentCoach.name || currentCoach.prenom || currentCoach.id,
     mois:             currentMonth,
@@ -210,10 +210,6 @@ export function updateSummary() {
 }
 
 // ===== Bouton "Copier pour CEA" =====
-// Injecte un bouton dans le bloc synthèse pour copier les données dans le presse-papier.
-// Ces données sont ensuite importées dans le script Tampermonkey cea-autofill
-// sur le portail cea.urssaf.fr.
-
 let _ceaPayload = null;
 
 function _updateCEAButton(payload) {
@@ -231,7 +227,22 @@ export function initCEACopyButton() {
   btn.disabled = true;
   btn.innerHTML = '\uD83D\uDCCB Copier pour CEA';
   btn.title = 'Copie les données du mois dans le presse-papier pour le script Tampermonkey CEA URSSAF';
-  btn.classList.add('btn-cea-copy'); // stylez via style.css si besoin
+  btn.style.cssText = [
+    'display:block',
+    'margin: 12px auto 4px',
+    'padding: 8px 20px',
+    'background: #1E3A7B',
+    'color: #fff',
+    'border: none',
+    'border-radius: 6px',
+    'font-size: 0.95rem',
+    'cursor: pointer',
+    'opacity: 0.6',
+    'transition: opacity .2s',
+  ].join(';');
+
+  btn.addEventListener('mouseenter', () => { if (!btn.disabled) btn.style.opacity = '1'; });
+  btn.addEventListener('mouseleave', () => { if (!btn.disabled) btn.style.opacity = '0.85'; });
 
   btn.addEventListener('click', async () => {
     if (!_ceaPayload) return;
@@ -244,16 +255,24 @@ export function initCEACopyButton() {
     }
   });
 
-  // Insertion après le bloc synthèse (adapte le sélecteur si l'ID change dans index.html)
+  // Sélecteur corrigé : le bloc synthèse dans index.html a la classe .summary (pas d'ID)
   const target =
     document.getElementById('summarySection') ||
     document.getElementById('summary') ||
-    document.querySelector('[id*="summary"], .synthese-block');
+    document.querySelector('.summary');
 
-  if (target) target.appendChild(btn);
+  if (target) {
+    target.appendChild(btn);
+  } else {
+    // Fallback : réessaye après un court délai (DOM pas encore rendu)
+    setTimeout(() => {
+      const t = document.querySelector('.summary');
+      if (t) t.appendChild(btn);
+    }, 800);
+  }
 }
 
-// Expose globally for backwards compat (called from calendar-ui etc.)
+// Expose globally for backwards compat
 window.updateSummary = updateSummary;
 window.updateFreezeUI = updateFreezeUI;
 window.isCurrentMonthFrozen = isCurrentMonthFrozen;

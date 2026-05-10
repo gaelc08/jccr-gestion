@@ -95,6 +95,7 @@ import {
   isCurrentMonthFrozen,
   toggleFreezeMonth,
   updateCurrentProfileUI,
+  initCEACopyButton,
 } from './modules/summary-ui.js';
 
 // ===== Feature modules =====
@@ -357,4 +358,6 @@ document.addEventListener('DOMContentLoaded', () => {
   setupAuthListeners();
   debugSession();
   debugSupabaseHealthFetch();
+  // Initialise le bouton CEA dans la section Récapitulatif mensuel
+  initCEACopyButton();
 });
