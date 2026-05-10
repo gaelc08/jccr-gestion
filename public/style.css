@@ -340,6 +340,66 @@ button, .btn-primary, .btn-secondary, .btn-danger {
 }
 
 /* ===== Coach Greeting (non-admin) ===== */
+/* ===== Admin Top Bar ===== */
+.admin-top-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+  background: rgba(255,255,255,0.97);
+  border-radius: var(--radius);
+  border-top: 4px solid var(--judo-gold);
+  box-shadow: var(--shadow-md);
+  padding: 14px 18px;
+  width: 100%;
+  min-width: 0;
+}
+
+.admin-top-bar-label {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 200px;
+  gap: 5px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--gray-700);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.admin-top-bar-label select,
+.admin-top-bar-label input[type="month"] {
+  padding: 10px 12px;
+  border: 2px solid var(--gray-300);
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  background: white;
+  transition: border-color 0.2s;
+  width: 100%;
+  min-width: 0;
+  height: 44px;
+  color: var(--gray-900);
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.admin-top-bar-label select:focus,
+.admin-top-bar-label input[type="month"]:focus {
+  outline: none;
+  border-color: var(--judo-red);
+}
+
+[data-theme="dark"] .admin-top-bar {
+  background: rgba(30,34,48,0.97);
+}
+
+[data-theme="dark"] .admin-top-bar-label select,
+[data-theme="dark"] .admin-top-bar-label input[type="month"] {
+  background: var(--gray-800);
+  color: var(--gray-100);
+  border-color: var(--gray-600);
+}
+
 .coach-greeting {
   color: var(--white);
   font-size: 1.1rem;
@@ -2348,3 +2408,4 @@ body.sidebar-open {
 #adminActionsPanel {
   display: none !important;
 }
+

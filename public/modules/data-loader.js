@@ -19,20 +19,24 @@ export function initDataLoader({ restSelect }) {
 // ===== Coach select dropdown =====
 export function loadCoaches() {
   const select = document.getElementById('coachSelect');
-  if (!select) return;
-  const current = select.value;
-  select.innerHTML = '<option value="">-- Sélectionner --</option>';
-  coaches.forEach((coach) => {
-    const opt = document.createElement('option');
-    opt.value = coach.id;
-    const label = getProfileLabel(coach, { capitalized: true });
-    const displayName = coach.name || coach.email || coach.id;
-    opt.textContent = `${displayName} (${label})`;
-    select.appendChild(opt);
+  const topSelect = document.getElementById('adminTopBarCoachSelect');
+  const selects = [select, topSelect].filter(Boolean);
+  if (selects.length === 0) return;
+  const current = select ? select.value : (topSelect ? topSelect.value : '');
+  selects.forEach((s) => {
+    s.innerHTML = '<option value="">-- Sélectionner --</option>';
+    coaches.forEach((coach) => {
+      const opt = document.createElement('option');
+      opt.value = coach.id;
+      const label = getProfileLabel(coach, { capitalized: true });
+      const displayName = coach.name || coach.email || coach.id;
+      opt.textContent = `${displayName} (${label})`;
+      s.appendChild(opt);
+    });
+    if (current && coaches.find((c) => c.id === current)) {
+      s.value = current;
+    }
   });
-  if (current && coaches.find((c) => c.id === current)) {
-    select.value = current;
-  }
 }
 
 // ===== Main data loader =====

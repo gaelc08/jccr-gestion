@@ -269,19 +269,28 @@ export function setupAuthListeners() {
       const adminEls = [
         'adminActionsPanel', 'adminProfileBtn', 'addCoachBtn', 'editCoachBtn', 'inviteAdminBtn',
         'freezeBtn', 'auditLogsBtn', 'helloAssoBtn', 'competitionsBtn', 'exportMonthlyExpensesBtn',
-        'importGroup', 'backupBtn',
+        'importGroup', 'backupBtn', 'adminTopBar',
       ];
       adminEls.forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
         if (id === 'adminActionsPanel' || id === 'importGroup') {
           el.style.display = isAdmin ? (id === 'importGroup' ? 'flex' : 'block') : 'none';
+        } else if (id === 'adminTopBar') {
+          el.style.display = isAdmin ? 'flex' : 'none';
         } else {
           // Si le bouton est dans la sidebar, utiliser 'block' (pas 'inline-block')
           const inSidebar = el.closest('#appSidebar');
           el.style.display = isAdmin ? (inSidebar ? 'block' : 'inline-block') : 'none';
         }
       });
+
+      // Init admin top bar month value
+      if (isAdmin) {
+        const topMonth = document.getElementById('adminTopBarMonthSelect');
+        const sidebarMonth = document.getElementById('monthSelect');
+        if (topMonth && sidebarMonth) topMonth.value = sidebarMonth.value;
+      }
 
       if (select) select.disabled = !isAdmin;
       _updateCoachGreeting?.(user, null, isAdmin);
@@ -302,6 +311,11 @@ export function setupAuthListeners() {
             setCurrentCoach(ownProfile);
             if (select) select.value = String(ownProfile.id);
           }
+        }
+        // Sync admin top bar coach select after coaches loaded
+        if (isAdmin) {
+          const topCoach = document.getElementById('adminTopBarCoachSelect');
+          if (topCoach && select) topCoach.value = select.value;
         }
       } catch (e) {
         console.error('Failed to load data:', e);

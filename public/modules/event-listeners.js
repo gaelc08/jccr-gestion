@@ -96,19 +96,50 @@ export function setupEventListeners() {
   // Month select
   bindChange('monthSelect', (e) => {
     setCurrentMonth(e.target.value);
+    const topMonth = document.getElementById('adminTopBarMonthSelect');
+    if (topMonth && topMonth.value !== e.target.value) topMonth.value = e.target.value;
     updateCalendar?.();
     updateSummary?.();
   });
+
+  // Admin top bar month select (sync → sidebar)
+  const adminTopBarMonthEl = document.getElementById('adminTopBarMonthSelect');
+  if (adminTopBarMonthEl) {
+    const sidebarMonthEl = document.getElementById('monthSelect');
+    if (sidebarMonthEl) adminTopBarMonthEl.value = sidebarMonthEl.value;
+    adminTopBarMonthEl.addEventListener('change', (e) => {
+      setCurrentMonth(e.target.value);
+      if (sidebarMonthEl && sidebarMonthEl.value !== e.target.value) sidebarMonthEl.value = e.target.value;
+      updateCalendar?.();
+      updateSummary?.();
+    });
+  }
 
   // Coach select
   bindChange('coachSelect', async (e) => {
     const coach = coaches.find((c) => String(c.id) === String(e.target.value));
     setCurrentCoach(coach || null);
+    const topCoach = document.getElementById('adminTopBarCoachSelect');
+    if (topCoach && topCoach.value !== e.target.value) topCoach.value = e.target.value;
     // Fermer la section compétitions si ouverte
     if (_competitionsVisible) toggleCompetitionsSection(false);
     await updateCalendar?.();
     updateSummary?.();
   });
+
+  // Admin top bar coach select (sync → sidebar)
+  const adminTopBarCoachEl = document.getElementById('adminTopBarCoachSelect');
+  if (adminTopBarCoachEl) {
+    const sidebarCoachEl = document.getElementById('coachSelect');
+    adminTopBarCoachEl.addEventListener('change', async (e) => {
+      const coach = coaches.find((c) => String(c.id) === String(e.target.value));
+      setCurrentCoach(coach || null);
+      if (sidebarCoachEl && sidebarCoachEl.value !== e.target.value) sidebarCoachEl.value = e.target.value;
+      if (_competitionsVisible) toggleCompetitionsSection(false);
+      await updateCalendar?.();
+      updateSummary?.();
+    });
+  }
 
   // Coach management
   bindClick('addCoachBtn',    () => openCoachModal?.('add'));

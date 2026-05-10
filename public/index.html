@@ -121,6 +121,18 @@
         <!-- Boutons déplacés dans la sidebar (#appSidebar) -->
       </div>
 
+      <!-- Admin top bar: profil + mois (mode admin uniquement) -->
+      <div id="adminTopBar" class="admin-top-bar" style="display:none">
+        <label class="admin-top-bar-label">
+          <span>👤 Profil</span>
+          <select id="adminTopBarCoachSelect"></select>
+        </label>
+        <label class="admin-top-bar-label">
+          <span>📅 Mois</span>
+          <input id="adminTopBarMonthSelect" type="month">
+        </label>
+      </div>
+
       <!-- Calendar -->
       <div id="frozenBanner" class="frozen-banner" style="display:none">🔒 Cette fiche est gelée — les modifications ne sont pas autorisées.</div>
       <div id="calendar" class="calendar card"></div>
