@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         JC Cattenom → CEA URSSAF Autofill
 // @namespace    https://github.com/gaelc08/jccattenom-app
-// @version      2.5.0
+// @version      2.6.0
 // @description  Lit la synthèse du mois depuis l'app JC Cattenom et pré-remplit le portail CEA URSSAF
 // @author       Gaël CANTARERO
 // @match        *://*/*
@@ -13,7 +13,6 @@
 (function () {
   'use strict';
 
-  // Ne s'exécute que sur le portail CEA
   if (!location.hostname.includes('cea.urssaf.fr')) return;
 
   const STORAGE_KEY = 'jcc_cea_payload';
@@ -52,9 +51,9 @@
     }
     #jcc-import-btn  { background: #2d4a3e; color: #7ec8a0; }
     #jcc-import-btn:hover { background: #3a5e4f; }
-    #jcc-step1-btn, #jcc-fill-btn { background: #1a6fa8; color: white; }
-    #jcc-step1-btn:hover, #jcc-fill-btn:hover { background: #1e84c8; }
-    #jcc-step1-btn:disabled, #jcc-fill-btn:disabled { background: #555; cursor: default; }
+    #jcc-step-btn { background: #1a6fa8; color: white; }
+    #jcc-step-btn:hover { background: #1e84c8; }
+    #jcc-step-btn:disabled { background: #555; cursor: default; }
     #jcc-status { margin-top: 6px; font-size: 11px; color: #7ec8a0; min-height: 16px; text-align: center; }
     #jcc-status.error { color: #f08080; }
     .jcc-badge { background: #e67e22; color: white; border-radius: 9999px; padding: 1px 7px; font-size: 11px; font-weight: 700; }
@@ -63,6 +62,7 @@
   document.head.appendChild(style);
 
   let payload = null;
+  let _lastStep = null;
 
   function loadPayload() {
     try { const r = storageGet(); if (r) payload = JSON.parse(r); } catch(e) { payload = null; }
@@ -73,9 +73,9 @@
   }
 
   function detectStep() {
-    const txt = document.title + ' ' + document.body.innerText.slice(0, 500);
-    if (/salarié.*période|choix du salarié|choix de la période/i.test(txt)) return 'step1';
-    if (/rémunération/i.test(txt)) return 'step3';
+    const txt = document.body.innerText.slice(0, 1000);
+    if (/rémunération|remuneration|salaire brut|taux horaire|nb.*heure/i.test(txt)) return 'step3';
+    if (/salaré|période|choix du salar|choix de la période|du\s*\//i.test(txt)) return 'step1';
     return 'other';
   }
 
@@ -105,7 +105,6 @@
     return null;
   }
 
-  // Civilités à ignorer lors du matching
   const CIVILITES = ['MR', 'MME', 'M.', 'MME.', 'DR', 'DR.', 'MLLE'];
 
   function extractMotsCle(nom) {
@@ -118,7 +117,6 @@
 
   function fillStep1(data) {
     let filled = 0;
-
     const motsCle = extractMotsCle(data.nomCoach);
 
     for (const sel of document.querySelectorAll('select')) {
@@ -198,9 +196,43 @@
     return filled;
   }
 
+  // ===== Mise à jour dynamique de la zone bouton selon l'étape =====
+  function updateStepUI(step) {
+    if (step === _lastStep) return;
+    _lastStep = step;
+
+    const zone = document.getElementById('jcc-step-zone');
+    if (!zone) return;
+
+    if (step === 'step1') {
+      zone.innerHTML = `
+        <div class="jcc-step-label">📍 Étape 1 — Salaré &amp; Période</div>
+        <button class="jcc-btn" id="jcc-step-btn">▶ Remplir salaré + période</button>
+      `;
+      zone.querySelector('#jcc-step-btn').addEventListener('click', () => {
+        if (!payload) { setStatus('\u26a0 Importez d\'abord les données.', true); return; }
+        const n = fillStep1(payload);
+        setStatus(n > 0 ? `\u2705 ${n} champ(s) rempli(s) \u2014 vérifiez puis Suivant` : '\u26a0 Aucun champ trouvé. Consultez la console.');
+      });
+    } else if (step === 'step3') {
+      zone.innerHTML = `
+        <div class="jcc-step-label">📍 Étape 3 — Rémunération</div>
+        <button class="jcc-btn" id="jcc-step-btn">▶ Remplir salaire &amp; heures</button>
+      `;
+      zone.querySelector('#jcc-step-btn').addEventListener('click', () => {
+        if (!payload) { setStatus('\u26a0 Importez d\'abord les données.', true); return; }
+        const n = fillStep3(payload);
+        setStatus(n > 0 ? `\u2705 ${n} champ(s) rempli(s)` : '\u26a0 Aucun champ trouvé. Consultez la console.');
+      });
+    } else {
+      zone.innerHTML = `<div class="jcc-step-label" style="color:#e67e22">Étape non reconnue — navigue vers étape 1 ou 3</div>`;
+    }
+  }
+
   function buildPanel() {
     loadPayload();
     const step = detectStep();
+    _lastStep = null; // force le rendu initial
 
     const panel = document.createElement('div');
     panel.id = 'jcc-panel';
@@ -212,15 +244,7 @@
       <div id="jcc-panel-body">
         <button class="jcc-btn" id="jcc-import-btn">📋 Coller les données depuis l'app</button>
         <table id="jcc-data-table"></table>
-        ${ step === 'step1' ? `
-          <div class="jcc-step-label">📍 Étape 1 — Salarié &amp; Période</div>
-          <button class="jcc-btn" id="jcc-step1-btn">▶ Remplir salarié + période</button>
-        ` : step === 'step3' ? `
-          <div class="jcc-step-label">📍 Étape 3 — Rémunération</div>
-          <button class="jcc-btn" id="jcc-fill-btn">▶ Remplir salaire &amp; heures</button>
-        ` : `
-          <div class="jcc-step-label" style="color:#e67e22">Étape non reconnue — navigue vers étape 1 ou 3</div>
-        `}
+        <div id="jcc-step-zone"></div>
         <div id="jcc-status"></div>
       </div>
     `;
@@ -236,28 +260,27 @@
         const text = await navigator.clipboard.readText();
         const data = JSON.parse(text);
         if (data.salaireBrut == null && data.heures == null) throw new Error('invalide');
-        savePayload(data); renderTable();
-        setStatus('✅ Données importées !');
+        savePayload(data);
+        renderTable();
+        setStatus('\u2705 Données importées !');
       } catch(e) {
-        setStatus('❌ Clipboard invalide — utilisez "Copier pour CEA" dans l\'app.', true);
+        setStatus('\u274c Clipboard invalide \u2014 utilisez "Copier pour CEA" dans l\'app.', true);
       }
     });
 
-    const s1 = panel.querySelector('#jcc-step1-btn');
-    if (s1) s1.addEventListener('click', () => {
-      if (!payload) { setStatus('⚠ Importez d\'abord les données.', true); return; }
-      const n = fillStep1(payload);
-      setStatus(n > 0 ? `✅ ${n} champ(s) rempli(s) — vérifiez puis Suivant` : '⚠ Aucun champ trouvé.');
-    });
-
-    const s3 = panel.querySelector('#jcc-fill-btn');
-    if (s3) s3.addEventListener('click', () => {
-      if (!payload) { setStatus('⚠ Importez d\'abord les données.', true); return; }
-      const n = fillStep3(payload);
-      setStatus(n > 0 ? `✅ ${n} champ(s) rempli(s)` : '⚠ Aucun champ trouvé.');
-    });
-
     renderTable();
+    updateStepUI(step);
+
+    // MutationObserver : surveille les changements de contenu (SPA CEA)
+    let _debounce = null;
+    const observer = new MutationObserver(() => {
+      clearTimeout(_debounce);
+      _debounce = setTimeout(() => {
+        const newStep = detectStep();
+        updateStepUI(newStep);
+      }, 400);
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
   }
 
   function renderTable() {
@@ -270,14 +293,14 @@
     const rows = [
       ['Coach',             payload.nomCoach],
       ['Mois',              payload.mois],
-      ['Heures',            payload.heures != null ? payload.heures + ' h' : '—'],
-      ['Taux horaire',      payload.tauxHoraire != null ? payload.tauxHoraire + ' €' : '—'],
-      ['Salaire formation', payload.salaireFormation != null ? payload.salaireFormation + ' €' : '—'],
-      ['Jours compét.',     payload.joursComp != null ? payload.joursComp + ' j' : '—'],
-      ['Salaire compét.',   payload.salaireComp != null ? payload.salaireComp + ' €' : '—'],
-      ['Total brut',        payload.salaireBrut != null ? payload.salaireBrut + ' €' : '—'],
+      ['Heures',            payload.heures != null ? payload.heures + ' h' : '\u2014'],
+      ['Taux horaire',      payload.tauxHoraire != null ? payload.tauxHoraire + ' \u20ac' : '\u2014'],
+      ['Salaire formation', payload.salaireFormation != null ? payload.salaireFormation + ' \u20ac' : '\u2014'],
+      ['Jours compét.',     payload.joursComp != null ? payload.joursComp + ' j' : '\u2014'],
+      ['Salaire compét.',   payload.salaireComp != null ? payload.salaireComp + ' \u20ac' : '\u2014'],
+      ['Total brut',        payload.salaireBrut != null ? payload.salaireBrut + ' \u20ac' : '\u2014'],
     ];
-    t.innerHTML = rows.map(([l,v]) => `<tr><td>${l}</td><td>${v ?? '—'}</td></tr>`).join('');
+    t.innerHTML = rows.map(([l,v]) => `<tr><td>${l}</td><td>${v ?? '\u2014'}</td></tr>`).join('');
   }
 
   function setStatus(msg, isError = false) {
