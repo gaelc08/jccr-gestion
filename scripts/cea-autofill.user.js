@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         JCC Cattenom → CEA URSSAF Autofill
+// @name         JC Cattenom → CEA URSSAF Autofill
 // @namespace    https://github.com/gaelc08/jccattenom-app
-// @version      2.4.1
-// @description  Lit la synthèse du mois depuis l'app JCC Cattenom et pré-remplit le portail CEA URSSAF
+// @version      2.4.2
+// @description  Lit la synthèse du mois depuis l'app JC Cattenom et pré-remplit le portail CEA URSSAF
 // @author       Gaël CANTARERO
 // @match        *://*/*
 // @updateURL    https://raw.githubusercontent.com/gaelc08/jccattenom-app/main/scripts/cea-autofill.user.js
@@ -108,12 +108,6 @@
   // Civilités à ignorer lors du matching
   const CIVILITES = ['MR', 'MME', 'M.', 'MME.', 'DR', 'DR.', 'MLLE'];
 
-  /**
-   * Extrait les mots significatifs d'un nom affiché par getCoachDisplayName
-   * Format attendu depuis l'app : "NOM Prénom" (ex: "CHERRIER Valentin")
-   * Format CEA : "MR NOM Prénom" ou "MME NOM Prénom"
-   * On ignore les civilités et on cherche chaque mot dans l'option du select.
-   */
   function extractMotsCle(nom) {
     return (nom || '')
       .toUpperCase()
@@ -125,13 +119,11 @@
   function fillStep1(data) {
     let filled = 0;
 
-    // Mots-clés depuis le nom de l'app (format "NOM Prénom")
     const motsCle = extractMotsCle(data.nomCoach);
 
     for (const sel of document.querySelectorAll('select')) {
       for (const opt of sel.options) {
         const optTxt = opt.text.toUpperCase();
-        // On veut que tous les mots-clés soient présents dans l'option
         const matches = motsCle.filter(m => optTxt.includes(m));
         if (motsCle.length > 0 && matches.length === motsCle.length) {
           sel.value = opt.value;
@@ -142,7 +134,6 @@
       }
     }
 
-    // Fallback : si le select n'a pas matché, on essaie un input texte
     if (filled === 0 && data.nomCoach) {
       for (const inp of document.querySelectorAll('input[type="text"]')) {
         if (/salar|nom|prénom|prenom/i.test(inp.name + inp.id + inp.placeholder)) {
@@ -215,7 +206,7 @@
     panel.id = 'jcc-panel';
     panel.innerHTML = `
       <div id="jcc-panel-header">
-        <span>🥋 JCC Cattenom → CEA</span>
+        <span>🥋 JC Cattenom → CEA</span>
         <span class="jcc-badge">AUTO</span>
       </div>
       <div id="jcc-panel-body">
