@@ -1,15 +1,11 @@
-// background.js — v2026.05.16-16
-// Gère le flux complet même quand la popup est fermée
+// background.js — v2026.05.16-17
+// Utilise chrome.tabs.onUpdated au lieu de setInterval
+// Le service worker se réveille sur chaque navigation, pas de polling
 
-let flowState = null; // { tabId, adherent, targetStep }
-let pollTimer = null;
+let flowState = null; // { tabId, adherent }
 
 function setStatus(msg, type = 'info') {
   chrome.storage.session.set({ flowStatus: { msg, type, ts: Date.now() } });
-}
-
-function stopPoll() {
-  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
 }
 
 function detectStep(url) {
@@ -21,7 +17,17 @@ function detectStep(url) {
   return null;
 }
 
-// --- Scripts injectés dans la page (world MAIN) ---
+async function runInTab(tabId, fn, args = []) {
+  const results = await chrome.scripting.executeScript({
+    target: { tabId },
+    world: 'MAIN',
+    func: fn,
+    args
+  });
+  return results[0].result;
+}
+
+// ---- Scripts injectés ----
 
 function fillEtape1(adherent) {
   let f = 0;
@@ -142,8 +148,8 @@ function fillEtape2(adherent) {
         .then(ok => { if (ok) f++; });
     })
     .then(() => {
-      if (ss('pratiques_1',     adherent.pratique || '1'))       f++;
-      if (sr('type_pratique_1', adherent.type_pratique || 'L'))  f++;
+      if (ss('pratiques_1',     adherent.pratique || '1'))      f++;
+      if (sr('type_pratique_1', adherent.type_pratique || 'L')) f++;
       sr('handicap', '0');
       if (adherent.certificat) ss('certificat', adherent.certificat);
       if (adherent.certificat === 'QU') sc('chk_questionnaire', true);
@@ -156,102 +162,95 @@ function fillEtape2(adherent) {
     });
 }
 
-async function runInTab(tabId, fn, args = []) {
-  const results = await chrome.scripting.executeScript({
-    target: { tabId },
-    world: 'MAIN',
-    func: fn,
-    args
-  });
-  return results[0].result;
-}
+// ---- Gestionnaire central de navigation ----
 
-// --- Machine à états ---
+async function handleNavigation(tabId, url) {
+  if (!flowState || flowState.tabId !== tabId) return;
+  const step = detectStep(url);
+  if (!step) return;
 
-async function handleStep(tabId, step, adherent) {
-  if (step === 'depart') {
-    setStatus('Navigation vers "Saisir une licence"...', 'info');
-    await chrome.tabs.update(tabId, { url: 'https://moncompte.ffjudo.com/espace-club/prise-licence/saisir-licence' });
-    watchFor(tabId, adherent, 'etape1');
-    return;
-  }
+  const adherent = flowState.adherent;
 
   if (step === 'etape1') {
     setStatus('\u00c9tape 1 : remplissage...', 'info');
-    const r = await runInTab(tabId, fillEtape1, [adherent]);
-    if (!r || !r.success) { setStatus('\u00c9tape 1 : aucun champ rempli.', 'error'); flowState = null; return; }
-    setStatus(`\u00c9tape 1 : ${r.filled} champ(s) \u2705 \u2014 Clique sur "Valider"...`, 'info');
-    watchFor(tabId, adherent, 'intermediaire');
+    // Attendre que la page soit stable
+    await new Promise(r => setTimeout(r, 800));
+    try {
+      const r = await runInTab(tabId, fillEtape1, [adherent]);
+      if (!r || !r.success) { setStatus('\u00c9tape 1 : aucun champ rempli.', 'error'); return; }
+      setStatus(`\u00c9tape 1 : ${r.filled} champ(s) \u2705 \u2014 Clique sur "Valider"...`, 'info');
+    } catch(e) { setStatus('Erreur \u00e9tape 1 : ' + e.message, 'error'); }
     return;
   }
 
   if (step === 'intermediaire') {
-    setStatus('Clic sur "Je souhaite cr\u00e9er une licence"...', 'info');
-    await new Promise(r => setTimeout(r, 800));
-    const ok = await runInTab(tabId, clickCreerLicence);
-    if (!ok) { setStatus('Bouton "cr\u00e9er une licence" introuvable.', 'error'); flowState = null; return; }
-    setStatus('Navigation vers \u00e9tape 2...', 'info');
-    watchFor(tabId, adherent, 'etape2');
+    setStatus('Clic auto sur "Je souhaite cr\u00e9er une licence"...', 'info');
+    await new Promise(r => setTimeout(r, 1000));
+    try {
+      const ok = await runInTab(tabId, clickCreerLicence);
+      if (!ok) { setStatus('Bouton "cr\u00e9er une licence" introuvable.', 'error'); return; }
+      setStatus('Navigation vers \u00e9tape 2...', 'info');
+    } catch(e) { setStatus('Erreur interm\u00e9diaire : ' + e.message, 'error'); }
     return;
   }
 
   if (step === 'etape2') {
     setStatus('\u00c9tape 2 : remplissage...', 'info');
-    await new Promise(r => setTimeout(r, 800));
-    const r = await runInTab(tabId, fillEtape2, [adherent]);
-    if (!r) { setStatus('\u00c9tape 2 : pas de r\u00e9ponse.', 'error'); flowState = null; return; }
-    setStatus(
-      r.success ? `\u00c9tape 2 : ${r.filled} champ(s) rempli(s) \u2705` : `\u00c9tape 2 : ${r.error || 'aucun champ.'}`,
-      r.success ? 'success' : 'error'
-    );
-    flowState = null;
+    await new Promise(r => setTimeout(r, 1000));
+    try {
+      const r = await runInTab(tabId, fillEtape2, [adherent]);
+      if (!r) { setStatus('\u00c9tape 2 : pas de r\u00e9ponse.', 'error'); return; }
+      setStatus(
+        r.success ? `\u00c9tape 2 : ${r.filled} champ(s) \u2705` : `\u00c9tape 2 : ${r.error || 'aucun champ.'}`,
+        r.success ? 'success' : 'error'
+      );
+      flowState = null; // Flux terminé
+    } catch(e) { setStatus('Erreur \u00e9tape 2 : ' + e.message, 'error'); }
     return;
   }
 }
 
-function watchFor(tabId, adherent, targetStep) {
-  stopPoll();
-  flowState = { tabId, adherent, targetStep };
-  const deadline = Date.now() + 60000;
+// ---- Listener principal : se déclenche à chaque navigation ----
 
-  pollTimer = setInterval(async () => {
-    if (!flowState) { stopPoll(); return; }
-    if (Date.now() > deadline) {
-      stopPoll(); flowState = null;
-      setStatus(`Timeout : \u00e9tape "${targetStep}" non atteinte.`, 'error');
-      return;
-    }
-    let tab;
-    try { tab = await chrome.tabs.get(tabId); } catch(e) { stopPoll(); flowState = null; return; }
-    const current = detectStep(tab.url || '');
-    if (current === targetStep) {
-      stopPoll();
-      await new Promise(r => setTimeout(r, 600));
-      await handleStep(tabId, targetStep, adherent);
-    }
-  }, 500);
-}
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (changeInfo.status !== 'complete') return;
+  if (!tab.url || !tab.url.includes('moncompte.ffjudo.com')) return;
+  handleNavigation(tabId, tab.url);
+});
 
-// --- Écoute des messages de la popup ---
+// ---- Messages depuis la popup ----
 
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   if (msg.action === 'startFlow') {
-    stopPoll();
-    flowState = null;
     const { tabId, tabUrl, adherent } = msg;
     const step = detectStep(tabUrl);
+
     if (!step) {
       setStatus('Page FFJDA non reconnue.', 'error');
       sendResponse({ ok: false });
       return true;
     }
-    handleStep(tabId, step, adherent);
+
+    flowState = { tabId, adherent };
+
+    // Si déjà sur la bonne page, traiter immédiatement
+    if (step === 'depart') {
+      setStatus('Navigation vers "Saisir une licence"...', 'info');
+      chrome.tabs.update(tabId, {
+        url: 'https://moncompte.ffjudo.com/espace-club/prise-licence/saisir-licence'
+      });
+    } else {
+      // La page est déjà chargée, handleNavigation ne se redéclenchera pas
+      // On le force manuellement
+      handleNavigation(tabId, tabUrl);
+    }
+
     sendResponse({ ok: true, step });
     return true;
   }
 
   if (msg.action === 'cancelFlow') {
-    stopPoll(); flowState = null;
+    flowState = null;
     setStatus('Flux annul\u00e9.', 'info');
     sendResponse({ ok: true });
     return true;
