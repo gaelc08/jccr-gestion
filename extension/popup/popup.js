@@ -16,15 +16,15 @@ function showStatus(msg, type = 'info') {
 function hideFiche() { fiche.classList.add('hidden'); btnFill.disabled = true; }
 
 function showFiche(a) {
-  document.getElementById('f-nom').textContent      = a.nom || '—';
-  document.getElementById('f-prenom').textContent   = a.prenom || '—';
-  document.getElementById('f-ddn').textContent      = a.date_naissance || '—';
-  document.getElementById('f-email').textContent    = a.email || '—';
-  document.getElementById('f-tel').textContent      = a.telephone || '—';
-  document.getElementById('f-adresse').textContent  = a.adresse || '—';
-  document.getElementById('f-cp').textContent       = a.code_postal || '—';
-  document.getElementById('f-ville').textContent    = a.ville || '—';
-  document.getElementById('f-sexe').textContent     = a.sexe || '—';
+  document.getElementById('f-nom').textContent        = a.nom || '—';
+  document.getElementById('f-prenom').textContent     = a.prenom || '—';
+  document.getElementById('f-ddn').textContent        = a.date_naissance || '—';
+  document.getElementById('f-email').textContent      = a.email || '—';
+  document.getElementById('f-tel').textContent        = a.telephone || '—';
+  document.getElementById('f-adresse').textContent    = a.adresse || '—';
+  document.getElementById('f-cp').textContent         = a.code_postal || '—';
+  document.getElementById('f-ville').textContent      = a.ville || '—';
+  document.getElementById('f-sexe').textContent       = a.sexe || '—';
   document.getElementById('f-discipline').textContent = a.discipline || '—';
   fiche.classList.remove('hidden');
   btnFill.disabled = false;
@@ -59,11 +59,11 @@ select.addEventListener('change', () => {
 });
 
 // -----------------------------------------------------------------------
-// Fonction injectée dans le contexte de la PAGE (world: MAIN)
-// A accès au jQuery natif de la page FFJDA
+// Fonction exécutée dans world: MAIN — accès au jQuery natif de FFJDA
 // -----------------------------------------------------------------------
 function pageScript(adherent) {
-  function norm(s) { return s.toUpperCase().replace(/-/g, ' '); }
+  function norm(s) { return (s || '').toUpperCase().replace(/-/g, ' '); }
+  function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
 
   function setInput(name, value) {
     const el = document.querySelector(`[name="${name}"]`);
@@ -98,92 +98,109 @@ function pageScript(adherent) {
     return true;
   }
 
+  // Remplit un Select2 de façon séquentielle et sûre
   function fillSelect2(selectName, searchText, targetText) {
     return new Promise((resolve) => {
+      // Fermer tout dropdown ouvert avant de commencer
+      jQuery('.select2-container--open').each(function() {
+        var sel = jQuery(this).data('select2');
+        if (sel) sel.$element.select2('close');
+      });
+
       const $sel = jQuery(`[name="${selectName}"]`);
       if (!$sel.length || !$sel.data('select2')) { resolve(false); return; }
 
-      $sel.select2('open');
       setTimeout(() => {
-        const input = document.querySelector('.select2-search__field');
-        if (!input) { $sel.select2('close'); resolve(false); return; }
-
-        input.focus();
-        input.value = searchText;
-        input.dispatchEvent(new Event('input', { bubbles: true }));
-        input.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true }));
+        $sel.select2('open');
 
         setTimeout(() => {
-          const opts = document.querySelectorAll(
-            '.select2-results__option:not(.select2-results__option--disabled):not(.select2-results__option--loading)'
-          );
-          const normTarget = targetText ? norm(targetText) : null;
-          let match = normTarget
-            ? Array.from(opts).find(o => norm(o.textContent).includes(normTarget))
-            : opts[0];
-          if (!match && opts[0]) match = opts[0];
+          // S'assurer qu'on trouve le bon input (celui du select ouvert)
+          const input = document.querySelector('.select2-container--open .select2-search__field');
+          if (!input) { $sel.select2('close'); resolve(false); return; }
 
-          if (match) {
-            match.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-            match.click();
-            resolve(true);
-          } else {
-            $sel.select2('close');
-            resolve(false);
-          }
-        }, 1500);
-      }, 500);
+          input.focus();
+          input.value = searchText;
+          input.dispatchEvent(new Event('input',         { bubbles: true }));
+          input.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true }));
+
+          setTimeout(() => {
+            const opts = document.querySelectorAll(
+              '.select2-container--open .select2-results__option:not(.select2-results__option--disabled):not(.select2-results__option--loading)'
+            );
+            const normTarget = norm(targetText);
+            let match = Array.from(opts).find(o => norm(o.textContent).includes(normTarget));
+            if (!match && opts[0]) match = opts[0]; // fallback première option
+
+            if (match) {
+              match.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+              match.click();
+              // Attendre la fermeture du dropdown
+              setTimeout(() => resolve(true), 300);
+            } else {
+              $sel.select2('close');
+              resolve(false);
+            }
+          }, 1500); // attente résultats AJAX
+        }, 500);   // attente ouverture
+      }, 200);     // délai avant ouverture (laisse le temps de fermer)
     });
   }
 
-  // Détection étape
-  const hasNaissance    = !!document.querySelector('[name="naissance"]');
+  // --- Détection étape ---
+  const hasNaissance     = !!document.querySelector('[name="naissance"]');
   const hasDateNaissance = !!document.querySelector('[name="date_naissance"]');
   const step = (hasNaissance && !hasDateNaissance) ? 1 : hasDateNaissance ? 2 : 0;
 
+  // --- Étape 1 ---
   if (step === 1) {
-    let filled = 0;
-    if (setInput('nom',        adherent.nom))          filled++;
-    if (setInput('prenom',     adherent.prenom))        filled++;
-    if (setSelect('sexe',      adherent.sexe === 'F' ? 'F' : 'M')) filled++;
-    if (setInput('naissance',  adherent.date_naissance || '')) filled++;
-    return Promise.resolve({ step: 1, success: filled > 0, filled });
+    let f = 0;
+    if (setInput('nom',       adherent.nom))          f++;
+    if (setInput('prenom',    adherent.prenom))        f++;
+    if (setSelect('sexe',     adherent.sexe === 'F' ? 'F' : 'M')) f++;
+    if (setInput('naissance', adherent.date_naissance || '')) f++;
+    return Promise.resolve({ step: 1, success: f > 0, filled: f });
   }
 
+  // --- Étape 2 ---
   if (step === 2) {
-    let filled = 0;
-    if (setInput('nom',          adherent.nom))          filled++;
-    if (setInput('prenom',       adherent.prenom))        filled++;
-    if (setInput('date_naissance', adherent.date_naissance)) filled++;
-    if (setInput('portable',     adherent.telephone))     filled++;
-    if (setInput('mail',         adherent.email))         filled++;
-    if (setInput('mail-confirm', adherent.email))         filled++;
-    if (setSelect('sexe',        adherent.sexe === 'F' ? 'F' : 'M')) filled++;
+    let f = 0;
+    if (setInput('nom',           adherent.nom))          f++;
+    if (setInput('prenom',        adherent.prenom))        f++;
+    if (setInput('date_naissance',adherent.date_naissance)) f++;
+    if (setInput('portable',      adherent.telephone))     f++;
+    if (setInput('mail',          adherent.email))         f++;
+    if (setInput('mail-confirm',  adherent.email))         f++;
+    if (setSelect('sexe',         adherent.sexe === 'F' ? 'F' : 'M')) f++;
 
+    // 1. CP Select2
     const cpTarget = adherent.ville
       ? `${adherent.code_postal} ${adherent.ville}`
       : adherent.code_postal;
 
     return fillSelect2('cp', adherent.code_postal, cpTarget)
       .then(cpOk => {
-        if (cpOk) filled++;
-        if (!adherent.adresse) return Promise.resolve();
-        return new Promise(r => setTimeout(r, 800))
-          .then(() => fillSelect2('adresse', adherent.adresse, adherent.adresse))
-          .then(adOk => { if (adOk) filled++; });
+        if (cpOk) f++;
+        // 2. Attendre que FFJDA charge le select Adresse suite à la sélection CP
+        // + s'assurer que le dropdown CP est bien fermé
+        return wait(1200);
       })
       .then(() => {
-        if (setSelect('pratiques_1',    adherent.pratique || '1'))    filled++;
-        if (setRadio('type_pratique_1', adherent.type_pratique || 'L')) filled++;
+        if (!adherent.adresse) return;
+        return fillSelect2('adresse', adherent.adresse, adherent.adresse)
+          .then(adOk => { if (adOk) f++; });
+      })
+      .then(() => {
+        if (setSelect('pratiques_1',    adherent.pratique || '1'))     f++;
+        if (setRadio('type_pratique_1', adherent.type_pratique || 'L')) f++;
         setRadio('handicap', '0');
         if (adherent.certificat) setSelect('certificat', adherent.certificat);
-        if (adherent.certificat === 'QU' && setCheckbox('chk_questionnaire', true)) filled++;
-        if (setRadio('fonction',       adherent.fonction || '4'))     filled++;
+        if (adherent.certificat === 'QU' && setCheckbox('chk_questionnaire', true)) f++;
+        if (setRadio('fonction',       adherent.fonction || '4'))      f++;
         setRadio('souscription', '1');
         setRadio('newsletter',   '0');
-        if (setCheckbox('assurance', true)) filled++;
+        if (setCheckbox('assurance', true)) f++;
         setCheckbox('rgpd', true);
-        return { step: 2, success: filled > 0, filled };
+        return { step: 2, success: f > 0, filled: f };
       });
   }
 
@@ -191,7 +208,7 @@ function pageScript(adherent) {
 }
 
 // -----------------------------------------------------------------------
-// Bouton Remplir — exécute pageScript dans world: MAIN
+// Bouton Remplir
 // -----------------------------------------------------------------------
 btnFill.addEventListener('click', async () => {
   const idx = select.value;
@@ -204,7 +221,7 @@ btnFill.addEventListener('click', async () => {
     return;
   }
 
-  showStatus('Remplissage en cours...', 'info');
+  showStatus('Remplissage en cours... (~5s)', 'info');
 
   try {
     const results = await chrome.scripting.executeScript({
@@ -215,12 +232,12 @@ btnFill.addEventListener('click', async () => {
     });
 
     const r = results[0].result;
-    // pageScript retourne une Promise — si le résultat est un objet on l'utilise directement
-    // (Chrome MV3 résout automatiquement les Promise retournées par executeScript)
     if (!r) { showStatus('Pas de réponse.', 'error'); return; }
     const stepLabel = r.step === 1 ? 'Étape 1' : r.step === 2 ? 'Étape 2' : 'Page non reconnue';
     showStatus(
-      r.success ? `${stepLabel} : ${r.filled} champ(s) rempli(s) ✅` : `${stepLabel} : aucun champ rempli.`,
+      r.success
+        ? `${stepLabel} : ${r.filled} champ(s) rempli(s) ✅`
+        : `${stepLabel} : ${r.error || 'aucun champ rempli.'}`,
       r.success ? 'success' : 'error'
     );
   } catch (err) {
