@@ -1,8 +1,8 @@
 // Content script — injecté sur moncompte.ffjudo.com
-// Étape 1 : nom, prenom, sexe, naissance
-// Étape 2 : formulaire complet
+// Les content scripts sont isolés : jQuery de la page n'est pas accessible directement.
+// Pour Select2, on injecte un <script> dans le DOM qui s'exécute dans le contexte de la page.
 
-// --- Helpers ---
+// --- Helpers standard ---
 
 function setInput(name, value) {
   const el = document.querySelector(`[name="${name}"]`);
@@ -37,57 +37,77 @@ function setCheckbox(id, checked) {
   return true;
 }
 
-// Normalise une chaîne pour la comparaison : majuscules, tirets → espaces
 function normalize(str) {
   return str.toUpperCase().replace(/-/g, ' ');
 }
 
-// Select2 : ouvre le dropdown, tape la recherche, attend les résultats, clique l'option.
-function fillSelect2(selectName, searchText, targetText) {
+// --- Injection Select2 dans le contexte de la page ---
+// Injecte un <script> dans le DOM pour accéder au jQuery natif de la page.
+// Communique le résultat via un CustomEvent.
+
+function fillSelect2ViaPage(selectName, searchText, targetText) {
   return new Promise((resolve) => {
-    if (typeof jQuery === 'undefined') { resolve(false); return; }
-    const $select = jQuery(`[name="${selectName}"]`);
-    if (!$select.length || !$select.data('select2')) { resolve(false); return; }
+    const eventId = `s2result_${selectName}_${Date.now()}`;
 
-    $select.select2('open');
+    // Écoute la réponse de la page
+    window.addEventListener(eventId, (e) => resolve(e.detail.success), { once: true });
 
-    setTimeout(() => {
-      const searchInput = document.querySelector('.select2-search__field');
-      if (!searchInput) { $select.select2('close'); resolve(false); return; }
+    // Injecte le script dans la page
+    const script = document.createElement('script');
+    script.textContent = `
+      (function() {
+        var selectName = ${JSON.stringify(selectName)};
+        var searchText = ${JSON.stringify(searchText)};
+        var targetText = ${JSON.stringify(targetText)};
+        var eventId    = ${JSON.stringify(eventId)};
 
-      // Saisie du texte de recherche
-      searchInput.focus();
-      searchInput.value = searchText;
-      searchInput.dispatchEvent(new Event('input', { bubbles: true }));
-      searchInput.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true }));
-
-      // Attente chargement AJAX
-      setTimeout(() => {
-        const options = document.querySelectorAll(
-          '.select2-results__option:not(.select2-results__option--disabled):not(.select2-results__option--loading)'
-        );
-
-        // Comparaison normalisée : "BASSE-HAM" == "BASSE HAM"
-        const normalTarget = targetText ? normalize(targetText) : null;
-        const match = normalTarget
-          ? [...options].find(o => normalize(o.textContent).includes(normalTarget))
-          : options[0];
-
-        if (match) {
-          match.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-          match.click();
-          resolve(true);
-        } else if (options[0]) {
-          // Fallback : première option
-          options[0].dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-          options[0].click();
-          resolve(true);
-        } else {
-          $select.select2('close');
-          resolve(false);
+        function norm(s) { return s.toUpperCase().replace(/-/g, ' '); }
+        function reply(ok) {
+          window.dispatchEvent(new CustomEvent(eventId, { detail: { success: ok } }));
         }
-      }, 1500);
-    }, 500);
+
+        var $sel = jQuery('[name="' + selectName + '"]');
+        if (!$sel.length || !$sel.data('select2')) { reply(false); return; }
+
+        $sel.select2('open');
+
+        setTimeout(function() {
+          var input = document.querySelector('.select2-search__field');
+          if (!input) { $sel.select2('close'); reply(false); return; }
+
+          input.focus();
+          input.value = searchText;
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          input.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true }));
+
+          setTimeout(function() {
+            var opts = document.querySelectorAll(
+              '.select2-results__option:not(.select2-results__option--disabled):not(.select2-results__option--loading)'
+            );
+            var normTarget = targetText ? norm(targetText) : null;
+            var match = normTarget
+              ? Array.from(opts).find(function(o) { return norm(o.textContent).includes(normTarget); })
+              : opts[0];
+
+            if (!match && opts[0]) match = opts[0]; // fallback
+
+            if (match) {
+              match.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+              match.click();
+              reply(true);
+            } else {
+              $sel.select2('close');
+              reply(false);
+            }
+          }, 1500);
+        }, 500);
+      })();
+    `;
+    document.head.appendChild(script);
+    script.remove();
+
+    // Timeout de sécurité
+    setTimeout(() => resolve(false), 5000);
   });
 }
 
@@ -113,21 +133,18 @@ async function fillStep2(a) {
   if (setInput('portable', a.telephone)) filled++;
   if (setInput('mail', a.email)) filled++;
   if (setInput('mail-confirm', a.email)) filled++;
-
   if (a.sexe && setSelect('sexe', a.sexe === 'F' ? 'F' : 'M')) filled++;
 
-  // CP Select2 : recherche "57970", cible "57970 BASSE HAM" (normalisé)
+  // CP via injection page
   if (a.code_postal) {
-    const cpTarget = a.ville
-      ? `${a.code_postal} ${a.ville}`  // normalize() gère le tiret
-      : a.code_postal;
-    const cpOk = await fillSelect2('cp', a.code_postal, cpTarget);
+    const cpTarget = a.ville ? `${a.code_postal} ${a.ville}` : a.code_postal;
+    const cpOk = await fillSelect2ViaPage('cp', a.code_postal, cpTarget);
     if (cpOk) filled++;
 
-    // Adresse Select2 : après le CP
+    // Adresse : attendre que FFJDA active le select après le CP
     if (a.adresse) {
       await new Promise(r => setTimeout(r, 800));
-      const adresseOk = await fillSelect2('adresse', a.adresse, a.adresse);
+      const adresseOk = await fillSelect2ViaPage('adresse', a.adresse, a.adresse);
       if (adresseOk) filled++;
     }
   }
@@ -141,9 +158,7 @@ async function fillStep2(a) {
 
   if (setRadio('fonction', a.fonction || '4')) filled++;
 
-  // Souscription commerciale FFJDA : Non
   setRadio('souscription', '1');
-  // Newsletter : Non
   setRadio('newsletter', '0');
 
   if (setCheckbox('assurance', true)) filled++;
