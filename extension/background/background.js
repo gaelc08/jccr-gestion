@@ -1,7 +1,6 @@
-// background.js — v2026.05.16-18
-// Utilise chrome.tabs.onUpdated au lieu de setInterval
+// background.js — v2026.05.16-19
 
-let flowState = null; // { tabId, adherent }
+let flowState = null;
 
 function setStatus(msg, type = 'info') {
   chrome.storage.session.set({ flowStatus: { msg, type, ts: Date.now() } });
@@ -29,7 +28,6 @@ async function runInTab(tabId, fn, args = []) {
 // ---- Scripts injectés ----
 
 function fillEtape1(adherent) {
-  let f = 0;
   function si(name, val) {
     const el = document.querySelector(`[name="${name}"]`);
     if (!el || val == null) return false;
@@ -45,10 +43,20 @@ function fillEtape1(adherent) {
     el.dispatchEvent(new Event('change', { bubbles: true }));
     return true;
   }
+
+  let f = 0;
   if (si('nom',       adherent.nom))                      f++;
   if (si('prenom',    adherent.prenom))                    f++;
   if (ss('sexe',      adherent.sexe === 'F' ? 'F' : 'M')) f++;
   if (si('naissance', adherent.date_naissance || ''))     f++;
+
+  // Clic sur "Valider"
+  setTimeout(() => {
+    const valider = Array.from(document.querySelectorAll('button[type="submit"]'))
+      .find(b => b.textContent.trim().toLowerCase().includes('valider'));
+    if (valider) valider.click();
+  }, 400);
+
   return { step: 1, success: f > 0, filled: f };
 }
 
@@ -157,36 +165,30 @@ function fillEtape2(adherent) {
       sr('newsletter',   '0');
       if (sc('assurance', true)) f++;
       sc('rgpd', true);
-
-      // Clic sur "Suivant"
       return wait(400).then(() => {
         const suivant = Array.from(document.querySelectorAll('button.big-btn[type="submit"]'))
           .find(b => b.textContent.trim().toLowerCase().includes('suivant'));
-        if (suivant) {
-          suivant.click();
-          f++;
-        }
+        if (suivant) { suivant.click(); f++; }
         return { step: 2, success: f > 0, filled: f, submitted: !!suivant };
       });
     });
 }
 
-// ---- Gestionnaire central de navigation ----
+// ---- Gestionnaire central ----
 
 async function handleNavigation(tabId, url) {
   if (!flowState || flowState.tabId !== tabId) return;
   const step = detectStep(url);
   if (!step) return;
-
   const adherent = flowState.adherent;
 
   if (step === 'etape1') {
-    setStatus('\u00c9tape 1 : remplissage...', 'info');
+    setStatus('\u00c9tape 1 : remplissage + clic Valider...', 'info');
     await new Promise(r => setTimeout(r, 800));
     try {
       const r = await runInTab(tabId, fillEtape1, [adherent]);
       if (!r || !r.success) { setStatus('\u00c9tape 1 : aucun champ rempli.', 'error'); return; }
-      setStatus(`\u00c9tape 1 : ${r.filled} champ(s) \u2705 \u2014 Clique sur "Valider"...`, 'info');
+      setStatus(`\u00c9tape 1 : ${r.filled} champ(s) \u2705 \u2192 Valider cliqu\u00e9...`, 'info');
     } catch(e) { setStatus('Erreur \u00e9tape 1 : ' + e.message, 'error'); }
     return;
   }
@@ -248,7 +250,6 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     sendResponse({ ok: true, step });
     return true;
   }
-
   if (msg.action === 'cancelFlow') {
     flowState = null;
     setStatus('Flux annul\u00e9.', 'info');
