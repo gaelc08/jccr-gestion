@@ -151,22 +151,13 @@ export function setupAuthListeners() {
   });
 
   const ssoBtn = document.getElementById('ssoBtn');
-  ssoBtn?.addEventListener('click', async () => {
-    try {
-      ssoBtn.disabled = true;
-      ssoBtn.textContent = 'Redirection...';
-      const { data, error } = await _supabase.auth.signInWithOAuth({
-        provider: 'keycloak',
-        options: {
-          redirectTo: window.location.origin + window.location.pathname,
-        },
-      });
-      if (error) throw error;
-    } catch (e) {
-      alert('Erreur SSO : ' + e.message);
-      ssoBtn.disabled = false;
-      ssoBtn.textContent = '🔐 SSO Keycloak';
-    }
+  ssoBtn?.addEventListener('click', () => {
+    ssoBtn.disabled = true;
+    ssoBtn.textContent = 'Redirection...';
+    // Redirection directe vers l'URL d'autorisation Supabase → Keycloak
+    const supabaseUrl = 'https://ajbpzueanpeukozjhkiv.supabase.co';
+    const redirectTo = encodeURIComponent(window.location.origin + window.location.pathname);
+    window.location.href = `${supabaseUrl}/auth/v1/authorize?provider=keycloak&redirect_to=${redirectTo}`;
   });
 
   logoutBtn?.addEventListener('click', async () => {
