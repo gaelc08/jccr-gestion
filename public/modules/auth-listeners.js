@@ -41,13 +41,11 @@ async function handleSSOCallback() {
   console.log('SSO callback detected, exchanging code for tokens...');
 
   try {
-    // Exchange code for tokens at Keycloak
+    // Exchange code for tokens at Keycloak (public client, no secret needed)
     const tokenEndpoint = 'https://auth.judo-cattenom.fr/realms/jccattenom/protocol/openid-connect/token';
-    const clientSecret = 'pdOiQ5MNnwW6UPXTfy9L2J9i2kC4CEpV';
     const params = new URLSearchParams({
       grant_type: 'authorization_code',
-      client_id: 'supabase',
-      client_secret: clientSecret,
+      client_id: 'jcc-frontend',
       code: code,
       redirect_uri: window.location.origin + window.location.pathname,
       code_verifier: verifier,
@@ -74,6 +72,7 @@ async function handleSSOCallback() {
     console.log('ID token received, signing into Supabase via signInWithIdToken...');
 
     // Sign into Supabase using the Keycloak ID token
+    // Supabase validates the JWT issuer matches the configured Keycloak provider
     const { data, error } = await _supabase.auth.signInWithIdToken({
       provider: 'keycloak',
       token: idToken,
