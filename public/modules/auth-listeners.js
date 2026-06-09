@@ -150,6 +150,25 @@ export function setupAuthListeners() {
     } catch (e) { alert(e.message); }
   });
 
+  const ssoBtn = document.getElementById('ssoBtn');
+  ssoBtn?.addEventListener('click', async () => {
+    try {
+      ssoBtn.disabled = true;
+      ssoBtn.textContent = 'Redirection...';
+      const { data, error } = await _supabase.auth.signInWithOAuth({
+        provider: 'keycloak',
+        options: {
+          redirectTo: window.location.origin + window.location.pathname,
+        },
+      });
+      if (error) throw error;
+    } catch (e) {
+      alert('Erreur SSO : ' + e.message);
+      ssoBtn.disabled = false;
+      ssoBtn.textContent = '🔐 SSO Keycloak';
+    }
+  });
+
   logoutBtn?.addEventListener('click', async () => {
     logoutBtn.disabled = true;
     try {
