@@ -248,7 +248,7 @@ export function setupAuthListeners() {
     generateCodeChallenge(codeVerifier).then(challenge => {
       const kcAuthUrl = 'https://auth.judo-cattenom.fr/realms/jccattenom/protocol/openid-connect/auth';
       const params = new URLSearchParams({
-        client_id: 'supabase',
+        client_id: 'jcc-frontend',
         redirect_uri: window.location.origin + window.location.pathname,
         response_type: 'code',
         scope: 'openid email profile',
