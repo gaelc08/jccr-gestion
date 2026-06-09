@@ -1,6 +1,6 @@
 // auth-listeners.js
 // Handles auth form handlers + onAuthStateChange logic.
-// All UI logic extracted from app-modular.js.
+// All UI code extracted from app-modular.js.
 
 import { supabaseUrl, supabaseKey } from './env.js';
 import {
@@ -9,6 +9,90 @@ import {
   setCoaches, setTimeData, setAuditLogs, setCurrentCoach, setEventListenersSetup,
 } from './app-context.js';
 import { __describeJwt, __hasAdminClaim } from './shared-utils.js';
+
+// ===== PKCE helpers =====
+function generateCodeVerifier() {
+  const array = new Uint8Array(32);
+  crypto.getRandomValues(array);
+  return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+}
+
+async function generateCodeChallenge(verifier) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(verifier);
+  const digest = await crypto.subtle.digest('SHA-256', data);
+  return btoa(String.fromCharCode(...new Uint8Array(digest)))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+// ===== SSO callback handler =====
+async function handleSSOCallback() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const code = urlParams.get('code');
+  if (!code) return;
+
+  const verifier = sessionStorage.getItem('pkce_verifier');
+  if (!verifier) {
+    console.error('SSO: no PKCE verifier found in sessionStorage');
+    window.history.replaceState({}, '', window.location.pathname);
+    return;
+  }
+
+  console.log('SSO callback detected, exchanging code for tokens...');
+
+  try {
+    // Exchange code for tokens at Keycloak
+    const tokenEndpoint = 'https://auth.judo-cattenom.fr/realms/jccattenom/protocol/openid-connect/token';
+    const clientSecret = 'pdOiQ5MNnwW6UPXTfy9L2J9i2kC4CEpV';
+    const params = new URLSearchParams({
+      grant_type: 'authorization_code',
+      client_id: 'supabase',
+      client_secret: clientSecret,
+      code: code,
+      redirect_uri: window.location.origin + window.location.pathname,
+      code_verifier: verifier,
+    });
+
+    const tokenResp = await fetch(tokenEndpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: params.toString(),
+    });
+
+    if (!tokenResp.ok) {
+      const err = await tokenResp.json();
+      throw new Error(err.error_description || err.error || `Token exchange failed: ${tokenResp.status}`);
+    }
+
+    const tokens = await tokenResp.json();
+    const idToken = tokens.id_token;
+
+    if (!idToken) {
+      throw new Error('No id_token received from Keycloak');
+    }
+
+    console.log('ID token received, signing into Supabase via signInWithIdToken...');
+
+    // Sign into Supabase using the Keycloak ID token
+    const { data, error } = await _supabase.auth.signInWithIdToken({
+      provider: 'keycloak',
+      token: idToken,
+    });
+
+    if (error) {
+      throw new Error(`Supabase auth failed: ${error.message}`);
+    }
+
+    console.log('SSO login successful!', data);
+  } catch (e) {
+    console.error('SSO callback error:', e);
+    alert('Erreur SSO : ' + e.message);
+  } finally {
+    // Clean up URL
+    window.history.replaceState({}, '', window.location.pathname);
+    sessionStorage.removeItem('pkce_verifier');
+  }
+}
 
 let _supabase = null;
 let _isCurrentUserAdminDB = null;
@@ -117,6 +201,11 @@ export function invalidateAdminCache() {
 export function setupAuthListeners() {
   console.log('DEBUG setupAuthListeners called');
 
+  // Handle SSO callback if present
+  if (new URLSearchParams(window.location.search).has('code')) {
+    handleSSOCallback();
+  }
+
   const emailInput     = document.getElementById('authEmail');
   const passwordInput  = document.getElementById('authPassword');
   const registerBtn    = document.getElementById('registerBtn');
@@ -154,10 +243,21 @@ export function setupAuthListeners() {
   ssoBtn?.addEventListener('click', () => {
     ssoBtn.disabled = true;
     ssoBtn.textContent = 'Redirection...';
-    // Redirection directe vers l'URL d'autorisation Supabase → Keycloak
-    const supabaseUrl = 'https://ajbpzueanpeukozjhkiv.supabase.co';
-    const redirectTo = encodeURIComponent(window.location.origin + window.location.pathname);
-    window.location.href = `${supabaseUrl}/auth/v1/authorize?provider=keycloak&redirect_to=${redirectTo}`;
+    // PKCE OAuth flow directly to Keycloak
+    const codeVerifier = generateCodeVerifier();
+    sessionStorage.setItem('pkce_verifier', codeVerifier);
+    generateCodeChallenge(codeVerifier).then(challenge => {
+      const kcAuthUrl = 'https://auth.judo-cattenom.fr/realms/jccattenom/protocol/openid-connect/auth';
+      const params = new URLSearchParams({
+        client_id: 'supabase',
+        redirect_uri: window.location.origin + window.location.pathname,
+        response_type: 'code',
+        scope: 'openid email profile',
+        code_challenge: challenge,
+        code_challenge_method: 'S256',
+      });
+      window.location.href = `${kcAuthUrl}?${params.toString()}`;
+    });
   });
 
   logoutBtn?.addEventListener('click', async () => {
