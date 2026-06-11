@@ -2,6 +2,22 @@
 // Saisie nouvelle licence + renouvellement (flux complet)
 
 let flowState = null;
+
+// Marquage auto "saisie" via HelloAsso API après succès
+async function apiMarkSaisie(adherent) {
+  try {
+    const { haToken, apiUrl } = await chrome.storage.local.get(['haToken', 'apiUrl']);
+    if (!haToken || !apiUrl) return;
+    if (!adherent.ha_order_id) return;
+    const resp = await fetch(`${apiUrl}/api/mark-saisie/${adherent.ha_order_id}`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${haToken}` }
+    });
+    if (resp.ok) console.log(`[API] ✓ ${adherent.nom} marqué saisi`);
+  } catch (e) {
+    console.warn('[API] Mark saisie failed:', e.message);
+  }
+}
 // flowState = { mode, tabId, queue, current, results, _step }
 
 function setStatus(msg, type = 'info') {
@@ -391,6 +407,7 @@ async function handleNavigation(tabId, url) {
       }
       if (r.success) {
         setStatus(`[${idx + 1}/${total}] ${adherent.nom} ✅`, 'success');
+        apiMarkSaisie(adherent);  // marque auto via API
         setTimeout(() => nextInQueue(), 2500);
       } else {
         setStatus(`Renouvellement [${idx + 1}] : échec (${r.error || 'inconnu'}).`, 'error');
@@ -440,6 +457,7 @@ async function handleNavigation(tabId, url) {
       }
       if (r.success) {
         setStatus(`[${idx + 1}/${total}] ${adherent.nom} ✅`, 'success');
+        apiMarkSaisie(adherent);  // marque auto via API
         setTimeout(() => nextInQueue(), 2500);
       } else {
         setStatus(`Étape 2 [${idx + 1}] : échec (${r.error || 'inconnu'}).`, 'error');
