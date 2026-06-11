@@ -9,15 +9,25 @@
 const SYNC_API_BASE = 'https://sync.judo-cattenom.fr';
 
 async function _getApiToken() {
-  // Récupère le token depuis chrome.storage.sync (partagé avec l'extension) si dispo
-  // Sinon attend que l'UI l'ait injecté
-  if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
+  // Try localStorage first (web app context)
+  let token = localStorage.getItem('jcc_api_token');
+  
+  // Fallback to chrome.storage.sync (extension context)
+  if (!token && typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
     try {
-      const result = await chrome.storage.sync.get(['jcc_api_token']);
-      if (result.jcc_api_token) return result.jcc_api_token;
+      const result = await new Promise((resolve) => {
+        chrome.storage.sync.get(['jcc_api_token'], resolve);
+      });
+      token = result.jcc_api_token;
     } catch (e) { /* ignore */ }
   }
-  return window.__jccApiToken || null;
+  
+  // Final fallback to window global (injected by app)
+  if (!token) {
+    token = window.__jccApiToken || null;
+  }
+  
+  return token;
 }
 
 async function _apiCall(endpoint, options = {}) {

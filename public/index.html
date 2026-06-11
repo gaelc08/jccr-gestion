@@ -296,7 +296,22 @@
   <!-- HelloAsso members modal -->
   <div id="helloAssoModal" class="modal">
     <div class="modal-content modal-content-audit">
-      <h2>🥋 Membres HelloAsso</h2>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <h2 style="margin:0">🥋 Membres HelloAsso</h2>
+        <button id="helloAssoConfigBtn" class="btn-secondary" style="font-size:12px;padding:4px 10px">⚙️ API</button>
+      </div>
+      <div id="helloAssoConfig" style="display:none;margin-bottom:14px;padding:10px;background:#f8f9fa;border-radius:6px;border:1px solid #dee2e6">
+        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px">Token API HelloAsso Sync</label>
+        <input id="helloAssoTokenInput" type="password" placeholder="jcc-sync-..." style="width:100%;padding:6px 10px;font-size:12px;border:1px solid #ccc;border-radius:4px;font-family:monospace">
+        <div style="display:flex;gap:6px;margin-top:8px">
+          <button id="helloAssoTokenSave" class="btn-primary" style="font-size:12px;padding:4px 12px">💾 Enregistrer</button>
+          <button id="helloAssoTokenTest" class="btn-secondary" style="font-size:12px;padding:4px 12px">🔌 Tester</button>
+        </div>
+        <div id="helloAssoTokenStatus" style="margin-top:6px;font-size:11px;display:none"></div>
+        <div style="margin-top:6px;font-size:10px;color:#888;line-height:1.4">
+          Token disponible sur le VPS dans <code>/home/hermes/.hermes/.env</code><br>(clé <b>HELLOASSO_API_TOKEN</b>)
+        </div>
+      </div>
       <div id="helloAssoContent">Chargement…</div>
       <div class="modal-actions">
         <button id="closeHelloAsso" class="btn-primary">Fermer</button>
@@ -564,6 +579,6 @@
 
   <div id="appVersion" class="app-version"></div>
 
-  <script type="module" src="app-modular.js?v=2026-06-11-r04"></script>
+  <script type="module" src="app-modular.js?v=2026-06-11-r05"></script>
 </body>
 </html>

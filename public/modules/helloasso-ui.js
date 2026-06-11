@@ -190,6 +190,78 @@ export function createHelloAssoUI({
     if (!modal) return;
     modal.classList.add('active');
     await renderHelloAssoSection();
+    initApiConfigUI();
+  }
+
+  // ─────────────────────────────────────────────────────────────────
+  // API Config UI
+  // ─────────────────────────────────────────────────────────────────
+
+  function initApiConfigUI() {
+    const configBtn = document.getElementById('helloAssoConfigBtn');
+    const configPanel = document.getElementById('helloAssoConfig');
+    const tokenInput = document.getElementById('helloAssoTokenInput');
+    const saveBtn = document.getElementById('helloAssoTokenSave');
+    const testBtn = document.getElementById('helloAssoTokenTest');
+    const statusEl = document.getElementById('helloAssoTokenStatus');
+
+    if (!configBtn || !configPanel) return;
+
+    // Toggle panel
+    configBtn.addEventListener('click', () => {
+      const isHidden = configPanel.style.display === 'none';
+      configPanel.style.display = isHidden ? 'block' : 'none';
+      if (isHidden) {
+        // Load current token
+        const token = localStorage.getItem('jcc_api_token') || '';
+        tokenInput.value = token;
+      }
+    });
+
+    // Save token
+    saveBtn?.addEventListener('click', () => {
+      const token = tokenInput.value.trim();
+      if (token) {
+        localStorage.setItem('jcc_api_token', token);
+        showStatus(statusEl, '✅ Token enregistré', 'success');
+      } else {
+        localStorage.removeItem('jcc_api_token');
+        showStatus(statusEl, '🗑️ Token supprimé', 'info');
+      }
+    });
+
+    // Test connection
+    testBtn?.addEventListener('click', async () => {
+      const token = tokenInput.value.trim();
+      if (!token) {
+        showStatus(statusEl, '⚠️ Aucun token à tester', 'warning');
+        return;
+      }
+
+      showStatus(statusEl, '🔄 Test en cours...', 'info');
+
+      try {
+        const resp = await fetch('https://sync.judo-cattenom.fr/stats', {
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
+
+        if (resp.ok) {
+          const data = await resp.json();
+          showStatus(statusEl, `✅ Connexion OK — ${data.paid || '?'} adhérents`, 'success');
+        } else {
+          showStatus(statusEl, `❌ Erreur ${resp.status}: ${resp.statusText}`, 'error');
+        }
+      } catch (err) {
+        showStatus(statusEl, `❌ Erreur réseau: ${err.message}`, 'error');
+      }
+    });
+  }
+
+  function showStatus(el, msg, type) {
+    if (!el) return;
+    el.style.display = 'block';
+    el.textContent = msg;
+    el.style.color = type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : type === 'warning' ? '#ffc107' : '#17a2b8';
   }
 
   // ─────────────────────────────────────────────────────────────────
