@@ -150,6 +150,8 @@ function fillEtape2(adherent) {
     si('mail',         adherent.email) && f++;
     si('mail-confirm', adherent.email) && f++;
   }
+  // Dojo (A ou B) — toujours Dojo A par défaut
+  if (adherent.dojo && ss('dojo-code', adherent.dojo)) f++;
   if (ss('pratiques_1',     adherent.pratique || '1'))       f++;
   if (sr('type_pratique_1', adherent.type_pratique || 'L'))  f++;
   sr('handicap', '0');

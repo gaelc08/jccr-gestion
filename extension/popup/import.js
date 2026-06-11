@@ -2,8 +2,8 @@
 // Convertisseur HelloAsso XLSX → JSON pour l'extension
 
 const CLUB_CONFIG = {
-  judo:  { pratique: '1',  type_pratique: 'C', fonction: '4' },
-  iaido: { pratique: '13', type_pratique: 'C', fonction: '4' },
+  judo:  { pratique: '1',  type_pratique: 'C', fonction: '4', dojo: 'A' },
+  iaido: { pratique: '13', type_pratique: 'C', fonction: '4', dojo: 'A' },
 };
 
 // Mapping colonnes HelloAsso (insensible à la casse, trim)
@@ -126,6 +126,7 @@ function handleFile(file) {
           pratique:      club.pratique,
           type_pratique: club.type_pratique,
           fonction:      club.fonction,
+          dojo:          club.dojo,
         }));
 
       renderPreview();
@@ -143,6 +144,7 @@ function applyClubConfig() {
     pratique:      club.pratique,
     type_pratique: club.type_pratique,
     fonction:      club.fonction,
+    dojo:          club.dojo,
   }));
   renderPreview();
 }
