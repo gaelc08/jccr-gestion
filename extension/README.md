@@ -42,9 +42,16 @@ extension/
 - **Format HelloAsso CSV** : les noms de colonnes dans `utils/import.js` doivent correspondre à l'export réel HelloAsso du club.
 - **Icônes** : ajouter des icônes PNG dans `icons/` (16×16, 48×48, 128×128).
 
+## 🔍 Reconnaissance du portail FFJDA (juin 2026)
+
+- **Backend** : CodeIgniter 4 hébergé sur `api.ffjudo.com` (développé par Koredge)
+- **API publique** : ❌ **Aucune API REST publique** — tous les endpoints testés (`/api`, `/swagger`, `/api-docs`, `/developer`) retournent 404
+- **Portail `moncompte.ffjudo.com`** : formulaires HTML/POST classiques, pas d'API JSON identifiable
+- **Debugbar CI4** : actif en production (CodeIgniter Debug Toolbar + Kint) — fuit des infos serveur mais pas d'aide pour une intégration API
+- **Conclusion** : l'extension Chrome avec scraping DOM reste la **seule approche viable** pour préremplir les licences FFJDA
+
 ## Prochaines étapes
 
 - [ ] Inspecter le DOM de la page FFJDA et corriger les sélecteurs
 - [ ] Ajouter une page d'import CSV/JSON dans la popup
-- [ ] Connecter directement à l'API club pour éviter les imports manuels
 - [ ] Gérer le statut « licence saisie » en retour dans l'app club

@@ -5,8 +5,8 @@
 // @description  Lit la synthèse du mois depuis l'app JC Cattenom et pré-remplit le portail CEA URSSAF
 // @author       Gaël CANTARERO
 // @match        https://www.cea.urssaf.fr/*
-// @updateURL    https://raw.githubusercontent.com/gaelc08/jccattenom-app/main/scripts/cea-autofill.user.js
-// @downloadURL  https://raw.githubusercontent.com/gaelc08/jccattenom-app/main/scripts/cea-autofill.user.js
+// @updateURL    https://raw.githubusercontent.com/gaelc08/jccattenom-app/main/userscripts/cea-autofill.user.js
+// @downloadURL  https://raw.githubusercontent.com/gaelc08/jccattenom-app/main/userscripts/cea-autofill.user.js
 // @grant        none
 // ==/UserScript==
 
