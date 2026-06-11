@@ -5,7 +5,8 @@
   "description": "Préremplissage automatique du formulaire de saisie de licence FFJDA depuis les données club.",
   "permissions": ["storage", "activeTab", "scripting"],
   "host_permissions": [
-    "https://moncompte.ffjudo.com/*"
+    "https://moncompte.ffjudo.com/*",
+    "https://sync.judo-cattenom.fr/*"
   ],
   "action": {
     "default_popup": "popup/popup.html",
