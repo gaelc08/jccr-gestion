@@ -1,6 +1,6 @@
 # JC Cattenom App
 
-Web app for the Judo Club de Cattenom-Rodemack to manage coach and volunteer activity, expenses, mileage, and related club administration.
+Web app for the Judo Club Cattenom Rodemack to manage coach and volunteer activity, expenses, mileage, and related club administration.
 
 ## What It Does
 

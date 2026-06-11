@@ -1,4 +1,4 @@
-# Procédure de Restauration - Plateforme Judo Club de Cattenom-Rodemack
+# Procédure de Restauration - Plateforme Judo Club Cattenom Rodemack
 
 ## Vue d'ensemble
 

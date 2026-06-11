@@ -1,7 +1,7 @@
 {
-  "name": "Judo Club de Cattenom-Rodemack – Suivi Entraîneurs",
+  "name": "Judo Club Cattenom Rodemack – Suivi Entraîneurs",
   "short_name": "Judo Coach",
-  "description": "Application de suivi des entraîneurs du Judo Club de Cattenom-Rodemack.",
+  "description": "Application de suivi des entraîneurs du Judo Club Cattenom Rodemack.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
