@@ -72,13 +72,18 @@
 
   const log = document.getElementById('recon-log');
   let logLines = [];
+  const MAX_LOGS = 300;
 
   function appendLog(msg, cls = '') {
+    // Déduplication : ne pas log 2x le même message consécutif
+    if (logLines.length > 0 && logLines[logLines.length - 1].msg === msg) return;
     logLines.push({ msg, cls });
     const line = document.createElement('div');
     if (cls) line.className = cls;
     line.textContent = msg;
     log.appendChild(line);
+    // Limiter le nombre de lignes pour éviter la saturation
+    while (log.children.length > MAX_LOGS) log.removeChild(log.firstChild);
     log.scrollTop = log.scrollHeight;
   }
 
@@ -289,22 +294,44 @@
 
   document.getElementById('recon-clipboard').addEventListener('click', () => {
     const json = exportData();
-    navigator.clipboard.writeText(json).then(() => {
-      appendLog('📋 Copié dans le clipboard !', 'recon-ok');
-    }).catch(() => {
-      // Fallback GM_setClipboard
-      if (typeof GM_setClipboard !== 'undefined') {
-        GM_setClipboard(json);
-        appendLog('📋 Copié (via GM) !', 'recon-ok');
-      } else {
-        appendLog('❌ Clipboard non disponible', 'recon-err');
+
+    // Méthode 1 : navigator.clipboard (moderne, nécessite focus)
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(json).then(() => {
+        appendLog('📋 Copié dans le clipboard !', 'recon-ok');
+      }).catch(() => fallbackCopy(json));
+    } else {
+      fallbackCopy(json);
+    }
+
+    function fallbackCopy(text) {
+      // Méthode 2 : textarea + execCommand (fonctionne partout)
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      try {
+        const ok = document.execCommand('copy');
+        appendLog(ok ? '📋 Copié (fallback) !' : '❌ execCommand a échoué', ok ? 'recon-ok' : 'recon-err');
+      } catch (e) {
+        appendLog('❌ Clipboard non disponible : ' + e.message, 'recon-err');
       }
-    });
+      document.body.removeChild(ta);
+    }
   });
 
   // Observer les changements de page (SPA possible)
-  const observer = new MutationObserver(() => {
-    setTimeout(scanForms, 500);
+  // IMPORTANT : exclure notre propre panneau pour éviter la boucle infinie
+  let _scanTimer = null;
+  const reconPanel = document.getElementById('recon-panel');
+  const observer = new MutationObserver((mutations) => {
+    // Ignorer les mutations qui viennent uniquement de notre panneau
+    const external = mutations.some(m => !reconPanel.contains(m.target));
+    if (!external) return;
+    clearTimeout(_scanTimer);
+    _scanTimer = setTimeout(scanForms, 800);
   });
   observer.observe(document.body, { childList: true, subtree: true });
 
