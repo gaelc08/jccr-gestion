@@ -8,8 +8,17 @@
 </head>
 <body>
   <div class="header">
-    <h1>JCC Cattenom</h1>
-    <p class="subtitle">Saisie licence FFJDA</p>
+    <div class="header-top">
+      <div>
+        <h1>JCC Cattenom</h1>
+        <p class="subtitle">Saisie licence FFJDA</p>
+      </div>
+      <button id="btn-settings" class="btn-icon" title="Paramètres API">⚙️</button>
+    </div>
+  </div>
+
+  <div id="api-warning" class="api-warning hidden">
+    ⚠️ Token API non configuré — <a href="#" id="link-config">Cliquer ici pour configurer</a>
   </div>
 
   <!-- Onglets mode -->
@@ -44,8 +53,11 @@
     <button id="btn-fill" class="btn-primary" disabled>
       ▶ Lancer la saisie
     </button>
+    <button id="btn-sync" class="btn-secondary" title="Synchroniser avec HelloAsso">
+      🔄
+    </button>
     <button id="btn-import-helloasso" class="btn-secondary">
-      📥 HelloAsso
+      📥
     </button>
     <button id="btn-load" class="btn-secondary">
       ↺
@@ -56,6 +68,7 @@
     <span>Ouvrez d'abord <a href="https://moncompte.ffjudo.com/espace-club/prise-licence" target="_blank">moncompte.ffjudo.com</a></span>
   </div>
 
+  <script src="../lib/api.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

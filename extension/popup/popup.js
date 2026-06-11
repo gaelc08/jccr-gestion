@@ -1,4 +1,6 @@
-// popup.js — v2026.05.18-02
+// popup.js — v2026.06.11-03 (intégration API HelloAsso Sync)
+const Api = window.JccApi;
+
 let adherents = [];
 let selected  = new Set();
 let currentMode = 'nouvelle';
@@ -29,9 +31,67 @@ document.querySelectorAll('.tab').forEach(tab => {
   });
 });
 
-// --- Import HelloAsso ---
+// --- Import HelloAsso XLSX ---
 document.getElementById('btn-import-helloasso').addEventListener('click', () => {
   window.location.href = 'import.html';
+});
+
+// --- Paramètres API ---
+const btnSettings = document.getElementById('btn-settings');
+const apiWarning  = document.getElementById('api-warning');
+const linkConfig  = document.getElementById('link-config');
+
+btnSettings.addEventListener('click', () => {
+  window.location.href = 'settings.html';
+});
+linkConfig.addEventListener('click', (e) => {
+  e.preventDefault();
+  window.location.href = 'settings.html';
+});
+
+async function checkApiToken() {
+  const hasToken = await Api.hasApiToken();
+  if (!hasToken) {
+    apiWarning.classList.remove('hidden');
+    return false;
+  }
+  apiWarning.classList.add('hidden');
+  return true;
+}
+
+// --- Sync HelloAsso (via API) ---
+const btnSync = document.getElementById('btn-sync');
+btnSync.addEventListener('click', async () => {
+  if (!(await checkApiToken())) {
+    showStatus('Token API non configuré.', 'error');
+    return;
+  }
+  btnSync.disabled = true;
+  btnSync.textContent = '…';
+  showStatus('🔄 Synchronisation HelloAsso en cours...', 'info');
+
+  const syncResult = await Api.triggerSync();
+  if (!syncResult.ok) {
+    showStatus(`❌ Sync échoué : ${syncResult.data.detail || 'erreur'}`, 'error');
+    btnSync.disabled = false;
+    btnSync.textContent = '🔄';
+    return;
+  }
+
+  showStatus(`✅ ${syncResult.data.paid} adhérent(s) synchronisé(s).`, 'success');
+
+  // Re-charger depuis l'API
+  const adhResult = await Api.getAdherents();
+  if (adhResult.ok) {
+    adherents = adhResult.data.adherents;
+    // Mirroiter dans chrome.storage.local (fallback offline)
+    chrome.storage.local.set({ adherents });
+    selected.clear();
+    renderList();
+  }
+
+  btnSync.disabled = false;
+  btnSync.textContent = '🔄';
 });
 
 function showStatus(msg, type = 'info') {
@@ -49,16 +109,18 @@ function updateCounter() {
 function renderList() {
   list.innerHTML = '';
   if (adherents.length === 0) {
-    list.innerHTML = '<div style="padding:10px;text-align:center;color:#999;font-size:12px">Aucun adhérent — cliquer 📥 HelloAsso</div>';
+    list.innerHTML = '<div style="padding:10px;text-align:center;color:#999;font-size:12px">Aucun adhérent — cliquer 🔄 (sync) ou 📥 (import XLSX)</div>';
     return;
   }
   adherents.forEach((a, i) => {
     const item = document.createElement('label');
-    item.className = 'adherent-item' + (selected.has(i) ? ' checked' : '');
+    const isSaisie = !!a.saisie_ffjda;
+    item.className = 'adherent-item' + (selected.has(i) ? ' checked' : '') + (isSaisie ? ' saisie' : '');
     const sexeWarn = !a.sexe ? ' ⚠' : '';
+    const saisieBadge = isSaisie ? '<span class="saisie-badge">✓ Saisie</span>' : '';
     item.innerHTML = `
       <input type="checkbox" value="${i}" ${selected.has(i) ? 'checked' : ''}>
-      <span class="name">${a.nom} ${a.prenom}${sexeWarn}</span>
+      <span class="name">${a.nom} ${a.prenom}${sexeWarn}${saisieBadge}</span>
       <span class="ddn">${a.date_naissance || ''}</span>
     `;
     item.querySelector('input').addEventListener('change', e => {
@@ -124,10 +186,23 @@ btnLoad.addEventListener('click', () => {
   });
 });
 
-// Chargement auto
-chrome.storage.local.get(['adherents'], result => {
-  if (result.adherents?.length > 0) {
-    adherents = result.adherents;
-    renderList();
+// Chargement auto : priorité API, fallback chrome.storage.local
+(async () => {
+  const hasToken = await checkApiToken();
+  if (hasToken) {
+    const result = await Api.getAdherents();
+    if (result.ok && result.data.adherents.length > 0) {
+      adherents = result.data.adherents;
+      chrome.storage.local.set({ adherents });
+      renderList();
+      return;
+    }
   }
-});
+  // Fallback : chrome.storage.local
+  chrome.storage.local.get(['adherents'], result => {
+    if (result.adherents?.length > 0) {
+      adherents = result.adherents;
+      renderList();
+    }
+  });
+})();

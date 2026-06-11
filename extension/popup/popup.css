@@ -14,8 +14,36 @@ body {
   color: white;
   padding: 12px 16px 10px;
 }
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
 .header h1 { font-size: 15px; font-weight: 700; letter-spacing: .3px; }
 .header .subtitle { font-size: 11px; opacity: .75; margin-top: 2px; }
+
+.btn-icon {
+  background: rgba(255, 255, 255, .15);
+  border: none;
+  color: white;
+  font-size: 16px;
+  padding: 6px 9px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background .15s;
+  line-height: 1;
+}
+.btn-icon:hover { background: rgba(255, 255, 255, .3); }
+
+.api-warning {
+  padding: 8px 14px;
+  background: #fff3e0;
+  color: #e65100;
+  font-size: 11px;
+  border-bottom: 1px solid #ffcc80;
+}
+.api-warning a { color: #bf360c; font-weight: 600; }
+.api-warning.hidden { display: none; }
 
 /* Onglets */
 .tabs {
@@ -112,6 +140,17 @@ body {
   color: #888;
   white-space: nowrap;
 }
+.adherent-item .saisie-badge {
+  font-size: 9px;
+  background: #c8e6c9;
+  color: #1b5e20;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-weight: 600;
+  margin-left: 4px;
+}
+.adherent-item.saisie { opacity: .55; }
+.adherent-item.saisie .name { text-decoration: line-through; }
 
 /* Barre de progression */
 .progress-wrap {
