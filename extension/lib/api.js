@@ -1,0 +1,139 @@
+// lib/api.js — Client API HelloAsso Sync (partagé popup, background, import)
+
+const API_BASE = "https://sync.judo-cattenom.fr";
+const TOKEN_KEY = "jcc_api_token";
+
+/**
+ * Récupère le token API depuis chrome.storage.sync (partage cross-devices).
+ * Retourne null si non configuré (→ invite l'utilisateur à le faire).
+ */
+async function getApiToken() {
+  const result = await chrome.storage.sync.get([TOKEN_KEY]);
+  return result[TOKEN_KEY] || null;
+}
+
+/**
+ * Sauvegarde le token API dans chrome.storage.sync.
+ */
+async function setApiToken(token) {
+  await chrome.storage.sync.set({ [TOKEN_KEY]: token });
+}
+
+/**
+ * Vérifie si le token est configuré.
+ */
+async function hasApiToken() {
+  const token = await getApiToken();
+  return !!token;
+}
+
+/**
+ * Appelle un endpoint de l'API avec authentification Bearer.
+ * @param {string} endpoint - "/sync", "/adherents", "/stats", "/mark-saisie"
+ * @param {object} options - { method, body, ... }
+ * @returns {Promise<{status: number, data: object, ok: boolean}>}
+ */
+async function apiCall(endpoint, options = {}) {
+  const token = await getApiToken();
+  if (!token) {
+    return {
+      status: 401,
+      data: { detail: "Token API non configuré. Ouvrez la page Paramètres (⚙️)." },
+      ok: false,
+      missingToken: true,
+    };
+  }
+  const method = options.method || "GET";
+  const fetchOptions = {
+    method,
+    headers: {
+      "Authorization": `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  };
+  if (options.body) {
+    fetchOptions.body = JSON.stringify(options.body);
+  }
+
+  try {
+    const r = await fetch(`${API_BASE}${endpoint}`, fetchOptions);
+    let data;
+    try {
+      data = await r.json();
+    } catch {
+      data = { detail: await r.text() };
+    }
+    return { status: r.status, data, ok: r.ok };
+  } catch (err) {
+    return { status: 0, data: { detail: err.message }, ok: false, networkError: true };
+  }
+}
+
+// --- Fonctions utilitaires publiques ---
+
+/**
+ * GET /adherents — récupère tous les adhérents synchronisés
+ */
+async function getAdherents() {
+  return apiCall("/adherents");
+}
+
+/**
+ * POST /sync — déclenche une synchronisation avec HelloAsso
+ */
+async function triggerSync() {
+  return apiCall("/sync", { method: "POST" });
+}
+
+/**
+ * GET /stats — récupère les stats de la dernier synchro
+ */
+async function getStats() {
+  return apiCall("/stats");
+}
+
+/**
+ * POST /mark-saisie — marque un item_id comme licence saisie dans FFJDA
+ */
+async function markSaisie(itemId, value = true) {
+  return apiCall("/mark-saisie", {
+    method: "POST",
+    body: { item_id: itemId, value },
+  });
+}
+
+/**
+ * Cherche un adhérent par (nom + prénom) dans la liste.
+ * Retourne l'adhérent matching ou null.
+ */
+function findAdherentByNomPrenom(adherents, nom, prenom) {
+  const normName = (s) =>
+    (s || "")
+      .toUpperCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[\s-]+/g, " ")
+      .trim();
+  const nA = normName(nom);
+  const pA = normName(prenom);
+  return adherents.find((a) => {
+    const nA_a = normName(a.nom);
+    const pA_a = normName(a.prenom);
+    return nA_a.includes(nA) && pA_a.includes(pA);
+  });
+}
+
+// Export via window.* pour usage depuis <script src>
+if (typeof window !== "undefined") {
+  window.JccApi = {
+    getApiToken,
+    setApiToken,
+    hasApiToken,
+    getAdherents,
+    triggerSync,
+    getStats,
+    markSaisie,
+    findAdherentByNomPrenom,
+    API_BASE,
+  };
+}
