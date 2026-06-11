@@ -1,9 +1,14 @@
-// popup.js — v2026.06.11-03 (intégration API HelloAsso Sync)
+// popup.js — v2026.06.11-04 (séparation Judo/Iaïdo + API HelloAsso)
 const Api = window.JccApi;
 
+// Tous les adhérents (106 HelloAsso)
 let adherents = [];
+// Index originaux sélectionnés (Set<number>)
 let selected  = new Set();
 let currentMode = 'nouvelle';
+// Filtre discipline : 'judo' | 'iaido' | 'all'
+// Par défaut : 'judo' — Iaïdo est un club distinct côté fédé
+let currentFilter = 'judo';
 
 const list    = document.getElementById('adherent-list');
 const btnFill = document.getElementById('btn-fill');
@@ -15,6 +20,52 @@ const status  = document.getElementById('status');
 const progressWrap = document.querySelector('.progress-wrap');
 const progressFill = document.querySelector('.progress-fill');
 const progressCurrent = document.querySelector('.progress-current');
+const selDiscipline = document.getElementById('sel-discipline');
+const countJudo = document.getElementById('count-judo');
+const countIaido = document.getElementById('count-iaido');
+const countAll = document.getElementById('count-all');
+const apiNotice = document.getElementById('api-notice');
+
+// --- Filtre discipline ---
+function isIaido(a) {
+  // pratique=13 OU tier contenant "iaïdo"/"iaido"/"cercle"
+  const tier = (a.tier || '').toLowerCase();
+  return a.pratique === '13' || tier.includes('iaido') || tier.includes('iaïdo') || tier.includes('cercle');
+}
+
+function getFiltered() {
+  // Retourne les items avec leur index original dans `adherents`
+  return adherents.map((a, idx) => ({ a, idx })).filter(({ a }) => {
+    if (currentFilter === 'iaido') return isIaido(a);
+    if (currentFilter === 'judo')  return !isIaido(a);
+    return true;
+  });
+}
+
+function updateDisciplineCounts() {
+  const nJudo  = adherents.filter(a => !isIaido(a)).length;
+  const nIaido = adherents.filter(a => isIaido(a)).length;
+  countJudo.textContent  = nJudo;
+  countIaido.textContent = nIaido;
+  countAll.textContent   = adherents.length;
+}
+
+selDiscipline.addEventListener('change', () => {
+  currentFilter = selDiscipline.value;
+  chrome.storage.local.set({ disciplineFilter: currentFilter });
+  // Nettoyer la sélection des items qui ne sont plus visibles
+  const visible = new Set(getFiltered().map(f => f.idx));
+  selected = new Set([...selected].filter(i => visible.has(i)));
+  renderList();
+});
+
+// Restaurer le filtre précédent
+chrome.storage.local.get(['disciplineFilter'], r => {
+  if (r.disciplineFilter && ['judo', 'iaido', 'all'].includes(r.disciplineFilter)) {
+    currentFilter = r.disciplineFilter;
+    selDiscipline.value = currentFilter;
+  }
+});
 
 // --- Onglets ---
 document.querySelectorAll('.tab').forEach(tab => {
@@ -108,32 +159,40 @@ function updateCounter() {
 
 function renderList() {
   list.innerHTML = '';
+  const filtered = getFiltered();
+  updateDisciplineCounts();
+  updateCounter();
+
   if (adherents.length === 0) {
     list.innerHTML = '<div style="padding:10px;text-align:center;color:#999;font-size:12px">Aucun adhérent — cliquer 🔄 (sync) ou 📥 (import XLSX)</div>';
     return;
   }
-  adherents.forEach((a, i) => {
+  if (filtered.length === 0) {
+    list.innerHTML = '<div style="padding:10px;text-align:center;color:#999;font-size:12px">Aucun adhérent dans cette discipline.</div>';
+    return;
+  }
+  filtered.forEach(({ a, idx }) => {
     const item = document.createElement('label');
     const isSaisie = !!a.saisie_ffjda;
-    item.className = 'adherent-item' + (selected.has(i) ? ' checked' : '') + (isSaisie ? ' saisie' : '');
+    item.className = 'adherent-item' + (selected.has(idx) ? ' checked' : '') + (isSaisie ? ' saisie' : '');
     const sexeWarn = !a.sexe ? ' ⚠' : '';
     const saisieBadge = isSaisie ? '<span class="saisie-badge">✓ Saisie</span>' : '';
+    const tierBadge = isIaido(a) ? '<span class="tier-badge iaido">⚔️</span>' : '';
     item.innerHTML = `
-      <input type="checkbox" value="${i}" ${selected.has(i) ? 'checked' : ''}>
-      <span class="name">${a.nom} ${a.prenom}${sexeWarn}${saisieBadge}</span>
+      <input type="checkbox" data-origidx="${idx}" ${selected.has(idx) ? 'checked' : ''}>
+      <span class="name">${a.nom} ${a.prenom}${sexeWarn}${tierBadge}${saisieBadge}</span>
       <span class="ddn">${a.date_naissance || ''}</span>
     `;
     item.querySelector('input').addEventListener('change', e => {
-      if (e.target.checked) { selected.add(i);    item.classList.add('checked'); }
-      else                  { selected.delete(i); item.classList.remove('checked'); }
+      if (e.target.checked) { selected.add(idx);     item.classList.add('checked'); }
+      else                  { selected.delete(idx);  item.classList.remove('checked'); }
       updateCounter();
     });
     list.appendChild(item);
   });
-  updateCounter();
 }
 
-btnAll.addEventListener('click',  () => { adherents.forEach((_, i) => selected.add(i));  renderList(); });
+btnAll.addEventListener('click',  () => { getFiltered().forEach(({ idx }) => selected.add(idx));  renderList(); });
 btnNone.addEventListener('click', () => { selected.clear(); renderList(); });
 
 // Sync statut + progression depuis le background

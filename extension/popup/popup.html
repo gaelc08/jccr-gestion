@@ -27,6 +27,17 @@
     <button class="tab" data-tab="renouvellement">Renouvellement</button>
   </div>
 
+  <!-- Filtre discipline (Judo vs Iaïdo = deux clubs distincts côté fédé) -->
+  <div class="discipline-filter">
+    <label>Discipline :</label>
+    <select id="sel-discipline">
+      <option value="judo">🥋 Judo &amp; Taïso (<span id="count-judo">0</span>)</option>
+      <option value="iaido">⚔️ Iaïdo / Cercle Iaïdo (<span id="count-iaido">0</span>)</option>
+      <option value="all">Tous (<span id="count-all">0</span>)</option>
+    </select>
+    <span id="api-notice" class="discipline-notice hidden"></span>
+  </div>
+
   <div class="section">
     <div class="select-header">
       <label>Adhérents à saisir</label>

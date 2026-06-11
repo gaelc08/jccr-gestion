@@ -70,6 +70,35 @@ body {
 }
 .tab:hover:not(.active) { color: #444; }
 
+/* Filtre discipline (Judo vs Iaïdo) */
+.discipline-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: #f8f9ff;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 12px;
+}
+.discipline-filter label {
+  font-weight: 600;
+  color: #555;
+}
+.discipline-filter select {
+  flex: 1;
+  padding: 4px 8px;
+  font-size: 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+}
+.discipline-notice {
+  font-size: 10px;
+  color: #bf360c;
+}
+.discipline-notice.hidden { display: none; }
+
 .section {
   padding: 10px 14px 8px;
   background: #fff;
@@ -147,6 +176,14 @@ body {
   padding: 1px 5px;
   border-radius: 3px;
   font-weight: 600;
+  margin-left: 4px;
+}
+.adherent-item .tier-badge.iaido {
+  font-size: 9px;
+  background: #ede7f6;
+  color: #4527a0;
+  padding: 1px 5px;
+  border-radius: 3px;
   margin-left: 4px;
 }
 .adherent-item.saisie { opacity: .55; }
