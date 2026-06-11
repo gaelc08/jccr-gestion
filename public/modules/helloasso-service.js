@@ -1,46 +1,83 @@
 /**
  * HelloAsso member sync service.
  * Provides functions to trigger server-side sync and read synced member data.
+ * 
+ * Calls the VPS backend sync.judo-cattenom.fr (which talks to HelloAsso via IONOS IP,
+ * not blocked by Cloudflare, unlike the former Supabase Edge Function).
  */
 
-export async function syncHelloAssoMembers(supabase) {
-  const { data, error } = await supabase.functions.invoke('sync-helloasso', {
-    method: 'POST',
-  });
-  if (error) {
-    // Try to extract the real error message from the function response body
-    const context = error.context;
-    if (context && typeof context.json === 'function') {
-      try {
-        const body = await context.json();
-        throw new Error(body.error || error.message);
-      } catch (parseErr) {
-        if (parseErr !== error) throw parseErr;
-      }
-    }
-    throw error;
+const SYNC_API_BASE = 'https://sync.judo-cattenom.fr';
+
+async function _getApiToken() {
+  // Récupère le token depuis chrome.storage.sync (partagé avec l'extension) si dispo
+  // Sinon attend que l'UI l'ait injecté
+  if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
+    try {
+      const result = await chrome.storage.sync.get(['jcc_api_token']);
+      if (result.jcc_api_token) return result.jcc_api_token;
+    } catch (e) { /* ignore */ }
+  }
+  return window.__jccApiToken || null;
+}
+
+async function _apiCall(endpoint, options = {}) {
+  const token = await _getApiToken();
+  if (!token) {
+    throw new Error('Token API HelloAsso non configuré. Configurez-le depuis l\'extension Chrome (⚙️ Paramètres).');
+  }
+  const fetchOptions = {
+    method: options.method || 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  };
+  const r = await fetch(`${SYNC_API_BASE}${endpoint}`, fetchOptions);
+  const data = await r.json();
+  if (!r.ok) {
+    throw new Error(data.detail || `HelloAsso API error ${r.status}`);
   }
   return data;
 }
 
-export async function getHelloAssoMembers(supabase) {
-  const { data, error } = await supabase
-    .from('helloasso_members')
-    .select('*')
-    .order('last_name', { ascending: true });
-  if (error) throw error;
-  return data ?? [];
+export async function syncHelloAssoMembers(_supabase) {
+  // _supabase ignoré — on utilise notre backend VPS à la place
+  return await _apiCall('/sync', { method: 'POST' });
 }
 
-export async function getLastSyncTime(supabase) {
-  const { data, error } = await supabase
-    .from('helloasso_members')
-    .select('synced_at')
-    .order('synced_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (error) return null;
-  return data?.synced_at ?? null;
+export async function getHelloAssoMembers(_supabase) {
+  // _supabase ignoré — on lit depuis notre backend VPS
+  const data = await _apiCall('/adherents');
+  const adherents = data.adherents || [];
+  // Mapper vers le format attendu par l'UI (legacy Supabase schema)
+  return adherents.map(a => ({
+    id: String(a.item_id || a.order_id || ''),
+    helloasso_id: String(a.item_id || ''),
+    first_name: a.prenom || '',
+    last_name: a.nom || '',
+    email: (a.email || '').toLowerCase(),
+    date_of_birth: a.date_naissance || '',
+    membership_amount: (a.amount_centimes || 0) / 100,
+    membership_date: null,
+    membership_state: 'active',
+    discipline: (function() {
+      if (a.pratique === '13') return 'iaido';
+      if (a.pratique === '3')  return 'taiso';
+      return 'judo';
+    })(),
+    judo_category: a.tier || '',
+    raw_data: a,
+  }));
+}
+
+export async function getLastSyncTime(_supabase) {
+  // _supabase ignoré — stats depuis notre backend
+  try {
+    const stats = await _apiCall('/stats');
+    return stats.synced_at || null;
+  } catch (e) {
+    return null;
+  }
 }
 
 /**
