@@ -53,6 +53,65 @@ selClub.addEventListener('change', () => {
   if (parsedAdherents.length > 0) applyClubConfig();
 });
 
+// Chargement en ligne depuis HelloAsso via API
+document.getElementById('btn-api-load').addEventListener('click', async () => {
+  const btn = document.getElementById('btn-api-load');
+  btn.disabled = true;
+  btn.textContent = '⏳ Chargement...';
+  showStatus('Connexion à HelloAsso...', 'info');
+
+  try {
+    const result = await JccApi.getAdherents();
+    if (!result.ok) {
+      if (result.missingToken) {
+        showStatus('⚠️ Token API non configuré. Cliquez sur ⚙️ en haut à droite de la popup.', 'error');
+      } else {
+        showStatus(`Erreur API : ${result.data.detail || 'inconnue'}`, 'error');
+      }
+      btn.disabled = false;
+      btn.textContent = '🔄 Charger depuis HelloAsso';
+      return;
+    }
+
+    const adherents = result.data;
+    if (!adherents || adherents.length === 0) {
+      showStatus('Aucun adhérent trouvé. Lancez d\'abord une sync depuis ⚙️.', 'error');
+      btn.disabled = false;
+      btn.textContent = '🔄 Charger depuis HelloAsso';
+      return;
+    }
+
+    const club = CLUB_CONFIG[selClub.value];
+
+    // Mappe les données API vers le format attendu
+    parsedAdherents = adherents.map(a => ({
+      nom:           (a.nom || '').toUpperCase(),
+      prenom:        a.prenom || '',
+      date_naissance: a.date_naissance || '',
+      sexe:          (a.sexe || '').toUpperCase(),
+      email:         a.email || '',
+      telephone:     a.telephone || a.tel || '',
+      adresse:       a.adresse || '',
+      code_postal:   a.code_postal || '',
+      ville:         (a.ville || '').toUpperCase(),
+      certificat:    a.certificat || '',
+      pratique:      club.pratique,
+      type_pratique: club.type_pratique,
+      fonction:      club.fonction,
+      dojo:          club.dojo,
+      ha_order_id:   a.ha_order_id || a.item_id || null,
+    }));
+
+    renderPreview();
+    btn.disabled = false;
+    btn.textContent = '🔄 Recharger depuis HelloAsso';
+  } catch (err) {
+    showStatus('Erreur réseau : ' + err.message, 'error');
+    btn.disabled = false;
+    btn.textContent = '🔄 Charger depuis HelloAsso';
+  }
+});
+
 function showStatus(msg, type = 'info') {
   status.textContent = msg;
   status.className = `status ${type}`;

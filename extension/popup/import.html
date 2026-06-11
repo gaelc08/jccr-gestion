@@ -22,6 +22,16 @@
     </div>
   </div>
 
+  <div class="section api-zone" id="api-zone">
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2z"/>
+      <path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/>
+    </svg>
+    <p>Charger en ligne depuis HelloAsso</p>
+    <p class="hint">Nécessite le token API configuré dans ⚙️ Paramètres</p>
+    <button id="btn-api-load" class="btn-secondary">🔄 Charger depuis HelloAsso</button>
+  </div>
+
   <div class="section drop-zone" id="drop-zone">
     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -49,6 +59,7 @@
     <button id="btn-import" class="btn-primary" disabled>Importer dans l'extension</button>
   </div>
 
+  <script src="../lib/api.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
   <script src="import.js"></script>
 </body>
