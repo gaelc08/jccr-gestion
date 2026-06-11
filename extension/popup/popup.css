@@ -19,6 +19,11 @@ body {
   align-items: center;
   justify-content: space-between;
 }
+.header-logo {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
 .header h1 { font-size: 15px; font-weight: 700; letter-spacing: .3px; }
 .header .subtitle { font-size: 11px; opacity: .75; margin-top: 2px; }
 
