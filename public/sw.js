@@ -1,5 +1,5 @@
-const CACHE_VERSION = 'judo-coach-pwa-v118';
-const APP_BUILD_ID = '2026-06-20-r02';
+const CACHE_VERSION = 'judo-coach-pwa-v119';
+const APP_BUILD_ID = '2026-06-20-r03';
 const BASE_PATH = new URL('./', self.location.href).pathname;
 const INDEX_URL = `${BASE_PATH}index.html`;
 const OFFLINE_URL = `${BASE_PATH}offline.html`;

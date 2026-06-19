@@ -2242,7 +2242,7 @@ button:focus-visible, .btn-primary:focus-visible, .btn-secondary:focus-visible {
   opacity: 1;
 }
 
-/* ===== App Sidebar (Modern, Clean, Light SaaS) ===== */
+/* ===== App Sidebar — thème JCC dark ===== */
 .app-sidebar {
   position: fixed;
   top: 0;
@@ -2250,12 +2250,12 @@ button:focus-visible, .btn-primary:focus-visible, .btn-secondary:focus-visible {
   height: 100%;
   width: 280px;
   max-width: 85vw;
-  background: var(--bg-primary);
-  border-right: 1px solid var(--border-subtle);
+  background: #0d1424;
+  border-right: 1px solid rgba(226, 177, 60, 0.15);
   z-index: 300;
   transform: translateX(-100%);
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: var(--shadow-lg);
+  box-shadow: 4px 0 24px rgba(0,0,0,0.4);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
@@ -2284,7 +2284,7 @@ button:focus-visible, .btn-primary:focus-visible, .btn-secondary:focus-visible {
   align-items: center;
   gap: var(--space-3);
   padding: 0 var(--space-4) var(--space-4);
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid rgba(226, 177, 60, 0.15);
   margin-bottom: var(--space-3);
 }
 
@@ -2292,13 +2292,13 @@ button:focus-visible, .btn-primary:focus-visible, .btn-secondary:focus-visible {
   width: 36px;
   height: 36px;
   border-radius: var(--radius-md);
-  background: var(--bg-secondary);
+  background: rgba(226, 177, 60, 0.1);
   padding: 4px;
   flex-shrink: 0;
 }
 
 .sidebar-club-name {
-  color: var(--text-primary);
+  color: #e8ecf4;
   font-weight: 600;
   font-size: 0.95rem;
   line-height: 1.3;
@@ -2308,40 +2308,42 @@ button:focus-visible, .btn-primary:focus-visible, .btn-secondary:focus-visible {
 .sidebar-nav-btn {
   display: flex;
   align-items: center;
-  width: 100%;
+  width: calc(100% - 24px);
   min-height: 44px;
   padding: var(--space-3) var(--space-4);
   text-align: left;
   background: transparent;
   border: none;
   border-radius: var(--radius-md);
-  color: var(--text-secondary);
+  color: #8892a8;
   font-size: 0.95rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.15s ease-out, color 0.15s ease-out;
+  transition: background-color 0.15s ease-out, color 0.15s ease-out, padding-left 0.2s;
   margin: 2px var(--space-3);
-  width: calc(100% - 24px);
 }
 
 .sidebar-nav-btn:hover {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
+  background: rgba(255,255,255,0.06);
+  color: #e8ecf4;
+  padding-left: calc(var(--space-4) + 4px);
 }
 
 .sidebar-nav-btn.btn-primary {
-  background: var(--judo-navy);
-  color: white;
+  background: rgba(226, 177, 60, 0.12);
+  color: #e2b13c;
   font-weight: 600;
+  border-left: 3px solid #e2b13c;
 }
 
 .sidebar-nav-btn.btn-primary:hover {
-  background: var(--judo-navy-dark);
+  background: rgba(226, 177, 60, 0.2);
+  color: #efd07a;
 }
 
 .sidebar-divider {
   height: 1px;
-  background: var(--border-subtle);
+  background: rgba(255,255,255,0.08);
   margin: var(--space-3) var(--space-4);
 }
 
@@ -2352,7 +2354,7 @@ button:focus-visible, .btn-primary:focus-visible, .btn-secondary:focus-visible {
   padding: var(--space-2) var(--space-4);
   font-size: 0.8rem;
   font-weight: 500;
-  color: var(--text-tertiary);
+  color: #8892a8;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -2360,10 +2362,10 @@ button:focus-visible, .btn-primary:focus-visible, .btn-secondary:focus-visible {
 .sidebar-label select,
 .sidebar-label input[type="month"] {
   padding: var(--space-3) var(--space-4);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid rgba(255,255,255,0.12);
   border-radius: var(--radius-md);
-  background: var(--bg-primary);
-  color: var(--text-primary);
+  background: rgba(255,255,255,0.05);
+  color: #e8ecf4;
   font-size: 0.9rem;
   width: 100%;
   min-height: 44px;
@@ -2376,18 +2378,18 @@ button:focus-visible, .btn-primary:focus-visible, .btn-secondary:focus-visible {
 .sidebar-label select:focus,
 .sidebar-label input[type="month"]:focus {
   outline: none;
-  border-color: var(--border-focus);
-  box-shadow: 0 0 0 3px rgba(30, 58, 123, 0.15);
+  border-color: #e2b13c;
+  box-shadow: 0 0 0 3px rgba(226, 177, 60, 0.15);
 }
 
 .sidebar-label select option {
-  background: var(--bg-primary);
-  color: var(--text-primary);
+  background: #0d1424;
+  color: #e8ecf4;
 }
 
 .sidebar-admin-title {
   padding: var(--space-2) var(--space-4);
-  color: var(--text-tertiary);
+  color: #e2b13c;
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -2395,16 +2397,12 @@ button:focus-visible, .btn-primary:focus-visible, .btn-secondary:focus-visible {
   margin-bottom: var(--space-1);
 }
 
-/* ===== Desktop: sidebar persistent (>= 768px) ===== */
+/* ===== Desktop: sidebar persistante (>= 768px) ===== */
 @media (min-width: 768px) {
   .app-sidebar {
-    transform: translateX(0);
+    transform: translateX(0) !important;
     box-shadow: none;
-    border-right: 1px solid var(--border-subtle);
-  }
-
-  .app-sidebar:not(.is-open) {
-    transform: translateX(0);
+    border-right: 1px solid rgba(226, 177, 60, 0.15);
   }
 
   .sidebar-overlay {
