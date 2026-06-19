@@ -1039,10 +1039,16 @@ button:focus-visible, .btn-primary:focus-visible, .btn-secondary:focus-visible {
     letter-spacing: 0.7px;
   }
 
-  .app-header-inner > button {
+  .app-header-inner > button:not(.btn-hamburger) {
     flex: 1 1 140px;
     min-width: 0;
     text-align: center;
+  }
+
+  .btn-hamburger {
+    display: flex !important;
+    flex: 0 0 auto;
+    color: #e8ecf4;
   }
 
   .app-body {

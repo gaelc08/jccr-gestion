@@ -2,6 +2,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 const envPath = 'public/modules/env.js';
 const swPath = 'public/sw.js';
 const indexPath = 'public/index.html';
+const stylePath = 'public/style.css';
 
 function getLocalDateString() {
   const now = new Date();
@@ -76,8 +77,15 @@ indexContent = replaceOrThrow(
   indexContent,
   /<script type="module" src="app-modular\.js\?v=[0-9]{4}-[0-9]{2}-[0-9]{2}-r[0-9]+"><\/script>/,
   `<script type="module" src="app-modular.js?v=${nextBuildId}"></script>`,
-  'index version query'
+  'index version query (app-modular)'
+);
+indexContent = replaceOrThrow(
+  indexContent,
+  /<link rel="stylesheet" href="style\.css\?v=[0-9]{4}-[0-9]{2}-[0-9]{2}-r[0-9]+">/,
+  `<link rel="stylesheet" href="style.css?v=${nextBuildId}">`,
+  'index version query (style.css)'
 );
 writeFileSync(indexPath, indexContent, 'utf8');
+
 
 console.log(`Bumped app version to ${nextBuildId} and cache to v${nextCacheVersion}.`);
