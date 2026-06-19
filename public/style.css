@@ -842,13 +842,15 @@ button:focus-visible, .btn-primary:focus-visible, .btn-secondary:focus-visible {
 }
 
 #freezeBtn {
-  background: var(--judo-navy);
-  color: white;
-  border: none;
+  background: rgba(255,255,255,0.05);
+  color: #8892a8;
+  border: 1px solid rgba(255,255,255,0.1);
 }
 
 #freezeBtn:hover {
-  background: var(--judo-red);
+  background: rgba(255,255,255,0.08);
+  color: #e8ecf4;
+  border-color: rgba(255,255,255,0.2);
 }
 
 #freezeBtn.frozen {
