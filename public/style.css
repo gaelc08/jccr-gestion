@@ -812,10 +812,7 @@ button:focus-visible, .btn-primary:focus-visible, .btn-secondary:focus-visible {
 }
 
 .import-group {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-wrap: wrap;
+  display: block;
 }
 
 .import-group input[type="file"] {
@@ -823,7 +820,26 @@ button:focus-visible, .btn-primary:focus-visible, .btn-secondary:focus-visible {
   color: var(--gray-700);
 }
 
-/* #importBtn : style géré par .sidebar-nav-btn.btn-secondary */
+#importBtn {
+  display: flex;
+  align-items: center;
+  width: calc(100% - 24px);
+  margin: 2px 12px;
+  padding: 12px 16px;
+  background: rgba(255,255,255,0.05);
+  color: #8892a8;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  box-sizing: border-box;
+}
+#importBtn:hover {
+  background: rgba(255,255,255,0.08);
+  color: #e8ecf4;
+}
 
 #freezeBtn {
   background: var(--judo-navy);
