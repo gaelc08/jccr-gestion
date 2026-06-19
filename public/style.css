@@ -2184,6 +2184,8 @@ button:focus-visible, .btn-primary:focus-visible, .btn-secondary:focus-visible {
   flex-shrink: 0;
   order: -1; /* toujours tout à gauche dans le flex header */
   transition: background 0.2s;
+  position: relative;
+  z-index: 101;
 }
 
 .btn-hamburger:hover {
