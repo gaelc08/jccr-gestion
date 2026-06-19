@@ -9,8 +9,15 @@
   /* === JCC Brand Colors (Refined for UI Clarity & Accessibility) === */
   --judo-navy: #1E3A7B;         /* Primary brand */
   --judo-navy-dark: #162D60;    /* Hover states */
-  --judo-gold: #E6B240;         /* Accent (adjusted for better contrast on white) */
-  --judo-gold-light: #FFF4D6;   /* Subtle backgrounds */
+  --judo-gold: #e2b13c;
+  --bg-app: #0a0f1c;
+  --bg-app-surface: #111827;
+  --text-app: #e8ecf4;
+  --text-app-muted: #8892a8;
+  --border-app: rgba(255, 255, 255, 0.12);
+  --radius-app: 10px;
+  --radius-app-lg: 16px;
+  --font-app: 'Plus Jakarta Sans', system-ui, sans-serif;
   
   /* Neutral Scale (Inter-friendly) */
   --bg-primary: #FFFFFF;
@@ -230,6 +237,23 @@ button:focus-visible, .btn-primary:focus-visible, .btn-secondary:focus-visible {
 }
 
 /* ===== App Header (Clean, Subtle, Functional) ===== */
+.app-header.jcc-header {
+  background: #0a0f1c;
+  border-bottom: 1px solid rgba(226, 177, 60, 0.25);
+  color: #e8ecf4;
+}
+.app-header.jcc-header .header-title h1 {
+  color: #e8ecf4;
+  letter-spacing: -0.01em;
+}
+.app-header.jcc-header .header-subtitle {
+  color: #8892a8;
+  font-weight: 400;
+}
+.app-header.jcc-header .header-logo {
+  filter: drop-shadow(0 0 0 rgba(226,177,60,0));
+}
+
 .app-header {
   background: var(--bg-primary);
   border-bottom: 1px solid var(--border-subtle);
