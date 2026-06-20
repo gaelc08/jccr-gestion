@@ -378,12 +378,12 @@ export function setupAuthListeners() {
       const adminEls = [
         'adminActionsPanel', 'adminProfileBtn', 'addCoachBtn', 'editCoachBtn', 'inviteAdminBtn',
         'freezeBtn', 'auditLogsBtn', 'helloAssoBtn', 'competitionsBtn', 'exportMonthlyExpensesBtn',
-        'importGroup', 'backupBtn', 'adminTopBar',
+        'importBtn', 'backupBtn', 'adminTopBar',
       ];
       adminEls.forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
-        if (id === 'adminActionsPanel' || id === 'importGroup') {
+        if (id === 'adminActionsPanel') {
           el.style.display = isAdmin ? 'block' : 'none';
         } else if (id === 'adminTopBar') {
           el.style.display = isAdmin ? 'flex' : 'none';
