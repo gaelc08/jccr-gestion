@@ -233,19 +233,19 @@ button:focus-visible, .btn-primary:focus-visible, .btn-secondary:focus-visible {
 
 .btn-logout, .btn-help {
   padding: var(--space-2) var(--space-4);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid rgba(255,255,255,0.25);
   border-radius: var(--radius-md);
-  background: var(--bg-primary);
-  color: var(--text-secondary);
+  background: transparent;
+  color: #e8ecf4;
   font-size: 0.85rem;
   font-weight: 500;
   white-space: nowrap;
 }
 
 .btn-logout:hover, .btn-help:hover {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-  border-color: var(--text-tertiary);
+  background: rgba(255,255,255,0.15);
+  color: #ffffff;
+  border-color: rgba(255,255,255,0.35);
 }
 
 /* ===== App Header (Clean, Subtle, Functional) ===== */
