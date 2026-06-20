@@ -384,7 +384,7 @@ export function setupAuthListeners() {
         const el = document.getElementById(id);
         if (!el) return;
         if (id === 'adminActionsPanel' || id === 'importGroup') {
-          el.style.display = isAdmin ? (id === 'importGroup' ? 'flex' : 'block') : 'none';
+          el.style.display = isAdmin ? 'block' : 'none';
         } else if (id === 'adminTopBar') {
           el.style.display = isAdmin ? 'flex' : 'none';
         } else {
