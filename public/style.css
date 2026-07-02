@@ -2494,7 +2494,8 @@ button:focus-visible, .btn-primary:focus-visible, .btn-secondary:focus-visible {
   }
 
   .header-actions .btn-help,
-  .header-actions .btn-logout {
+  .header-actions .btn-logout,
+  .header-actions .btn-back-site {
     font-size: 0.75rem;
     padding: 6px 10px;
   }
@@ -2509,7 +2510,8 @@ button:focus-visible, .btn-primary:focus-visible, .btn-secondary:focus-visible {
 
 @media (max-width: 480px) {
   .header-actions .btn-help span,
-  .header-actions .btn-logout {
+  .header-actions .btn-logout,
+  .header-actions .btn-back-site {
     font-size: 0.72rem;
     padding: 5px 8px;
   }

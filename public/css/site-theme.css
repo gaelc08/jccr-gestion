@@ -115,6 +115,22 @@ input::placeholder { color: var(--text-muted); }
 .btn-danger { background:#dc2626; color:#fff; border-color:#dc2626; }
 .btn-danger:hover { background:#ef4444; border-color:#ef4444; }
 .btn-logout { color: var(--text); }
+
+.btn-back-site {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  background: var(--accent, #e2b13c);
+  color: #0a0f1c !important;
+  text-decoration: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: opacity 0.2s;
+}
+.btn-back-site:hover { opacity: 0.85; }
 .btn-icon { color: var(--text-muted); }
 
 /* Cartes / panneaux */
