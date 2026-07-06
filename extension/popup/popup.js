@@ -266,7 +266,7 @@ async function loadCampaigns() {
   if (!result.ok || !result.data.campaigns) return;
 
   const campaigns = result.data.campaigns.filter(
-    c => c.type === 'Membership' && (c.slug.includes('adhesion') || c.slug === 'stage-judo-printemps')
+    c => (c.type || 'Membership') === 'Membership' && (c.slug.includes('adhesion') || c.slug === 'stage-judo-printemps')
   );
   const current = result.data.current;
 

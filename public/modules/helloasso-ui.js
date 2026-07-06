@@ -237,7 +237,7 @@ export function createHelloAssoUI({
       if (!r.ok) { sel.innerHTML = '<option value="">Erreur API</option>'; return; }
       const data = await r.json();
       const campaigns = (data.campaigns || []).filter(
-        c => c.type === 'Membership' && c.slug.includes('adhesion')
+        c => (c.type || 'Membership') === 'Membership' && c.slug.includes('adhesion')
       );
       sel.innerHTML = '';
       for (const c of campaigns) {
