@@ -256,6 +256,17 @@ export function setupAuthListeners() {
         code_challenge_method: 'S256',
       });
       window.location.href = `${kcAuthUrl}?${params.toString()}`;
+    }).catch(err => {
+      console.error('SSO PKCE error, fallback sans PKCE:', err);
+      // Fallback : redirection directe sans PKCE (fonctionne sur tous les navigateurs)
+      const kcAuthUrl = 'https://auth.judo-cattenom.fr/realms/jccattenom/protocol/openid-connect/auth';
+      const params = new URLSearchParams({
+        client_id: 'jcc-frontend',
+        redirect_uri: window.location.origin + window.location.pathname,
+        response_type: 'code',
+        scope: 'openid email profile',
+      });
+      window.location.href = `${kcAuthUrl}?${params.toString()}`;
     });
   });
 
