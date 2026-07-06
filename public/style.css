@@ -2257,6 +2257,23 @@ button:focus-visible, .btn-primary:focus-visible, .btn-secondary:focus-visible {
   margin-left: auto;
 }
 
+/* ===== Bouton Accueil (jaune) ===== */
+.btn-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  background: #e2b13c;
+  color: #0a0f1c !important;
+  text-decoration: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: opacity 0.2s;
+}
+.btn-home:hover { opacity: 0.85; }
+
 /* ===== Sidebar overlay ===== */
 .sidebar-overlay {
   display: none;
