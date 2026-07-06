@@ -3,7 +3,6 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: ["main"]
-  # Allow manual trigger from the Actions tab
   workflow_dispatch:
 
 permissions:
@@ -13,7 +12,7 @@ permissions:
 
 concurrency:
   group: "pages"
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   deploy:
@@ -32,6 +31,7 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: "public"
+          overwrite: true
 
       - name: Deploy to GitHub Pages
         id: deployment
