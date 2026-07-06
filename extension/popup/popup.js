@@ -26,6 +26,8 @@ const countIaido = document.getElementById('count-iaido');
 const countAll = document.getElementById('count-all');
 const apiNotice = document.getElementById('api-notice');
 const selCampaign = document.getElementById('sel-campaign');
+const countUnsaisie = document.getElementById('counter-unsaisie');
+const chkUnsaisieOnly = document.getElementById('chk-unsaisie-only');
 
 // --- Filtre discipline ---
 function isIaido(a) {
@@ -39,6 +41,10 @@ function getFiltered() {
   return adherents.map((a, idx) => ({ a, idx })).filter(({ a }) => {
     if (currentFilter === 'iaido') return isIaido(a);
     if (currentFilter === 'judo')  return !isIaido(a);
+    return true;
+  }).filter(({ a }) => {
+    // Filtre "non saisis seulement"
+    if (chkUnsaisieOnly.checked) return !a.saisie_ffjda;
     return true;
   });
 }
@@ -157,6 +163,10 @@ function updateCounter() {
   const n = selected.size;
   counter.textContent = `${n} sélectionné(s)`;
   btnFill.disabled = n === 0;
+  // Compteur non saisis
+  const unsaisie = adherents.filter(a => !a.saisie_ffjda).length;
+  countUnsaisie.textContent = unsaisie > 0 ? `${unsaisie} à saisir` : '';
+  countUnsaisie.style.display = unsaisie > 0 ? '' : 'none';
 }
 
 function renderList() {
@@ -283,6 +293,19 @@ selCampaign.addEventListener('change', async () => {
 
 chrome.storage.local.get(['campaignSlug'], r => {
   if (r.campaignSlug) selCampaign.value = r.campaignSlug;
+});
+
+// Filtre saisie
+chkUnsaisieOnly.addEventListener('change', () => {
+  chrome.storage.local.set({ unsaisieOnly: chkUnsaisieOnly.checked });
+  renderList();
+});
+
+chrome.storage.local.get(['unsaisieOnly'], r => {
+  if (r.unsaisieOnly) {
+    chkUnsaisieOnly.checked = true;
+    renderList();
+  }
 });
 
 // Chargement auto : priorité API, fallback chrome.storage.local

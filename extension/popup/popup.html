@@ -47,6 +47,11 @@
     </select>
   </div>
 
+  <!-- Filtre statut saisie -->
+  <div class="saisie-filter">
+    <label><input type="checkbox" id="chk-unsaisie-only"> Non saisis seulement</label>
+  </div>
+
   <div class="section">
     <div class="select-header">
       <label>Adhérents à saisir</label>
@@ -54,6 +59,7 @@
         <button id="btn-all" class="btn-link">Tout</button>
         <button id="btn-none" class="btn-link">Aucun</button>
         <span id="counter" class="counter">0 sélectionné(s)</span>
+        <span id="counter-unsaisie" class="counter" style="color:#c62828"></span>
       </div>
     </div>
     <div id="adherent-list" class="adherent-list"></div>
