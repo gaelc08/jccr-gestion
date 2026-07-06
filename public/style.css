@@ -129,7 +129,7 @@ html {
 
 .auth-subtitle {
   color: var(--text-secondary);
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   margin-top: var(--space-2);
   font-weight: 400;
 }
@@ -149,7 +149,7 @@ html {
   border-radius: var(--radius-md);
   background: var(--bg-primary);
   color: var(--text-primary);
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   transition: border-color 0.15s ease-out, box-shadow 0.15s ease-out;
   min-height: 44px; /* Accessibility: minimum touch target */
 }
@@ -184,7 +184,7 @@ button, .btn-primary, .btn-secondary, .btn-danger {
   padding: var(--space-3) var(--space-5);
   border: 1px solid transparent;
   border-radius: var(--radius-md);
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.15s ease-out, border-color 0.15s ease-out, box-shadow 0.15s ease-out;
@@ -402,7 +402,7 @@ button:focus-visible, .btn-primary:focus-visible, .btn-secondary:focus-visible {
   padding: 10px 12px;
   border: 2px solid var(--gray-300);
   border-radius: var(--radius-sm);
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   background: white;
   transition: border-color 0.2s;
   width: 100%;
@@ -479,7 +479,7 @@ button:focus-visible, .btn-primary:focus-visible, .btn-secondary:focus-visible {
   padding: var(--space-3) var(--space-4);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   background: var(--bg-primary);
   color: var(--text-primary);
   transition: border-color 0.15s ease-out, box-shadow 0.15s ease-out;
@@ -911,7 +911,7 @@ button:focus-visible, .btn-primary:focus-visible, .btn-secondary:focus-visible {
   padding: 10px 12px;
   border: 2px solid var(--gray-300);
   border-radius: var(--radius-sm);
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   transition: border-color 0.2s;
   color: var(--gray-900);
 }
@@ -1029,6 +1029,14 @@ button:focus-visible, .btn-primary:focus-visible, .btn-secondary:focus-visible {
 
 /* ===== Responsive ===== */
 @media (max-width: 768px) {
+  .header-actions .btn-help,
+  .header-actions .btn-logout,
+  .header-actions .btn-home {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+  }
   .app-header-inner {
     padding: calc(10px + env(safe-area-inset-top, 0px)) calc(12px + env(safe-area-inset-right, 0px)) 10px calc(12px + env(safe-area-inset-left, 0px));
     gap: 10px;
@@ -1168,41 +1176,33 @@ button:focus-visible, .btn-primary:focus-visible, .btn-secondary:focus-visible {
   }
 }
 
+@media (max-width: 380px) {
+  .header-title h1 { font-size: 0.7rem; }
+  .header-actions .btn-help span,
+  .header-actions .btn-logout,
+  .header-actions .btn-home {
+    font-size: 0.65rem;
+    padding: 4px 5px;
+    min-height: 28px;
+  }
+}
+
 @media (max-width: 480px) {
-  .toolbar {
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-
-  .toolbar-label {
-    width: 100%;
-  }
-
-  .actions button {
-    min-width: 0;
-  }
-
-  .admin-actions-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .calendar {
-    gap: 3px;
-  }
-
-  .calendar-header {
+  .header-actions .btn-help span,
+  .header-actions .btn-logout,
+  .header-actions .btn-home {
     font-size: 0.7rem;
-    padding: 8px 2px;
+    padding: 5px 6px;
+    min-height: 32px;
+    line-height: 1;
   }
-
-  .calendar-day {
-    padding: 3px;
-    min-height: 40px;
+  .header-actions .btn-help {
+    padding: 5px 8px;
+    min-height: 32px;
+    line-height: 1;
   }
-
-  .legend {
-    gap: 10px;
-    padding: 10px 14px;
+  .header-title h1 {
+    font-size: 0.78rem;
   }
 }
 
@@ -1416,7 +1416,7 @@ button:focus-visible, .btn-primary:focus-visible, .btn-secondary:focus-visible {
   padding: 10px 12px;
   border: 2px solid var(--gray-300);
   border-radius: var(--radius-sm);
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   color: var(--gray-900);
   background: white;
 }
@@ -1611,6 +1611,14 @@ button:focus-visible, .btn-primary:focus-visible, .btn-secondary:focus-visible {
 }
 
 @media (max-width: 768px) {
+  .header-actions .btn-help,
+  .header-actions .btn-logout,
+  .header-actions .btn-home {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+  }
   .modal-content-audit {
     width: 95vw;
     min-width: unset;
@@ -1952,7 +1960,7 @@ button:focus-visible, .btn-primary:focus-visible, .btn-secondary:focus-visible {
 }
 
 .comp-day-detail-title {
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   font-weight: 700;
   color: var(--judo-navy);
   margin-bottom: 10px;
@@ -2348,7 +2356,7 @@ button:focus-visible, .btn-primary:focus-visible, .btn-secondary:focus-visible {
 .sidebar-club-name {
   color: #e8ecf4;
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   line-height: 1.3;
   letter-spacing: -0.01em;
 }
@@ -2364,7 +2372,7 @@ button:focus-visible, .btn-primary:focus-visible, .btn-secondary:focus-visible {
   border: none;
   border-radius: var(--radius-md);
   color: #8892a8;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.15s ease-out, color 0.15s ease-out, padding-left 0.2s;
@@ -2476,8 +2484,16 @@ button:focus-visible, .btn-primary:focus-visible, .btn-secondary:focus-visible {
 
 /* ===== Mobile adjustments for new header ===== */
 @media (max-width: 768px) {
+  .header-actions .btn-help,
+  .header-actions .btn-logout,
+  .header-actions .btn-home {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+  }
   .header-title h1 {
-    font-size: 0.95rem;
+    font-size: 0.85rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -2506,12 +2522,33 @@ button:focus-visible, .btn-primary:focus-visible, .btn-secondary:focus-visible {
   }
 }
 
+@media (max-width: 380px) {
+  .header-title h1 { font-size: 0.7rem; }
+  .header-actions .btn-help span,
+  .header-actions .btn-logout,
+  .header-actions .btn-home {
+    font-size: 0.65rem;
+    padding: 4px 5px;
+    min-height: 28px;
+  }
+}
+
 @media (max-width: 480px) {
   .header-actions .btn-help span,
   .header-actions .btn-logout,
   .header-actions .btn-home {
-    font-size: 0.72rem;
+    font-size: 0.7rem;
+    padding: 5px 6px;
+    min-height: 32px;
+    line-height: 1;
+  }
+  .header-actions .btn-help {
     padding: 5px 8px;
+    min-height: 32px;
+    line-height: 1;
+  }
+  .header-title h1 {
+    font-size: 0.78rem;
   }
 }
 
