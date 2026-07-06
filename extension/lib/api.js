@@ -1,7 +1,7 @@
 // lib/api.js — Client API HelloAsso Sync (partagé popup, background, import)
-
 const API_BASE = "https://sync.judo-cattenom.fr";
 const TOKEN_KEY = "jcc_api_token";
+const HA_FORM_SLUG_KEY = "jcc_ha_form_slug";
 
 /**
  * Récupère le token API depuis chrome.storage.sync (partage cross-devices).
@@ -28,6 +28,15 @@ async function hasApiToken() {
 }
 
 /**
+ * Récupère le slug de la campagne HelloAsso depuis chrome.storage.sync.
+ * Retourne null si non configuré.
+ */
+async function getHaFormSlug() {
+  const result = await chrome.storage.sync.get([HA_FORM_SLUG_KEY]);
+  return result[HA_FORM_SLUG_KEY] || null;
+}
+
+/**
  * Appelle un endpoint de l'API avec authentification Bearer.
  * @param {string} endpoint - "/sync", "/adherents", "/stats", "/mark-saisie"
  * @param {object} options - { method, body, ... }
@@ -43,6 +52,7 @@ async function apiCall(endpoint, options = {}) {
       missingToken: true,
     };
   }
+
   const method = options.method || "GET";
   const fetchOptions = {
     method,
@@ -51,6 +61,7 @@ async function apiCall(endpoint, options = {}) {
       "Content-Type": "application/json",
     },
   };
+
   if (options.body) {
     fetchOptions.body = JSON.stringify(options.body);
   }
@@ -80,9 +91,12 @@ async function getAdherents() {
 
 /**
  * POST /sync — déclenche une synchronisation avec HelloAsso
+ * Passe le slug de campagne en body s'il est configuré dans les settings.
  */
 async function triggerSync() {
-  return apiCall("/sync", { method: "POST" });
+  const slug = await getHaFormSlug();
+  const body = slug ? { form_slug: slug } : undefined;
+  return apiCall("/sync", { method: "POST", body });
 }
 
 /**
@@ -114,8 +128,10 @@ function findAdherentByNomPrenom(adherents, nom, prenom) {
       .replace(/[\u0300-\u036f]/g, "")
       .replace(/[\s-]+/g, " ")
       .trim();
+
   const nA = normName(nom);
   const pA = normName(prenom);
+
   return adherents.find((a) => {
     const nA_a = normName(a.nom);
     const pA_a = normName(a.prenom);
@@ -129,6 +145,7 @@ if (typeof window !== "undefined") {
     getApiToken,
     setApiToken,
     hasApiToken,
+    getHaFormSlug,
     getAdherents,
     triggerSync,
     getStats,
