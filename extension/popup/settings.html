@@ -44,40 +44,42 @@
 </head>
 <body>
   <div class="header">
-    <button id="btn-back" class="btn-back" style="color:white;background:rgba(255,255,255,.15);border:none;padding:4px 10px;border-radius:4px;cursor:pointer;margin-bottom:6px;font-size:11px">← Retour</button>
+    <button id="btn-back" class="btn-back" style="color:white;background:rgba(255,255,255,.15);border:none;padding:4px 10px;border-radius:4px;cursor:pointer;margin-bottom:6px;font-size:11px">&larr; Retour</button>
     <div style="display:flex;align-items:center;gap:8px">
       <img src="logo-popup.png" alt="JCC" class="header-logo">
-      <h1>Paramètres API</h1>
+      <h1>Param&egrave;tres API</h1>
     </div>
-    <p class="subtitle">Connexion à sync.judo-cattenom.fr</p>
+    <p class="subtitle">Connexion &agrave; sync.judo-cattenom.fr</p>
   </div>
-
   <div class="section">
     <div class="form-group">
       <label for="api-token">Token API</label>
       <input type="password" id="api-token" placeholder="jcc-sync-..." autocomplete="off">
       <div class="hint">
-        Token de 32+ caractères. Disponible dans <code>/home/hermes/.hermes/.env</code> sur le VPS, clé <b>HELLOASSO_API_TOKEN</b>.
+        Token de 32+ caract&egrave;res. Disponible dans <code>/home/hermes/.hermes/.env</code> sur le VPS, cl&eacute; <b>HELLOASSO_API_TOKEN</b>.
       </div>
     </div>
-
     <div class="form-group">
       <label><input type="checkbox" id="show-token"> Afficher le token</label>
     </div>
-
-    <div class="btn-row">
-      <button id="btn-save" class="btn-primary" style="flex:none;">💾 Enregistrer</button>
-      <button id="btn-test" class="btn-secondary">🔌 Tester la connexion</button>
+    <div class="form-group">
+      <label for="ha-form-slug">Campagne HelloAsso (slug)</label>
+      <input type="text" id="ha-form-slug" placeholder="jcc-cattenom-saison-2026-2027" autocomplete="off">
+      <div class="hint">
+        Slug de la campagne HelloAsso &mdash; visible dans l'URL de ta campagne.<br>
+        Ex&nbsp;: <code>helloasso.com/associations/.../adhesions/<b>jcc-cattenom-2026-2027</b></code>
+      </div>
     </div>
-
+    <div class="btn-row">
+      <button id="btn-save" class="btn-primary" style="flex:none;">&#128190; Enregistrer</button>
+      <button id="btn-test" class="btn-secondary">&#128299; Tester la connexion</button>
+    </div>
     <div id="status" class="status hidden"></div>
-
     <div id="stats-box" class="stats-box">
-      <h3>📊 État de la dernière synchro</h3>
+      <h3>&#128202; &Eacute;tat de la derni&egrave;re synchro</h3>
       <div id="stats-content"></div>
     </div>
   </div>
-
   <script src="../lib/api.js"></script>
   <script src="settings.js"></script>
 </body>
