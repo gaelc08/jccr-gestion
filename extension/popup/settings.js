@@ -1,6 +1,5 @@
 // settings.js — Page Paramètres API
-
-const HA_FORM_SLUG_KEY = "jcc_ha_form_slug";
+// Note: HA_FORM_SLUG_KEY est déclaré dans lib/api.js (chargé avant ce script)
 
 function showStatus(msg, type = "info") {
   const status = document.getElementById("status");
@@ -58,8 +57,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   // Retour vers popup
-  btnBack.addEventListener("click", () => {
-    window.location.href = "popup.html";
+  btnBack.addEventListener(\"click\", () => {
+    window.location.href = \"popup.html\";
   });
 
   // Enregistrer
