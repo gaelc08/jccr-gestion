@@ -105,7 +105,7 @@ import { publicHolidaysFallback, schoolHolidaysFallback } from './modules/holida
 import { createHolidayService } from './modules/holidays-service.js';
 import { createInviteDebugTools } from './modules/invite-debug.js';
 import { findExistingProfileByEmail, getCoachDisplayName, getCurrentUserDisplayName, getProfileLabel, getProfileType, isVolunteerProfile } from './modules/profile-utils.js';
-import { syncHelloAssoMembers, getHelloAssoMembers, getLastSyncTime, parseHelloAssoCsv, importHelloAssoCsvData } from './modules/helloasso-service.js';
+import { syncHelloAssoMembers, getHelloAssoMembers, getLastSyncTime, parseHelloAssoCsv, importHelloAssoCsvData, importFfjdaCsv } from './modules/helloasso-service.js';
 
 // ===== Admin service (fully implemented) =====
 import { notifyAdminAlert, __isAdminForUi, initAdminService } from './modules/admin-service.js';
@@ -259,6 +259,7 @@ const __helloAssoUI = createHelloAssoUI({
   getLastSyncTime,
   parseHelloAssoCsv,
   importHelloAssoCsvData,
+  importFfjdaCsv,
   escapeHtml: __escapeHtml,
 });
 

@@ -155,5 +155,17 @@ export async function importHelloAssoCsvData(supabase, rows) {
       updated += data.length;
     }
   }
+
   return { updated, notFound };
+}
+
+/**
+ * Importe un CSV exporté du site FFJDO pour marquer les adhérents comme saisis.
+ * Envoie le texte CSV au backend VPS qui fait le matching et met à jour l'état.
+ */
+export async function importFfjdaCsv(csvText) {
+  return await _apiCall('/import-ffjda-csv', {
+    method: 'POST',
+    body: JSON.stringify({ csv_text: csvText }),
+  });
 }

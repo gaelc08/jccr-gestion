@@ -13,6 +13,7 @@ export function createHelloAssoUI({
   getLastSyncTime,
   parseHelloAssoCsv,
   importHelloAssoCsvData,
+  importFfjdaCsv,
 
   // Utilities
   escapeHtml,
@@ -168,8 +169,12 @@ export function createHelloAssoUI({
           <span class="audit-status">${escapeHtml(syncInfo)}</span>
           <button id="syncHelloAssoBtn" class="btn-secondary">🔄 Synchroniser</button>
           <label class="btn-secondary" style="cursor:pointer;margin-left:0.5rem" title="Importer un export CSV HelloAsso pour enrichir les dates de naissance">
-            📂 Importer CSV
+            📂 CSV HelloAsso
             <input type="file" id="helloAssoCsvInput" accept=".csv" style="display:none">
+          </label>
+          <label class="btn-secondary" style="cursor:pointer;margin-left:0.5rem;background:#e2b13c;color:#0a0f1c" title="Importer un export CSV FFJDO (liste des licenciés) pour marquer les adhérents comme saisis">
+            🥋 CSV FFJDO
+            <input type="file" id="ffjdaCsvInput" accept=".csv" style="display:none">
           </label>
         </div>
         ${tableHtml}`;
@@ -213,6 +218,26 @@ export function createHelloAssoUI({
             alert(`Erreur lors de l'import CSV : ${err.message || err}`);
           }
           csvInput.value = '';
+        };
+      }
+
+      // FFJDA CSV import
+      const ffjdaInput = document.getElementById('ffjdaCsvInput');
+      if (ffjdaInput) {
+        ffjdaInput.onchange = async (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+          try {
+            const text = await file.text();
+            const result = await importFfjdaCsv(text);
+            let msg = `✅ ${result.matched}/${result.total} adhérents marqués comme saisis.`;
+            if (result.not_found > 0) msg += `\n⚠️ ${result.not_found} non trouvé(s) dans la base HelloAsso.`;
+            alert(msg);
+            await renderHelloAssoSection();
+          } catch (err) {
+            alert(`Erreur import FFJDA : ${err.message || err}`);
+          }
+          ffjdaInput.value = '';
         };
       }
     } catch (e) {
