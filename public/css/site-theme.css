@@ -116,7 +116,7 @@ input::placeholder { color: var(--text-muted); }
 .btn-danger:hover { background:#ef4444; border-color:#ef4444; }
 .btn-logout { color: var(--text); }
 
-.btn-back-site {
+.btn-home {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -130,8 +130,8 @@ input::placeholder { color: var(--text-muted); }
   white-space: nowrap;
   transition: opacity 0.2s;
 }
-.btn-back-site:hover { opacity: 0.85; }
-.btn-icon { color: var(--text-muted); }
+.btn-home:hover { opacity: 0.85; }
+
 
 /* Cartes / panneaux */
 .card { background: var(--bg-surface); border: 1px solid var(--border); color: var(--text); }

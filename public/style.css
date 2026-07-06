@@ -19,27 +19,27 @@
   --radius-app-lg: 16px;
   --font-app: 'Plus Jakarta Sans', system-ui, sans-serif;
   
-  /* Neutral Scale (Inter-friendly) */
-  --bg-primary: #FFFFFF;
-  --bg-secondary: #F9FAFB;
-  --bg-tertiary: #F3F4F6;
-  --text-primary: #111827;
-  --text-secondary: #4B5563;
-  --text-tertiary: #9CA3AF;
-  --border-subtle: #E5E7EB;
-  --border-focus: #1E3A7B;
+  /* Neutral Scale (toujours dark — pas de mode clair) */
+  --bg-primary: #111827;
+  --bg-secondary: #0a0f1c;
+  --bg-tertiary: #141d2b;
+  --text-primary: #e8ecf4;
+  --text-secondary: #8892a8;
+  --text-tertiary: #6b7280;
+  --border-subtle: rgba(255, 255, 255, 0.10);
+  --border-focus: #e2b13c;
   
-  /* Gray scale (fallbacks pour anciens composants) */
-  --gray-50: #f9fafb;
-  --gray-100: #f3f4f6;
-  --gray-200: #e5e7eb;
-  --gray-300: #d1d5db;
-  --gray-400: #9ca3af;
-  --gray-500: #6b7280;
-  --gray-600: #4b5563;
-  --gray-700: #374151;
-  --gray-800: #1f2937;
-  --gray-900: #111827;
+  /* Gray scale (dark) */
+  --gray-50: #0f151f;
+  --gray-100: #141d2b;
+  --gray-200: #1e293b;
+  --gray-300: #334155;
+  --gray-400: #6b7280;
+  --gray-500: #8892a8;
+  --gray-600: #96a2b8;
+  --gray-700: #cbd5e1;
+  --gray-800: #e2e8f0;
+  --gray-900: #f1f5f9;
 
   /* Spacing & Layout (8px grid) */
   --space-1: 4px;
@@ -233,19 +233,19 @@ button:focus-visible, .btn-primary:focus-visible, .btn-secondary:focus-visible {
 
 .btn-logout, .btn-help {
   padding: var(--space-2) var(--space-4);
-  border: 1px solid rgba(255,255,255,0.25);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   background: transparent;
-  color: #e8ecf4;
+  color: var(--text-app);
   font-size: 0.85rem;
   font-weight: 500;
   white-space: nowrap;
 }
 
 .btn-logout:hover, .btn-help:hover {
-  background: rgba(255,255,255,0.15);
-  color: #ffffff;
-  border-color: rgba(255,255,255,0.35);
+  background: rgba(255,255,255,0.10);
+  color: #fff;
+  border-color: var(--border-strong, rgba(255,255,255,0.25));
 }
 
 /* ===== App Header (Clean, Subtle, Functional) ===== */
@@ -2248,25 +2248,6 @@ button:focus-visible, .btn-primary:focus-visible, .btn-secondary:focus-visible {
   background: rgba(255,255,255,0.15);
 }
 
-/* ===== Icon button (dark mode toggle) ===== */
-.btn-icon {
-  background: transparent;
-  border: 1px solid rgba(255,255,255,0.25);
-  color: white;
-  font-size: 1rem;
-  cursor: pointer;
-  padding: 6px 10px;
-  border-radius: var(--radius-sm);
-  line-height: 1;
-  flex-shrink: 0;
-  transition: background 0.2s;
-  white-space: nowrap;
-}
-
-.btn-icon:hover {
-  background: rgba(255,255,255,0.15);
-}
-
 /* ===== Header actions group ===== */
 .header-actions {
   display: flex;
@@ -2495,7 +2476,7 @@ button:focus-visible, .btn-primary:focus-visible, .btn-secondary:focus-visible {
 
   .header-actions .btn-help,
   .header-actions .btn-logout,
-  .header-actions .btn-back-site {
+  .header-actions .btn-home {
     font-size: 0.75rem;
     padding: 6px 10px;
   }
@@ -2511,7 +2492,7 @@ button:focus-visible, .btn-primary:focus-visible, .btn-secondary:focus-visible {
 @media (max-width: 480px) {
   .header-actions .btn-help span,
   .header-actions .btn-logout,
-  .header-actions .btn-back-site {
+  .header-actions .btn-home {
     font-size: 0.72rem;
     padding: 5px 8px;
   }

@@ -331,27 +331,6 @@ export function setupEventListeners() {
     adminObserver.observe(adminPanelEl, { attributes: true, attributeFilter: ['style'] });
   }
 
-  // ===== Dark mode toggle =====
-  const darkToggle = document.getElementById('darkModeToggle');
-  const THEME_KEY  = 'jct.theme';
-
-  function applyTheme(theme) {
-    document.documentElement.dataset.theme = theme;
-    if (darkToggle) darkToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
-  }
-
-  // Restore persisted theme
-  try {
-    const saved = localStorage.getItem(THEME_KEY);
-    if (saved === 'dark' || saved === 'light') applyTheme(saved);
-  } catch {}
-
-  if (darkToggle) {
-    darkToggle.addEventListener('click', () => {
-      const current = document.documentElement.dataset.theme;
-      const next    = current === 'dark' ? 'light' : 'dark';
-      applyTheme(next);
-      try { localStorage.setItem(THEME_KEY, next); } catch {}
-    });
-  }
+  // ===== Dark mode permanent (pas de toggle) =====
+  document.documentElement.dataset.theme = 'dark';
 }
