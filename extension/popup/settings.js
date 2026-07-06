@@ -57,8 +57,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   // Retour vers popup
-  btnBack.addEventListener(\"click\", () => {
-    window.location.href = \"popup.html\";
+  btnBack.addEventListener("click", () => {
+    window.location.href = "popup.html";
   });
 
   // Enregistrer
