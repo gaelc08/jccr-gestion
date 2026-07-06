@@ -1176,16 +1176,6 @@ button:focus-visible, .btn-primary:focus-visible, .btn-secondary:focus-visible {
   }
 }
 
-@media (max-width: 380px) {
-  .header-title h1 { font-size: 0.7rem; }
-  .header-actions .btn-help span,
-  .header-actions .btn-logout,
-  .header-actions .btn-home {
-    font-size: 0.65rem;
-    padding: 4px 5px;
-    min-height: 28px;
-  }
-}
 
 @media (max-width: 480px) {
   .header-actions .btn-help span,
