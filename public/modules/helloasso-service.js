@@ -45,7 +45,15 @@ async function _apiCall(endpoint, options = {}) {
   const r = await fetch(`${SYNC_API_BASE}${endpoint}`, fetchOptions);
   const data = await r.json();
   if (!r.ok) {
-    throw new Error(data.detail || `HelloAsso API error ${r.status}`);
+    let msg;
+    if (Array.isArray(data.detail)) {
+      msg = data.detail.map(e => e.msg || JSON.stringify(e)).join('; ');
+    } else if (typeof data.detail === 'string') {
+      msg = data.detail;
+    } else {
+      msg = JSON.stringify(data);
+    }
+    throw new Error(msg || `HelloAsso API error ${r.status}`);
   }
   return data;
 }

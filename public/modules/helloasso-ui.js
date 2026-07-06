@@ -235,7 +235,8 @@ export function createHelloAssoUI({
             alert(msg);
             await renderHelloAssoSection();
           } catch (err) {
-            alert(`Erreur import FFJDA : ${err.message || err}`);
+            const msg = err?.message || err?.detail || (typeof err === 'object' ? JSON.stringify(err) : String(err));
+            alert(`Erreur import FFJDA : ${msg}`);
           }
           ffjdaInput.value = '';
         };
