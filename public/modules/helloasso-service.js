@@ -42,6 +42,9 @@ async function _apiCall(endpoint, options = {}) {
       'Content-Type': 'application/json',
     },
   };
+  if (options.body) {
+    fetchOptions.body = options.body;
+  }
   const r = await fetch(`${SYNC_API_BASE}${endpoint}`, fetchOptions);
   const data = await r.json();
   if (!r.ok) {
