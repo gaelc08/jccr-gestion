@@ -25,6 +25,7 @@ const countJudo = document.getElementById('count-judo');
 const countIaido = document.getElementById('count-iaido');
 const countAll = document.getElementById('count-all');
 const apiNotice = document.getElementById('api-notice');
+const selCampaign = document.getElementById('sel-campaign');
 
 // --- Filtre discipline ---
 function isIaido(a) {
@@ -119,9 +120,10 @@ btnSync.addEventListener('click', async () => {
   }
   btnSync.disabled = true;
   btnSync.textContent = '…';
-  showStatus('🔄 Synchronisation HelloAsso en cours...', 'info');
+  const slug = selCampaign.value || undefined;
+  showStatus(`🔄 Synchronisation ${slug ? slug.replace(/^adhesion-/,'Saison ').replace(/-sport$/,'') : ''}...`, 'info');
 
-  const syncResult = await Api.triggerSync();
+  const syncResult = await Api.triggerSync(slug);
   if (!syncResult.ok) {
     showStatus(`❌ Sync échoué : ${syncResult.data.detail || 'erreur'}`, 'error');
     btnSync.disabled = false;
@@ -245,9 +247,48 @@ btnLoad.addEventListener('click', () => {
   });
 });
 
+// --- Sélecteur de campagne ---
+async function loadCampaigns() {
+  const hasToken = await checkApiToken();
+  if (!hasToken) return;
+
+  const result = await Api.getCampaigns();
+  if (!result.ok || !result.data.campaigns) return;
+
+  const campaigns = result.data.campaigns.filter(
+    c => c.type === 'Membership' && (c.slug.includes('adhesion') || c.slug === 'stage-judo-printemps')
+  );
+  const current = result.data.current;
+
+  selCampaign.innerHTML = '';
+  for (const c of campaigns) {
+    const opt = document.createElement('option');
+    opt.value = c.slug;
+    const label = c.slug
+      .replace(/^adhesion-(\d{4})-(\d{4})-sport$/, 'Saison $1/$2')
+      .replace(/^stage-judo-printemps$/, 'Stage Printemps');
+    opt.textContent = label;
+    if (c.slug === current) opt.selected = true;
+    selCampaign.appendChild(opt);
+  }
+}
+
+selCampaign.addEventListener('change', async () => {
+  const slug = selCampaign.value;
+  if (!slug) return;
+  chrome.storage.local.set({ campaignSlug: slug });
+  await Api.setCurrentCampaign(slug);
+  btnSync.click();
+});
+
+chrome.storage.local.get(['campaignSlug'], r => {
+  if (r.campaignSlug) selCampaign.value = r.campaignSlug;
+});
+
 // Chargement auto : priorité API, fallback chrome.storage.local
 (async () => {
   const hasToken = await checkApiToken();
+  await loadCampaigns();
   if (hasToken) {
     const result = await Api.getAdherents();
     if (result.ok && result.data.adherents.length > 0) {

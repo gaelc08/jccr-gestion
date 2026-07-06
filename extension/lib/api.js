@@ -91,12 +91,29 @@ async function getAdherents() {
 
 /**
  * POST /sync — déclenche une synchronisation avec HelloAsso
- * Passe le slug de campagne en body s'il est configuré dans les settings.
+ * @param {string} formSlug - optionnel, slug de la campagne
  */
-async function triggerSync() {
-  const slug = await getHaFormSlug();
+async function triggerSync(formSlug) {
+  const slug = formSlug || (await getHaFormSlug());
   const body = slug ? { form_slug: slug } : undefined;
   return apiCall("/sync", { method: "POST", body });
+}
+
+/**
+ * GET /campaigns — liste les campagnes disponibles
+ */
+async function getCampaigns() {
+  return apiCall("/campaigns");
+}
+
+/**
+ * POST /campaigns/current — change la campagne active
+ */
+async function setCurrentCampaign(formSlug) {
+  return apiCall("/campaigns/current", {
+    method: "POST",
+    body: { form_slug: formSlug },
+  });
 }
 
 /**
@@ -148,6 +165,8 @@ if (typeof window !== "undefined") {
     getHaFormSlug,
     getAdherents,
     triggerSync,
+    getCampaigns,
+    setCurrentCampaign,
     getStats,
     markSaisie,
     findAdherentByNomPrenom,

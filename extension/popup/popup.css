@@ -104,6 +104,30 @@ body {
 }
 .discipline-notice.hidden { display: none; }
 
+/* Sélecteur de campagne/saison */
+.campaign-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: #f8f9ff;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 12px;
+}
+.campaign-filter label {
+  font-weight: 600;
+  color: #555;
+}
+.campaign-filter select {
+  flex: 1;
+  padding: 4px 8px;
+  font-size: 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+}
+
 .section {
   padding: 10px 14px 8px;
   background: #fff;
