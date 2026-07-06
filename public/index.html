@@ -312,6 +312,17 @@
           Token disponible sur le VPS dans <code>/home/hermes/.hermes/.env</code><br>(clé <b>HELLOASSO_API_TOKEN</b>)
         </div>
       </div>
+      <div id="helloAssoToolbar" style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+        <label style="font-size:12px;font-weight:600;color:#555">Saison :
+          <select id="haCampaignSelect" style="padding:4px 8px;font-size:12px;border:1px solid #ccc;border-radius:4px">
+            <option value="">Chargement...</option>
+          </select>
+        </label>
+        <label style="font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer;color:#555;font-weight:600">
+          <input type="checkbox" id="haUnsaisieOnly"> Non saisis seulement
+        </label>
+        <span id="haCounter" style="font-size:12px;color:#888;margin-left:auto"></span>
+      </div>
       <div id="helloAssoContent">Chargement…</div>
       <div class="modal-actions">
         <button id="closeHelloAsso" class="btn-primary">Fermer</button>

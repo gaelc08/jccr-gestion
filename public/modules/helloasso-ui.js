@@ -96,30 +96,70 @@ export function createHelloAssoUI({
         ? `Dernière synchronisation : ${new Date(lastSync).toLocaleString('fr-FR')}`
         : 'Jamais synchronisé';
 
+      // Appliquer le filtre "non saisis"
+      const unsaisieOnly = document.getElementById('haUnsaisieOnly')?.checked;
+      let filtered = members;
+      if (unsaisieOnly) {
+        filtered = members.filter(m => !m.raw_data?.saisie_ffjda);
+      }
+
+      // Compteur
+      const total = members.length;
+      const unsaisis = members.filter(m => !m.raw_data?.saisie_ffjda).length;
+      const counterEl = document.getElementById('haCounter');
+      if (counterEl) {
+        counterEl.textContent = `${unsaisis}/${total} à saisir`;
+        counterEl.style.color = unsaisis > 0 ? '#c62828' : '#2e7d32';
+      }
+
       let tableHtml = '';
-      if (members.length === 0) {
-        tableHtml = '<p class="audit-status">Aucun membre synchronisé. Cliquez sur Synchroniser.</p>';
+      if (filtered.length === 0) {
+        const msg = unsaisieOnly ? '✅ Tous les adhérents sont saisis sur FFJDA !' : 'Aucun membre synchronisé. Cliquez sur Synchroniser.';
+        tableHtml = `<p class="audit-status">${msg}</p>`;
       } else {
-        const sorted = [...members].sort((a, b) => (a.last_name ?? '').localeCompare(b.last_name ?? '', 'fr'));
-        const judo  = sorted.filter((m) => m.discipline === 'judo');
-        const iaido = sorted.filter((m) => m.discipline === 'iaido');
-        const taiso = sorted.filter((m) => m.discipline === 'taiso');
+        const sorted = [...filtered].sort((a, b) => (a.last_name ?? '').localeCompare(b.last_name ?? '', 'fr'));
 
         const ffjOrder = ['Baby Judo', 'Mini-Poussin', 'Poussin', 'Benjamin', 'Minime', 'Cadet', 'Junior', 'Senior', 'Vétéran'];
-        const legacyOrder = ['Baby Judo', 'Mini-Poussin/Poussin', 'Benjamin/Minime', 'Cadet/Junior/Senior'];
-        judo.sort((a, b) => {
-          const catA = getFfjCategory(a.date_of_birth) ?? a.judo_category ?? '';
-          const catB = getFfjCategory(b.date_of_birth) ?? b.judo_category ?? '';
-          const ia = ffjOrder.indexOf(catA) !== -1 ? ffjOrder.indexOf(catA) : legacyOrder.indexOf(catA) * 2;
-          const ib = ffjOrder.indexOf(catB) !== -1 ? ffjOrder.indexOf(catB) : legacyOrder.indexOf(catB) * 2;
-          if (ia !== ib) return ia - ib;
-          return (a.last_name ?? '').localeCompare(b.last_name ?? '', 'fr');
-        });
+        const byDiscipline = { judo: [], iaido: [], taiso: [] };
+        for (const m of sorted) {
+          const disc = m.discipline || 'judo';
+          if (byDiscipline[disc]) byDiscipline[disc].push(m);
+          else byDiscipline.judo.push(m);
+        }
+
+        const buildTable = (group, showCategory = false) => {
+          if (group.length === 0) return '';
+          const rows = group.map(m => {
+            const amount = m.membership_amount != null
+              ? `${Number(m.membership_amount).toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`
+              : '—';
+            const date = m.membership_date ? new Date(m.membership_date).toLocaleDateString('fr-FR') : '—';
+            const ffjCat = showCategory ? (getFfjCategory(m.date_of_birth) ?? m.judo_category ?? '—') : null;
+            const saisie = m.raw_data?.saisie_ffjda;
+            const statusBadge = saisie
+              ? '<span style="background:#c8e6c9;color:#1b5e20;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:600">✓ FFJDA</span>'
+              : '<span style="background:#ffcdd2;color:#b71c1c;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:600">À saisir</span>';
+            return `<tr>
+              <td>${escapeHtml(m.first_name ?? '')}</td>
+              <td>${escapeHtml(m.last_name ?? '')}</td>
+              <td>${escapeHtml(m.email ?? '')}</td>
+              ${showCategory ? `<td>${escapeHtml(ffjCat)}</td>` : ''}
+              <td>${escapeHtml(m.date_of_birth || '')}</td>
+              <td>${amount}</td>
+              <td>${statusBadge}</td>
+            </tr>`;
+          }).join('');
+          const catHeader = showCategory ? '<th>Catégorie</th>' : '';
+          return `<div class="audit-table-wrap"><table class="audit-table"><thead><tr>
+            <th>Prénom</th><th>Nom</th><th>Email</th>
+            ${catHeader}<th>Naissance</th><th>Montant</th><th>FFJDA</th>
+          </tr></thead><tbody>${rows}</tbody></table></div>`;
+        };
 
         tableHtml = `
-          <h3>🥋 Judo (${judo.length})</h3>${buildMemberTable(judo, true)}
-          <h3>🗡️ Iaïdo (${iaido.length})</h3>${buildMemberTable(iaido, false)}
-          <h3>🤸 Taïso (${taiso.length})</h3>${buildMemberTable(taiso, false)}
+          <h3>🥋 Judo (${byDiscipline.judo.length})</h3>${buildTable(byDiscipline.judo, true)}
+          <h3>🗡️ Iaïdo (${byDiscipline.iaido.length})</h3>${buildTable(byDiscipline.iaido, false)}
+          <h3>🤸 Taïso (${byDiscipline.taiso.length})</h3>${buildTable(byDiscipline.taiso, false)}
         `;
       }
 
@@ -185,10 +225,67 @@ export function createHelloAssoUI({
   // openHelloAssoModal
   // ─────────────────────────────────────────────────────────────────
 
+  async function loadHaCampaigns() {
+    const sel = document.getElementById('haCampaignSelect');
+    if (!sel) return;
+    try {
+      const token = localStorage.getItem('jcc_api_token');
+      if (!token) { sel.innerHTML = '<option value="">Token non configuré</option>'; return; }
+      const r = await fetch('https://sync.judo-cattenom.fr/campaigns', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!r.ok) { sel.innerHTML = '<option value="">Erreur API</option>'; return; }
+      const data = await r.json();
+      const campaigns = (data.campaigns || []).filter(
+        c => c.type === 'Membership' && c.slug.includes('adhesion')
+      );
+      sel.innerHTML = '';
+      for (const c of campaigns) {
+        const opt = document.createElement('option');
+        opt.value = c.slug;
+        opt.textContent = c.slug.replace(/^adhesion-(\d{4})-(\d{4})-sport$/, 'Saison $1/$2');
+        if (c.slug === data.current) opt.selected = true;
+        sel.appendChild(opt);
+      }
+    } catch (e) {
+      sel.innerHTML = '<option value="">Erreur: ' + escapeHtml(e.message) + '</option>';
+    }
+  }
+
   async function openHelloAssoModal() {
     const modal = document.getElementById('helloAssoModal');
     if (!modal) return;
     modal.classList.add('active');
+
+    // Load campaigns
+    await loadHaCampaigns();
+
+    // Campaign selector: re-sync on change
+    const sel = document.getElementById('haCampaignSelect');
+    if (sel) {
+      sel.onchange = async () => {
+        const slug = sel.value;
+        if (!slug) return;
+        try {
+          const token = localStorage.getItem('jcc_api_token');
+          await fetch('https://sync.judo-cattenom.fr/campaigns/current', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ form_slug: slug }),
+          });
+        } catch (e) { /* ignore */ }
+        await renderHelloAssoSection();
+      };
+    }
+
+    // Unsaisie filter: re-render on toggle
+    const filterChk = document.getElementById('haUnsaisieOnly');
+    if (filterChk) {
+      filterChk.onchange = async () => {
+        await renderHelloAssoSection();
+      };
+    }
+
     await renderHelloAssoSection();
     initApiConfigUI();
   }
