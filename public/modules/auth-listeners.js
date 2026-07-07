@@ -254,6 +254,7 @@ export function setupAuthListeners() {
         scope: 'openid email profile',
         code_challenge: challenge,
         code_challenge_method: 'S256',
+        rememberMe: 'true',
       });
       window.location.href = `${kcAuthUrl}?${params.toString()}`;
     }).catch(err => {
@@ -265,6 +266,7 @@ export function setupAuthListeners() {
         redirect_uri: window.location.origin + window.location.pathname,
         response_type: 'code',
         scope: 'openid email profile',
+        rememberMe: 'true',
       });
       window.location.href = `${kcAuthUrl}?${params.toString()}`;
     });
