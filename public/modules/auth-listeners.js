@@ -2,7 +2,7 @@
 // Handles auth form handlers + onAuthStateChange logic.
 // All UI code extracted from app-modular.js.
 
-import { supabaseUrl, supabaseKey } from './env.js';
+import { supabaseUrl, supabaseKey, kcUrl, kcRealm, kcClient } from './env.js';
 import {
   currentUser, currentSession, currentAccessToken, coaches, currentCoach, __eventListenersSetup,
   setCurrentUser, setCurrentSession, setCurrentAccessToken,
@@ -42,7 +42,7 @@ async function handleSSOCallback() {
 
   try {
     // Exchange code for tokens at Keycloak (public client, no secret needed)
-    const tokenEndpoint = 'https://auth.judo-cattenom.fr/realms/jccattenom/protocol/openid-connect/token';
+    const tokenEndpoint = `${kcUrl}/realms/${kcRealm}/protocol/openid-connect/token`;
     const params = new URLSearchParams({
       grant_type: 'authorization_code',
       client_id: 'jcc-frontend',
@@ -246,9 +246,9 @@ export function setupAuthListeners() {
     const codeVerifier = generateCodeVerifier();
     sessionStorage.setItem('pkce_verifier', codeVerifier);
     generateCodeChallenge(codeVerifier).then(challenge => {
-      const kcAuthUrl = 'https://auth.judo-cattenom.fr/realms/jccattenom/protocol/openid-connect/auth';
+      const kcAuthUrl = `${kcUrl}/realms/${kcRealm}/protocol/openid-connect/auth`;
       const params = new URLSearchParams({
-        client_id: 'jcc-frontend',
+        client_id: kcClient,
         redirect_uri: window.location.origin + window.location.pathname,
         response_type: 'code',
         scope: 'openid email profile',
@@ -260,9 +260,9 @@ export function setupAuthListeners() {
     }).catch(err => {
       console.error('SSO PKCE error, fallback sans PKCE:', err);
       // Fallback : redirection directe sans PKCE (fonctionne sur tous les navigateurs)
-      const kcAuthUrl = 'https://auth.judo-cattenom.fr/realms/jccattenom/protocol/openid-connect/auth';
+      const kcAuthUrl = `${kcUrl}/realms/${kcRealm}/protocol/openid-connect/auth`;
       const params = new URLSearchParams({
-        client_id: 'jcc-frontend',
+        client_id: kcClient,
         redirect_uri: window.location.origin + window.location.pathname,
         response_type: 'code',
         scope: 'openid email profile',
