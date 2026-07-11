@@ -1,9 +1,31 @@
 /* ===== Competitions section ===== */
-.competitions-section { margin-top: 16px; display: flex; flex-direction: column; gap: 12px; }
-.comp-header { margin-bottom: 4px; }
-.comp-header h2 { font-size: 1.15rem; font-weight: 700; color: #ffffff; margin-bottom: 4px; }
-.comp-subtitle { font-size: 0.85rem; color: rgba(255,255,255,0.75); }
-.comp-subtitle a { color: rgba(255,255,255,0.9); text-decoration: underline; }
+.competitions-section {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.comp-header {
+  margin-bottom: 4px;
+}
+
+.comp-header h2 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 4px;
+}
+
+.comp-subtitle {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.75);
+}
+
+.comp-subtitle a {
+  color: rgba(255,255,255,0.9);
+  text-decoration: underline;
+}
 
 .comp-toolbar {
   display: flex;
@@ -15,44 +37,272 @@
   padding: 14px 16px;
   box-shadow: var(--shadow-sm);
 }
-.comp-toolbar-actions { display: flex; align-items: flex-end; gap: 8px; padding-bottom: 2px; }
-.comp-toolbar .btn-secondary { background: var(--judo-navy); color: white; border: 1px solid var(--judo-navy); backdrop-filter: none; }
-.comp-toolbar .btn-secondary:hover { background: var(--judo-red-dark); border-color: var(--judo-red-dark); }
 
-.comp-list { display: flex; flex-direction: column; gap: 10px; }
-.comp-status { background: rgba(255,255,255,0.97); border-radius: var(--radius); padding: 20px; text-align: center; color: var(--gray-600); font-size: 0.92rem; }
-.comp-empty { font-style: italic; }
+.comp-toolbar-actions {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding-bottom: 2px;
+}
 
-.comp-card { position: relative; display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; transition: box-shadow 0.15s; }
-.comp-card--selected { border-left: 4px solid var(--judo-gold); }
-.comp-card-header { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.comp-card-date { font-weight: 700; font-size: 0.9rem; color: var(--judo-navy); flex: 1 1 160px; }
-.comp-card-badges { display: flex; gap: 6px; flex-wrap: wrap; }
-.comp-badge { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; white-space: nowrap; }
-.comp-club-badge { font-size: 0.78rem; color: var(--judo-gold); font-weight: 700; }
-.comp-select-btn { margin-left: auto; padding: 4px 10px; font-size: 1rem; line-height: 1; border-radius: var(--radius-sm); cursor: pointer; }
-.comp-select-btn--on { background: var(--judo-gold-light) !important; border-color: var(--judo-gold) !important; color: var(--judo-navy) !important; }
-.comp-card-title { font-size: 1rem; font-weight: 700; color: var(--gray-900); }
-.comp-card-lieu, .comp-card-categories, .comp-card-type, .comp-card-commentaire { font-size: 0.86rem; color: var(--gray-700); }
-.comp-card-commentaire { font-style: italic; white-space: pre-wrap; border-top: 1px solid var(--gray-200); padding-top: 6px; margin-top: 2px; }
-.comp-card-link a { font-size: 0.82rem; color: var(--judo-navy); text-decoration: underline; }
+/* btn-secondary sur fond clair (toolbar, section competitions) */
+.comp-toolbar .btn-secondary {
+  background: var(--judo-navy);
+  color: white;
+  border: 1px solid var(--judo-navy);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
 
-/* Competition calendar */
-.comp-calendar { background: rgba(255,255,255,0.97); border-radius: var(--radius); padding: 14px 16px; box-shadow: var(--shadow-sm); margin-bottom: 12px; }
-.comp-cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 8px; }
-.comp-cal-month-label { font-weight: 700; font-size: 1rem; color: var(--judo-navy); }
-.comp-cal-nav .btn-secondary { padding: 5px 12px; font-size: 0.82rem; background: var(--judo-navy); color: white; border: 1px solid var(--judo-navy); }
-.comp-cal-nav .btn-secondary:hover { background: var(--judo-red-dark); border-color: var(--judo-red-dark); }
-.comp-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
-.comp-cal-header-day { text-align: center; font-size: 0.72rem; font-weight: 700; color: var(--judo-navy); padding: 4px 0; text-transform: uppercase; }
-.comp-cal-day { min-height: 40px; border-radius: var(--radius-sm); display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; font-size: 0.82rem; color: var(--gray-700); user-select: none; padding: 2px; }
-.comp-cal-day--empty { pointer-events: none; }
-.comp-cal-day--has-events { background: rgba(30, 58, 123, 0.12); cursor: pointer; font-weight: 700; color: var(--judo-navy); transition: background 0.15s; }
-.comp-cal-day--has-events:hover { background: rgba(30, 58, 123, 0.22); }
-.comp-cal-day--selected { border: 2px solid var(--judo-red); background: rgba(30, 58, 123, 0.18) !important; }
-.comp-cal-day-num { line-height: 1; }
-.comp-cal-day-badge { display: inline-flex; align-items: center; justify-content: center; background: var(--judo-gold); color: var(--judo-navy); font-size: 0.65rem; font-weight: 900; border-radius: 999px; min-width: 16px; height: 16px; padding: 0 3px; margin-top: 2px; }
+.comp-toolbar .btn-secondary:hover {
+  background: var(--judo-red-dark);
+  border-color: var(--judo-red-dark);
+}
 
-.comp-day-detail { background: rgba(255,255,255,0.97); border-radius: var(--radius); padding: 14px 16px; box-shadow: var(--shadow-sm); margin-bottom: 12px; border-left: 4px solid var(--judo-gold); }
-.comp-day-detail-title { font-size: 0.85rem; font-weight: 700; color: var(--judo-navy); margin-bottom: 10px; }
-.comp-day-detail-list { display: flex; flex-direction: column; gap: 10px; }
+.comp-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.comp-status {
+  background: rgba(255,255,255,0.97);
+  border-radius: var(--radius);
+  padding: 20px;
+  text-align: center;
+  color: var(--gray-600);
+  font-size: 0.92rem;
+}
+
+.comp-empty {
+  font-style: italic;
+}
+
+.comp-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+  transition: box-shadow 0.15s;
+}
+
+.comp-card--selected {
+  border-left: 4px solid var(--judo-gold);
+}
+
+.comp-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.comp-card-date {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--judo-navy);
+  flex: 1 1 160px;
+}
+
+.comp-card-badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.comp-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.comp-club-badge {
+  font-size: 0.78rem;
+  color: var(--judo-gold);
+  font-weight: 700;
+}
+
+.comp-select-btn {
+  margin-left: auto;
+  padding: 4px 10px;
+  font-size: 1rem;
+  line-height: 1;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.comp-select-btn--on {
+  background: var(--judo-gold-light) !important;
+  border-color: var(--judo-gold) !important;
+  color: var(--judo-navy) !important;
+}
+
+.comp-card-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--gray-900);
+}
+
+.comp-card-lieu,
+.comp-card-categories,
+.comp-card-type,
+.comp-card-commentaire {
+  font-size: 0.86rem;
+  color: var(--gray-700);
+}
+
+.comp-card-commentaire {
+  font-style: italic;
+  white-space: pre-wrap;
+  border-top: 1px solid var(--gray-200);
+  padding-top: 6px;
+  margin-top: 2px;
+}
+
+.comp-card-link a {
+  font-size: 0.82rem;
+  color: var(--judo-navy);
+  text-decoration: underline;
+}
+
+/* ─── Calendrier compétitions ─────────────────────────────────────── */
+
+.comp-calendar {
+  background: rgba(255,255,255,0.97);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 12px;
+}
+
+.comp-cal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  gap: 8px;
+}
+
+.comp-cal-month-label {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--judo-navy);
+}
+
+.comp-cal-nav .btn-secondary {
+  padding: 5px 12px;
+  font-size: 0.82rem;
+  background: var(--judo-navy);
+  color: white;
+  border: 1px solid var(--judo-navy);
+}
+
+.comp-cal-nav .btn-secondary:hover {
+  background: var(--judo-red-dark);
+  border-color: var(--judo-red-dark);
+}
+
+.comp-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+}
+
+.comp-cal-header-day {
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--judo-navy);
+  padding: 4px 0;
+  text-transform: uppercase;
+}
+
+.comp-cal-day {
+  min-height: 40px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  font-size: 0.82rem;
+  color: var(--gray-700);
+  user-select: none;
+  padding: 2px;
+}
+
+.comp-cal-day--empty {
+  pointer-events: none;
+}
+
+.comp-cal-day--has-events {
+  background: rgba(30, 58, 123, 0.12);
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--judo-navy);
+  transition: background 0.15s;
+}
+
+.comp-cal-day--has-events:hover {
+  background: rgba(30, 58, 123, 0.22);
+}
+
+.comp-cal-day--selected {
+  border: 2px solid var(--judo-red);
+  background: rgba(30, 58, 123, 0.18) !important;
+}
+
+.comp-cal-day-num {
+  line-height: 1;
+}
+
+.comp-cal-day-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--judo-gold);
+  color: var(--judo-navy);
+  font-size: 0.65rem;
+  font-weight: 900;
+  border-radius: 999px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3px;
+  margin-top: 2px;
+}
+
+.comp-day-detail {
+  background: rgba(255,255,255,0.97);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 12px;
+  border-left: 4px solid var(--judo-gold);
+}
+
+.comp-day-detail-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--judo-navy);
+  margin-bottom: 10px;
+}
+
+.comp-day-detail-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+[data-theme="dark"] .comp-toolbar,
+[data-theme="dark"] .comp-calendar,
+[data-theme="dark"] .comp-day-detail,
+[data-theme="dark"] .comp-status,
+[data-theme="dark"] .comp-card {
+  background: #1a2744;
+  color: var(--text-primary);
+}
