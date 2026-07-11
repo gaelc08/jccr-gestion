@@ -217,6 +217,7 @@ async function renderActiveTab(): Promise<void> {
     case 'age': void renderAgeTab(); break;
     case 'whatsapp': void renderWhatsappTab(); break;
     case 'mail': void renderMailTab(); break;
+    case 'reconciliation': void renderReconciliationTab(); break;
   }
 }
 
@@ -962,21 +963,13 @@ function wireToolbarEvents(): void {
     };
   }
 
-  // Reconciliation button
+  // Reconciliation button → switch to reconciliation tab
   const reconBtn = document.getElementById('membersReconBtn');
   if (reconBtn) {
     reconBtn.onclick = () => {
-      // Open the existing reconciliation modal
-      const modal = document.getElementById('reconciliationModal');
-      if (modal) {
-        modal.classList.add('active');
-        // The helloasso-ui.ts wire handles this when reconciliation modal is shown
-        const content = document.getElementById('reconciliationContent');
-        if (content) {
-          content.innerHTML = '<p>Chargement...</p>';
-          void loadReconciliationContent();
-        }
-      }
+      // Switch to the reconciliation tab
+      const tab = document.querySelector('.members-tab[data-tab="reconciliation"]') as HTMLButtonElement | null;
+      if (tab) tab.click();
     };
   }
 
@@ -1022,6 +1015,79 @@ function wireToolbarEvents(): void {
       statusEl.style.color = '#dc3545';
     }
   });
+}
+
+async function renderReconciliationTab(): Promise<void> {
+  const panel = document.getElementById('membersTabReconciliation');
+  if (!panel) return;
+  panel.innerHTML = '<div class="members-empty" style="padding:20px;text-align:center">Chargement de la reconciliation...</div>';
+  try {
+    const data = await _deps.getReconciliation() as Record<string, unknown> | null;
+    if (!data?.reconciliation) {
+      panel.innerHTML = '<div class="members-empty">Aucune donnee de reconciliation. Importez d abord un CSV FFJDA (bouton "CSV FFJDO" dans la barre d\'outils).</div>';
+      return;
+    }
+
+    const rec = data.reconciliation as Array<Record<string, unknown>>;
+    const matched = data.matched as number || 0;
+    const nameMismatch = data.name_mismatch as number || 0;
+    const corrected = data.corrected as number || 0;
+    const unmatched = data.unmatched as number || 0;
+    const ffjdaOnly = data.ffjda_only as number || 0;
+    const totalHa = data.total_ha as number || 0;
+    const totalFfjda = data.total_ffjda as number || 0;
+
+    let html = `
+      <div class="members-stats-bar" style="margin-bottom:12px">
+        <span class="members-stat matched">\u2705 <strong>${matched}</strong> match</span>
+        <span class="members-stat mismatch">\u26A0\uFE0F <strong>${nameMismatch}</strong> nom diff.</span>
+        <span class="members-stat corrected">\u270F\uFE0F <strong>${corrected}</strong> corrige</span>
+        <span class="members-stat unmatched">\u274C <strong>${unmatched}</strong> non matche</span>
+        <span class="members-stat ffjda-only">\uD83C\uDD95 <strong>${ffjdaOnly}</strong> FFJDA seul</span>
+        <span style="margin-left:auto;color:rgba(255,255,255,0.5);font-size:0.82rem">${totalHa} HA · ${totalFfjda} FFJDA</span>
+      </div>
+      <div class="members-table-wrap" style="max-height:55vh">
+        <table class="members-table" style="font-size:0.8rem">
+          <thead><tr>
+            <th>HelloAsso</th><th>FFJDA</th><th>Email HA</th><th>Email FFJDA</th>
+            <th>Naiss. HA</th><th>Naiss. FFJDA</th><th>Licence</th><th>Statut</th>
+          </tr></thead>
+          <tbody>`;
+
+    for (const r of rec) {
+      const status = String(r.status ?? '');
+      const statusBadge = getStatusHtml(status);
+      const haName = (r.ha_first_name || r.ha_last_name)
+        ? renderEditableName(r.item_id, r.ha_first_name as string, r.ha_last_name as string)
+        : '\u2014';
+      const ffjdaName = (r.ffjda_first_name || r.ffjda_last_name)
+        ? `${esc(r.ffjda_first_name)} ${esc(r.ffjda_last_name)}` : '\u2014';
+      html += `<tr>
+        <td>${haName}</td><td>${ffjdaName}</td>
+        <td style="font-size:0.78rem">${r.ha_email ? esc(r.ha_email) : '\u2014'}</td>
+        <td style="font-size:0.78rem">${r.ffjda_email ? esc(r.ffjda_email) : '\u2014'}</td>
+        <td style="font-size:0.78rem">${r.ha_dob ? esc(r.ha_dob) : '\u2014'}</td>
+        <td style="font-size:0.78rem">${r.ffjda_dob ? esc(r.ffjda_dob) : '\u2014'}</td>
+        <td style="font-size:0.78rem">${r.ffjda_licence ? esc(r.ffjda_licence) : '\u2014'}</td>
+        <td>${statusBadge}</td>
+      </tr>`;
+    }
+
+    html += `</tbody></table></div>`;
+    panel.innerHTML = html;
+
+    // Wire edit buttons
+    panel.querySelectorAll('.ha-edit-btn').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const b = btn as HTMLButtonElement;
+        openInlineEdit(b.dataset.itemId, b.dataset.first ?? '', b.dataset.last ?? '');
+      });
+    });
+  } catch (e) {
+    console.error('Reconciliation render error:', e);
+    panel.innerHTML = `<div class="members-empty">Erreur : ${esc(String(e))}</div>`;
+  }
 }
 
 async function loadReconciliationContent(): Promise<void> {
