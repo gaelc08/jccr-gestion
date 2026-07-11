@@ -11,3 +11,6 @@ nohup.out
 
 # Supabase local CLI metadata
 supabase/.temp/
+
+# Build output (Vite)
+dist/

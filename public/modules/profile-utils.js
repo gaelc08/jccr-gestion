@@ -1,87 +1,75 @@
-export function getCoachDisplayName(coach) {
-  if (!coach) return '';
-  const firstName = String(coach.first_name || '').trim();
-  const lastName = String(coach.name || '').trim();
-  return [lastName, firstName].filter(Boolean).join(' ').trim();
+function getCoachDisplayName(coach) {
+  if (!coach) return "";
+  const firstName = String(coach.first_name ?? "").trim();
+  const lastName = String(coach.name ?? coach.last_name ?? "").trim();
+  return [lastName, firstName].filter(Boolean).join(" ").trim();
 }
-
-export function getCoachCivilite(coach) {
-  return (coach?.civilite || 'MR').toUpperCase();
+function getCoachCivilite(coach) {
+  return (coach?.civilite || "MR").toUpperCase();
 }
-
-export function getCurrentUserDisplayName(user, {
-  preferredCoach = null,
-  coaches = [],
-  normalizeEmail,
-  getCoachDisplayNameFn = getCoachDisplayName,
-} = {}) {
-  if (!user) return '';
-
+function getCurrentUserDisplayName(user, options) {
+  const {
+    preferredCoach = null,
+    coaches = [],
+    normalizeEmail,
+    getCoachDisplayNameFn = getCoachDisplayName
+  } = options;
+  if (!user) return "";
   const preferredName = getCoachDisplayNameFn(preferredCoach);
   if (preferredName) return preferredName;
-
-  const ownedCoach = (coaches || []).find((coach) =>
-    coach?.owner_uid === user.id
-    || (normalizeEmail(coach?.email) && normalizeEmail(coach?.email) === normalizeEmail(user.email))
+  const ownedCoach = coaches.find(
+    (c) => c?.owner_uid === user.id || normalizeEmail(c?.email) && normalizeEmail(c?.email) === normalizeEmail(user.email)
   );
   const ownedCoachName = getCoachDisplayNameFn(ownedCoach);
   if (ownedCoachName) return ownedCoachName;
-
-  const metaFirstName = String(user.user_metadata?.first_name || user.user_metadata?.firstname || '').trim();
-  const metaLastName = String(user.user_metadata?.last_name || user.user_metadata?.lastname || user.user_metadata?.name || '').trim();
-  const metadataName = [metaFirstName, metaLastName].filter(Boolean).join(' ').trim();
-  if (metadataName) return metadataName;
-
-  return String(user.email || '').trim();
+  const meta = user.user_metadata ?? {};
+  const metaFirst = String(meta.first_name ?? meta.firstname ?? "").trim();
+  const metaLast = String(meta.last_name ?? meta.lastname ?? meta.name ?? "").trim();
+  const metaName = [metaFirst, metaLast].filter(Boolean).join(" ").trim();
+  if (metaName) return metaName;
+  return String(user.email ?? "").trim();
 }
-
-export function getProfileType(profileOrType) {
-  const raw = typeof profileOrType === 'string'
-    ? profileOrType
-    : (profileOrType?.profile_type || profileOrType?.role);
-  const normalized = String(raw || 'coach').trim().toLowerCase();
-  if (normalized === 'benevole') return 'benevole';
-  if (normalized === 'admin') return 'admin';
-  return 'coach';
+function getProfileType(profileOrType) {
+  const raw = typeof profileOrType === "string" ? profileOrType : profileOrType?.profile_type ?? profileOrType?.role;
+  const normalized = String(raw ?? "coach").trim().toLowerCase();
+  if (normalized === "benevole") return "benevole";
+  if (normalized === "admin") return "admin";
+  return "coach";
 }
-
-export function isVolunteerProfile(profileOrType) {
-  return getProfileType(profileOrType) === 'benevole';
+function isVolunteerProfile(profileOrType) {
+  return getProfileType(profileOrType) === "benevole";
 }
-
-export function isAdminProfile(profileOrType) {
-  return getProfileType(profileOrType) === 'admin';
+function isAdminProfile(profileOrType) {
+  return getProfileType(profileOrType) === "admin";
 }
-
-export function getProfileLabel(profileOrType, { capitalized = false, plural = false } = {}) {
+function getProfileLabel(profileOrType, { capitalized = false, plural = false } = {}) {
   const type = getProfileType(profileOrType);
   let label;
-  if (type === 'benevole') {
-    label = plural ? 'bénévoles' : 'bénévole';
-  } else if (type === 'admin') {
-    label = plural ? 'administrateurs' : 'administrateur';
+  if (type === "benevole") {
+    label = plural ? "b\xE9n\xE9voles" : "b\xE9n\xE9vole";
+  } else if (type === "admin") {
+    label = plural ? "administrateurs" : "administrateur";
   } else {
-    label = plural ? 'entraîneurs' : 'entraîneur';
+    label = plural ? "entra\xEEneurs" : "entra\xEEneu";
   }
-
-  if (capitalized) {
-    label = label.charAt(0).toUpperCase() + label.slice(1);
-  }
-
-  return label;
+  return capitalized ? label.charAt(0).toUpperCase() + label.slice(1) : label;
 }
-
-export function findExistingProfileByEmail(email, {
-  excludeId = null,
-  coaches = [],
-  normalizeEmail,
-} = {}) {
+function findExistingProfileByEmail(email, { excludeId = null, coaches = [], normalizeEmail }) {
   const normalizedEmail = normalizeEmail(email);
   if (!normalizedEmail) return null;
-
-  return (coaches || []).find((coach) => {
-    if (!coach) return false;
-    if (excludeId && coach.id === excludeId) return false;
-    return normalizeEmail(coach.email) === normalizedEmail;
-  }) || null;
+  return coaches.find((c) => {
+    if (!c) return false;
+    if (excludeId != null && c.id === excludeId) return false;
+    return normalizeEmail(c.email) === normalizedEmail;
+  }) ?? null;
 }
+export {
+  findExistingProfileByEmail,
+  getCoachCivilite,
+  getCoachDisplayName,
+  getCurrentUserDisplayName,
+  getProfileLabel,
+  getProfileType,
+  isAdminProfile,
+  isVolunteerProfile
+};

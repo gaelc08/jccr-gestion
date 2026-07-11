@@ -1,4 +1,4 @@
-// app-modular.js — Thin entry point
+// app-modular.ts — Thin entry point (TypeScript)
 // Imports all modules and wires them together.
 // Do NOT add business logic here; it belongs in the modules.
 
@@ -167,7 +167,7 @@ const __inviteDebugTools = createInviteDebugTools({
   getCurrentUser: () => currentUser,
   getCurrentSession: () => currentSession,
   getCurrentAccessToken: () => currentAccessToken,
-  getInviteDebugLast: () => window.__inviteDebugLast || null,
+  getInviteDebugLast: () => (window as Record<string, unknown>).__inviteDebugLast as string | null || null,
 });
 const __collectInviteDebug    = __inviteDebugTools.collectInviteDebug;
 const __getInviteDebugReport  = __inviteDebugTools.getInviteDebugReport;
@@ -184,8 +184,8 @@ const __holidayService = createHolidayService({
 const fetchPublicHolidays = __holidayService.fetchPublicHolidays;
 const fetchSchoolHolidays = __holidayService.fetchSchoolHolidays;
 
-let publicHolidays = {};
-let schoolHolidays = [];
+let publicHolidays: Record<string, unknown> = {};
+let schoolHolidays: unknown[] = [];
 
 // ===== Audit controller =====
 const __auditController = createAuditController({
@@ -203,8 +203,8 @@ const __auditController = createAuditController({
   auditMatchesCurrentCoach,
   normalizeEmail: __normalizeEmail,
   normalizeMonth: __normalizeMonth,
-  getElementById: (id) => document.getElementById(id),
-  alertFn: (message) => alert(message),
+  getElementById: (id: string) => document.getElementById(id),
+  alertFn: (message: string) => alert(message),
 });
 
 function renderAuditLogs()         { return __auditController.renderAuditLogs(); }
@@ -342,13 +342,13 @@ function setupEnvironmentBanner() {
   const envBanner = document.getElementById('envBanner');
   if (!envBanner) return;
   if (__effectiveEnv !== 'dev') { envBanner.style.display = 'none'; return; }
-  envBanner.textContent = `🧪 ENVIRONNEMENT DEV — ${supabaseUrl}`;
+  envBanner.textContent = `🧪 ENVIRONNEMENT DEV — ${supabaseUrl as string}`;
   envBanner.style.display = 'block';
 }
 
 function setupVersionBadge() {
   const el = document.getElementById('appVersion');
-  if (el) el.textContent = `v${__BUILD_ID}`;
+  if (el) el.textContent = `v${__BUILD_ID as string}`;
 }
 
 function setupHelpVersion() {
@@ -356,8 +356,8 @@ function setupHelpVersion() {
   if (!el) return;
   el.innerHTML = `
     <span class="help-version-label">Version</span>
-    <span class="help-version-date">${__VERSION_DATE}</span>
-    <span class="help-version-build">#${__VERSION_INCREMENT}</span>
+    <span class="help-version-date">${__VERSION_DATE as string}</span>
+    <span class="help-version-build">#${__VERSION_INCREMENT as string}</span>
   `;
 }
 
