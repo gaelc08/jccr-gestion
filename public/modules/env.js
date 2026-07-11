@@ -1,5 +1,5 @@
 const PROD_SUPABASE_URL = 'https://ajbpzueanpeukozjhkiv.supabase.co';
-const PROD_SUPABASE_KEY = 'eyJhbG...T67A';
+const PROD_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFqYnB6dWVhbnBldWtvempoa2l2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4OTQyMTAsImV4cCI6MjA4ODQ3MDIxMH0.1i1nJ3DlHGVPIWKNjD64ZyHj3cxG4o-ikju-sO0T67A';
 
 const DEV_SUPABASE_URL = 'https://nkzsjyzhpvivfgslzltn.supabase.co';
 const DEV_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5renNqeXpocHZpdmZnc2x6bHRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM0MzQ4NDIsImV4cCI6MjA4OTAxMDg0Mn0.HmvvvQy3YLpc-YpV_WENuWsZz-MbBdknr35yhRvERVg';
