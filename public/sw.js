@@ -1,22 +1,11 @@
-const CACHE_VERSION = 'judo-coach-pwa-v132';
-const APP_BUILD_ID = '2026-07-06-r02';
+const CACHE_VERSION = 'judo-coach-pwa-v133';
 const BASE_PATH = new URL('./', self.location.href).pathname;
 const INDEX_URL = `${BASE_PATH}index.html`;
 const OFFLINE_URL = `${BASE_PATH}offline.html`;
-const APP_SHELL = [
-  BASE_PATH,
-  INDEX_URL,
-  `${BASE_PATH}style.css?v=${APP_BUILD_ID}`,
-  `${BASE_PATH}app-modular.js?v=${APP_BUILD_ID}`,
-  `${BASE_PATH}manifest.webmanifest`,
-  `${BASE_PATH}logo-jcc.png`,
-  OFFLINE_URL
-];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_VERSION).then((cache) => cache.addAll(APP_SHELL))
-  );
+  // Don't cache APP_SHELL statically — Vite generates hashed filenames.
+  // Navigation handler caches index.html, fetch handler caches assets on first access.
   self.skipWaiting();
 });
 
