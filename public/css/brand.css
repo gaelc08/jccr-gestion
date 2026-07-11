@@ -1,5 +1,7 @@
 /* === JCC Brand Tokens — Judo Club Cattenom Rodemack === */
 /* Charte graphique v1.0 — Mars 2026                      */
+/* NOTE: les tokens radius/spacing sont définis dans base.css (source unique). */
+/* Ce fichier expose uniquement les tokens sémantiques propres à la charte JCC. */
 
 :root {
   /* Couleurs primaires */
@@ -25,19 +27,10 @@
   --font-heading: 'Oswald', sans-serif;
   --font-body: 'Inter', sans-serif;
 
-  /* Border radius */
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
+  /* Border radius — alias vers base.css (pas de redéfinition) */
   --radius-pill: 9999px;
 
-  /* Espacements */
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-6: 24px;
-  --space-8: 32px;
+  /* Espacements supplémentaires non couverts par base.css */
   --space-12: 48px;
   --space-16: 64px;
 }
