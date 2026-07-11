@@ -262,7 +262,7 @@ export function setupEventListeners() {
   });
 
   // Fermer les modals via leurs boutons dédiés
-  ['closeAuditLogs', 'closeHelloAsso', 'closeHelp'].forEach((id) => {
+  ['closeAuditLogs', 'closeHelloAsso', 'closeReconciliation', 'closeHelp'].forEach((id) => {
     bindClick(id, () => document.getElementById(id)?.closest('.modal')?.classList.remove('active'));
   });
 

@@ -1,5 +1,6 @@
 // helloasso-ui.js — HelloAsso UI module
 // Extracted from app-modular.js (main branch)
+// v2: + inline name editing + reconciliation view
 
 /**
  * createHelloAssoUI — factory that injects all dependencies
@@ -14,6 +15,9 @@ export function createHelloAssoUI({
   parseHelloAssoCsv,
   importHelloAssoCsvData,
   importFfjdaCsv,
+  correctMemberName,
+  getReconciliation,
+  getFfjdaMembers,
 
   // Utilities
   escapeHtml,
@@ -41,51 +45,168 @@ export function createHelloAssoUI({
   }
 
   // ─────────────────────────────────────────────────────────────────
-  // buildMemberTable
+  // Inline edit helpers
   // ─────────────────────────────────────────────────────────────────
 
-  function buildMemberTable(group, showCategory = false) {
-    if (group.length === 0) return '<p class="audit-status">Aucun adhérent.</p>';
-    const rows = group.map((m) => {
-      const amount = m.membership_amount != null
-        ? `${Number(m.membership_amount).toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`
-        : '—';
-      const date = m.membership_date ? new Date(m.membership_date).toLocaleDateString('fr-FR') : '—';
-      const ffjCategory = showCategory ? getFfjCategory(m.date_of_birth) : null;
-      const categoryCell = showCategory ? `<td>${escapeHtml(ffjCategory ?? m.judo_category ?? '—')}</td>` : '';
-      const dob = m.date_of_birth ? escapeHtml(m.date_of_birth) : '—';
-      return `<tr>
-        <td>${escapeHtml(m.first_name ?? '')}</td>
-        <td>${escapeHtml(m.last_name ?? '')}</td>
-        <td>${escapeHtml(m.email ?? '')}</td>
-        ${categoryCell}
-        <td>${dob}</td>
-        <td>${amount}</td>
-        <td>${date}</td>
-      </tr>`;
-    }).join('');
-    const categoryHeader = showCategory ? '<th>Catégorie</th>' : '';
+  async function saveNameCorrection(itemId, firstName, lastName) {
+    try {
+      const result = await correctMemberName(itemId, firstName, lastName);
+      if (result.success) {
+        // Re-render the whole section to reflect changes
+        await renderHelloAssoSection();
+      }
+    } catch (e) {
+      alert('Erreur lors de la correction du nom : ' + (e.message || e));
+    }
+  }
+
+  function renderEditableNameCell(itemId, firstName, lastName) {
+    const escapedFirst = escapeHtml(firstName || '');
+    const escapedLast = escapeHtml(lastName || '');
+    const displayName = `${escapedFirst} ${escapedLast}`.trim();
     return `
-      <div class="audit-table-wrap">
-        <table class="audit-table">
-          <thead><tr>
-            <th>Prénom</th><th>Nom</th><th>Email</th>
-            ${categoryHeader}
-            <th>Naissance</th><th>Montant (€)</th><th>Date adhésion</th>
-          </tr></thead>
-          <tbody>${rows}</tbody>
-        </table>
-      </div>`;
+      <span class="ha-name-display" style="cursor:pointer" data-item-id="${escapedFirst}" title="Cliquer pour éditer">
+        ${displayName || '—'}
+        <button class="ha-edit-btn" data-item-id="${escapeHtml(String(itemId))}"
+          data-first="${escapedFirst}" data-last="${escapedLast}"
+          style="border:none;background:none;cursor:pointer;font-size:12px;padding:0 4px;opacity:0.5;vertical-align:middle"
+          title="Corriger le nom">✏️</button>
+      </span>`;
   }
 
   // ─────────────────────────────────────────────────────────────────
-  // renderHelloAssoSection
+  // Reconciliation view
+  // ─────────────────────────────────────────────────────────────────
+
+  async function openReconciliationView() {
+    const modal = document.getElementById('reconciliationModal');
+    if (!modal) return;
+    modal.classList.add('active');
+
+    const content = document.getElementById('reconciliationContent');
+    if (!content) return;
+    content.innerHTML = '<p>Chargement…</p>';
+
+    try {
+      const data = await getReconciliation();
+      if (!data || !data.reconciliation) {
+        content.innerHTML = '<p class="audit-status">Aucune donnée de réconciliation disponible. Importez d\'abord un CSV FFJDA.</p>';
+        return;
+      }
+
+      // Stats bar
+      const statsHtml = `
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;font-size:13px">
+          <span style="background:#e3f2fd;padding:4px 10px;border-radius:4px">
+            ✅ <strong>${data.matched}</strong> matché(s)
+          </span>
+          <span style="background:#fff3e0;padding:4px 10px;border-radius:4px">
+            ⚠️ <strong>${data.name_mismatch}</strong> nom(s) différent(s)
+          </span>
+          <span style="background:#e8f5e9;padding:4px 10px;border-radius:4px">
+            ✏️ <strong>${data.corrected}</strong> corrigé(s)
+          </span>
+          <span style="background:#ffebee;padding:4px 10px;border-radius:4px">
+            ❌ <strong>${data.unmatched}</strong> non matché(s)
+          </span>
+          <span style="background:#f3e5f5;padding:4px 10px;border-radius:4px">
+            🆕 <strong>${data.ffjda_only}</strong> FFJDA seulement
+          </span>
+          <span style="margin-left:auto;color:#888">${data.total_ha} HA · ${data.total_ffjda} FFJDA</span>
+        </div>`;
+
+      // Build table
+      const rows = data.reconciliation.map(r => {
+        const statusBadge = getStatusBadge(r.status);
+        const haName = r.ha_first_name || r.ha_last_name
+          ? renderEditableNameCell(r.item_id, r.ha_first_name, r.ha_last_name)
+          : '—';
+        const ffjdaName = (r.ffjda_first_name || r.ffjda_last_name)
+          ? `${escapeHtml(r.ffjda_first_name)} ${escapeHtml(r.ffjda_last_name)}`
+          : '—';
+        const haDob = r.ha_dob ? escapeHtml(r.ha_dob) : '—';
+        const ffjdaDob = r.ffjda_dob ? escapeHtml(r.ffjda_dob) : '—';
+        const haEmail = r.ha_email ? escapeHtml(r.ha_email) : '—';
+        const ffjdaEmail = r.ffjda_email ? escapeHtml(r.ffjda_email) : '—';
+        const licence = r.ffjda_licence ? escapeHtml(r.ffjda_licence) : '—';
+
+        return `<tr>
+          <td>${haName}</td>
+          <td>${ffjdaName}</td>
+          <td style="font-size:11px">${haEmail}</td>
+          <td style="font-size:11px">${ffjdaEmail}</td>
+          <td style="font-size:11px;white-space:nowrap">${haDob}</td>
+          <td style="font-size:11px;white-space:nowrap">${ffjdaDob}</td>
+          <td style="font-size:11px">${licence}</td>
+          <td>${statusBadge}</td>
+        </tr>`;
+      }).join('');
+
+      const tableHtml = `
+        <div class="reconciliation-table-wrap" style="overflow-x:auto;max-height:60vh;overflow-y:auto">
+          <table class="audit-table" style="font-size:12px">
+            <thead>
+              <tr>
+                <th>HelloAsso</th>
+                <th>FFJDA</th>
+                <th>Email HA</th>
+                <th>Email FFJDA</th>
+                <th>Naiss. HA</th>
+                <th>Naiss. FFJDA</th>
+                <th>Licence</th>
+                <th>Statut</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>`;
+
+      content.innerHTML = statsHtml + tableHtml;
+
+      // Wire edit buttons
+      content.querySelectorAll('.ha-edit-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const itemId = btn.dataset.itemId;
+          const currentFirst = btn.dataset.first;
+          const currentLast = btn.dataset.last;
+          openInlineEdit(itemId, currentFirst, currentLast);
+        });
+      });
+
+    } catch (e) {
+      console.error('Reconciliation error:', e);
+      content.innerHTML = `<p class="audit-status">Erreur : ${escapeHtml(String(e))}</p>`;
+    }
+  }
+
+  function getStatusBadge(status) {
+    const badges = {
+      'matched': '<span style="background:#c8e6c9;color:#1b5e20;padding:2px 6px;border-radius:3px;font-size:10px;font-weight:600">✅ Match</span>',
+      'name_mismatch': '<span style="background:#fff3e0;color:#e65100;padding:2px 6px;border-radius:3px;font-size:10px;font-weight:600">⚠️ Nom diff.</span>',
+      'corrected': '<span style="background:#e8f5e9;color:#2e7d32;padding:2px 6px;border-radius:3px;font-size:10px;font-weight:600">✏️ Corrigé</span>',
+      'unmatched': '<span style="background:#ffcdd2;color:#b71c1c;padding:2px 6px;border-radius:3px;font-size:10px;font-weight:600">❌ Non matché</span>',
+      'ffjda_only': '<span style="background:#e1bee7;color:#4a148c;padding:2px 6px;border-radius:3px;font-size:10px;font-weight:600">🆕 FFJDA seul</span>',
+    };
+    return badges[status] || `<span style="background:#eee;padding:2px 6px;border-radius:3px;font-size:10px">${escapeHtml(status)}</span>`;
+  }
+
+  function openInlineEdit(itemId, currentFirst, currentLast) {
+    const first = prompt('Prénom (HelloAsso) :', currentFirst);
+    if (first === null) return; // cancelled
+    const last = prompt('Nom (HelloAsso) :', currentLast);
+    if (last === null) return;
+    saveNameCorrection(itemId, first.trim(), last.trim());
+  }
+
+  // ─────────────────────────────────────────────────────────────────
+  // renderHelloAssoSection — main content rendering
   // ─────────────────────────────────────────────────────────────────
 
   async function renderHelloAssoSection() {
     const contentEl = document.getElementById('helloAssoContent');
     if (!contentEl) return;
-    contentEl.innerHTML = '<p>Chargement…</p>';
+    contentEl.innerHTML = '<p class="audit-status">Chargement…</p>';
 
     try {
       const [lastSync, members] = await Promise.all([
@@ -120,7 +241,6 @@ export function createHelloAssoUI({
       } else {
         const sorted = [...filtered].sort((a, b) => (a.last_name ?? '').localeCompare(b.last_name ?? '', 'fr'));
 
-        const ffjOrder = ['Baby Judo', 'Mini-Poussin', 'Poussin', 'Benjamin', 'Minime', 'Cadet', 'Junior', 'Senior', 'Vétéran'];
         const byDiscipline = { judo: [], iaido: [], taiso: [] };
         for (const m of sorted) {
           const disc = m.discipline || 'judo';
@@ -140,64 +260,82 @@ export function createHelloAssoUI({
             const statusBadge = saisie
               ? '<span style="background:#c8e6c9;color:#1b5e20;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:600">✓ FFJDA</span>'
               : '<span style="background:#ffcdd2;color:#b71c1c;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:600">À saisir</span>';
+            const nameCell = renderEditableNameCell(
+              m.helloasso_id || m.id,
+              m.first_name,
+              m.last_name
+            );
+            const catCell = showCategory ? `<td>${escapeHtml(ffjCat)}</td>` : '';
             return `<tr>
-              <td>${escapeHtml(m.first_name ?? '')}</td>
-              <td>${escapeHtml(m.last_name ?? '')}</td>
+              <td>${nameCell}</td>
+              ${catCell}
               <td>${escapeHtml(m.email ?? '')}</td>
-              ${showCategory ? `<td>${escapeHtml(ffjCat)}</td>` : ''}
               <td>${escapeHtml(m.date_of_birth || '')}</td>
               <td>${amount}</td>
+              <td>${date}</td>
               <td>${statusBadge}</td>
             </tr>`;
           }).join('');
           const catHeader = showCategory ? '<th>Catégorie</th>' : '';
           return `<div class="audit-table-wrap"><table class="audit-table"><thead><tr>
-            <th>Prénom</th><th>Nom</th><th>Email</th>
-            ${catHeader}<th>Naissance</th><th>Montant</th><th>FFJDA</th>
+            <th>Nom</th>${catHeader}<th>Email</th><th>Naissance</th><th>Montant</th><th>Date</th><th>FFJDA</th>
           </tr></thead><tbody>${rows}</tbody></table></div>`;
         };
 
         tableHtml = `
-          <h3>🥋 Judo (${byDiscipline.judo.length})</h3>${buildTable(byDiscipline.judo, true)}
-          <h3>🗡️ Iaïdo (${byDiscipline.iaido.length})</h3>${buildTable(byDiscipline.iaido, false)}
-          <h3>🤸 Taïso (${byDiscipline.taiso.length})</h3>${buildTable(byDiscipline.taiso, false)}
+          <h3>Judo (${byDiscipline.judo.length})</h3>${buildTable(byDiscipline.judo, true)}
+          <h3>Iaido (${byDiscipline.iaido.length})</h3>${buildTable(byDiscipline.iaido, false)}
+          <h3>Taiso (${byDiscipline.taiso.length})</h3>${buildTable(byDiscipline.taiso, false)}
         `;
       }
 
       contentEl.innerHTML = `
         <div class="audit-toolbar">
           <span class="audit-status">${escapeHtml(syncInfo)}</span>
-          <button id="syncHelloAssoBtn" class="btn-secondary">🔄 Synchroniser</button>
+          <button id="syncHelloAssoBtn" class="btn-secondary" style="margin-left:0.5rem">Synchroniser</button>
           <label class="btn-secondary" style="cursor:pointer;margin-left:0.5rem" title="Importer un export CSV HelloAsso pour enrichir les dates de naissance">
-            📂 CSV HelloAsso
+            CSV HelloAsso
             <input type="file" id="helloAssoCsvInput" accept=".csv" style="display:none">
           </label>
-          <label class="btn-secondary" style="cursor:pointer;margin-left:0.5rem;background:#e2b13c;color:#0a0f1c" title="Importer un export CSV FFJDO (liste des licenciés) pour marquer les adhérents comme saisis">
-            🥋 CSV FFJDO
+          <label class="btn-secondary" style="cursor:pointer;margin-left:0.5rem;background:#e2b13c;color:#0a0f1c" title="Importer un export CSV FFJDO (liste des licencies) pour marquer les adherents comme saisis">
+            CSV FFJDO
             <input type="file" id="ffjdaCsvInput" accept=".csv" style="display:none">
           </label>
+          <button id="openReconciliationBtn" class="btn-secondary" style="margin-left:0.5rem;background:#1565c0;color:#fff" title="Voir les ecarts entre HelloAsso et FFJDA">
+            Voir les ecarts
+          </button>
         </div>
         ${tableHtml}`;
 
-      // Sync button
+      // Wire sync button
       const syncBtn = document.getElementById('syncHelloAssoBtn');
       if (syncBtn) {
         syncBtn.onclick = async () => {
           syncBtn.disabled = true;
-          syncBtn.textContent = '⏳ Synchronisation…';
+          syncBtn.textContent = 'Synchronisation…';
           try {
-            const result = await syncHelloAssoMembers(supabase);
-            console.log('DEBUG sync-helloasso result:', result);
+            await syncHelloAssoMembers(supabase);
           } catch (e) {
-            console.error('DEBUG sync-helloasso error:', e);
-            alert(`Erreur lors de la synchronisation : ${e.message || e}`);
+            console.error('Sync error:', e);
+            alert('Erreur lors de la synchronisation : ' + (e.message || e));
           } finally {
             await renderHelloAssoSection();
           }
         };
       }
 
-      // CSV import
+      // Wire edit buttons
+      contentEl.querySelectorAll('.ha-edit-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const itemId = btn.dataset.itemId;
+          const currentFirst = btn.dataset.first;
+          const currentLast = btn.dataset.last;
+          openInlineEdit(itemId, currentFirst, currentLast);
+        });
+      });
+
+      // Wire CSV inputs
       const csvInput = document.getElementById('helloAssoCsvInput');
       if (csvInput) {
         csvInput.onchange = async (e) => {
@@ -206,22 +344,22 @@ export function createHelloAssoUI({
           try {
             const text = await file.text();
             const rows = parseHelloAssoCsv(text);
-            if (rows.length === 0) { alert('Aucune donnée trouvée dans le CSV. Vérifiez le format du fichier.'); return; }
+            if (rows.length === 0) { alert('Aucune donnee trouvee dans le CSV.'); return; }
             const withDob = rows.filter((r) => r.date_of_birth);
-            if (withDob.length === 0) { alert('Le CSV ne contient pas de colonne "date de naissance". Vérifiez les colonnes exportées depuis HelloAsso.'); return; }
+            if (withDob.length === 0) { alert('Le CSV ne contient pas de colonne "date de naissance".'); return; }
             const { updated, notFound } = await importHelloAssoCsvData(supabase, withDob);
-            let msg = `✅ ${updated} date(s) de naissance importée(s).`;
-            if (notFound.length > 0) msg += `\n⚠️ ${notFound.length} email(s) non trouvé(s) dans la base.`;
+            let msg = `${updated} date(s) de naissance importee(s).`;
+            if (notFound.length > 0) msg += `\n${notFound.length} email(s) non trouve(s).`;
             alert(msg);
             await renderHelloAssoSection();
           } catch (err) {
-            alert(`Erreur lors de l'import CSV : ${err.message || err}`);
+            alert('Erreur import CSV : ' + (err.message || err));
           }
           csvInput.value = '';
         };
       }
 
-      // FFJDA CSV import
+      // Wire FFJDA CSV input
       const ffjdaInput = document.getElementById('ffjdaCsvInput');
       if (ffjdaInput) {
         ffjdaInput.onchange = async (e) => {
@@ -230,19 +368,26 @@ export function createHelloAssoUI({
           try {
             const text = await file.text();
             const result = await importFfjdaCsv(text);
-            let msg = `✅ ${result.matched}/${result.total} adhérents marqués comme saisis.`;
-            if (result.not_found > 0) msg += `\n⚠️ ${result.not_found} non trouvé(s) dans la base HelloAsso.`;
+            let msg = `${result.matched}/${result.total} adherents marques comme saisis.`;
+            if (result.not_found > 0) msg += `\n${result.not_found} non trouve(s).`;
             alert(msg);
             await renderHelloAssoSection();
           } catch (err) {
             const msg = err?.message || err?.detail || (typeof err === 'object' ? JSON.stringify(err) : String(err));
-            alert(`Erreur import FFJDA : ${msg}`);
+            alert('Erreur import FFJDA : ' + msg);
           }
           ffjdaInput.value = '';
         };
       }
+
+      // Wire reconciliation button
+      const reconBtn = document.getElementById('openReconciliationBtn');
+      if (reconBtn) {
+        reconBtn.onclick = () => openReconciliationView();
+      }
+
     } catch (e) {
-      console.error('DEBUG renderHelloAssoSection error:', e);
+      console.error('renderHelloAssoSection error:', e);
       contentEl.innerHTML = `<p class="audit-status">Erreur : ${escapeHtml(String(e))}</p>`;
     }
   }
@@ -256,7 +401,7 @@ export function createHelloAssoUI({
     if (!sel) return;
     try {
       const token = localStorage.getItem('jcc_api_token');
-      if (!token) { sel.innerHTML = '<option value="">Token non configuré</option>'; return; }
+      if (!token) { sel.innerHTML = '<option value="">Token non configure</option>'; return; }
       const r = await fetch('https://sync.judo-cattenom.fr/campaigns', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -330,52 +475,45 @@ export function createHelloAssoUI({
 
     if (!configBtn || !configPanel) return;
 
-    // Toggle panel
     configBtn.addEventListener('click', () => {
       const isHidden = configPanel.style.display === 'none';
       configPanel.style.display = isHidden ? 'block' : 'none';
       if (isHidden) {
-        // Load current token
         const token = localStorage.getItem('jcc_api_token') || '';
         tokenInput.value = token;
       }
     });
 
-    // Save token
     saveBtn?.addEventListener('click', () => {
       const token = tokenInput.value.trim();
       if (token) {
         localStorage.setItem('jcc_api_token', token);
-        showStatus(statusEl, '✅ Token enregistré', 'success');
+        showStatus(statusEl, 'Token enregistre', 'success');
       } else {
         localStorage.removeItem('jcc_api_token');
-        showStatus(statusEl, '🗑️ Token supprimé', 'info');
+        showStatus(statusEl, 'Token supprime', 'info');
       }
     });
 
-    // Test connection
     testBtn?.addEventListener('click', async () => {
       const token = tokenInput.value.trim();
       if (!token) {
-        showStatus(statusEl, '⚠️ Aucun token à tester', 'warning');
+        showStatus(statusEl, 'Aucun token a tester', 'warning');
         return;
       }
-
-      showStatus(statusEl, '🔄 Test en cours...', 'info');
-
+      showStatus(statusEl, 'Test en cours...', 'info');
       try {
         const resp = await fetch('https://sync.judo-cattenom.fr/stats', {
           headers: { 'Authorization': `Bearer ${token}` },
         });
-
         if (resp.ok) {
           const data = await resp.json();
-          showStatus(statusEl, `✅ Connexion OK — ${data.paid || '?'} adhérents`, 'success');
+          showStatus(statusEl, `Connexion OK — ${data.paid || '?'} adherents`, 'success');
         } else {
-          showStatus(statusEl, `❌ Erreur ${resp.status}: ${resp.statusText}`, 'error');
+          showStatus(statusEl, `Erreur ${resp.status}: ${resp.statusText}`, 'error');
         }
       } catch (err) {
-        showStatus(statusEl, `❌ Erreur réseau: ${err.message}`, 'error');
+        showStatus(statusEl, `Erreur reseau: ${err.message}`, 'error');
       }
     });
   }
@@ -394,5 +532,6 @@ export function createHelloAssoUI({
   return {
     renderHelloAssoSection,
     openHelloAssoModal,
+    openReconciliationView,
   };
 }

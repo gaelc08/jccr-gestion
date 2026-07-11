@@ -105,7 +105,7 @@ import { publicHolidaysFallback, schoolHolidaysFallback } from './modules/holida
 import { createHolidayService } from './modules/holidays-service.js';
 import { createInviteDebugTools } from './modules/invite-debug.js';
 import { findExistingProfileByEmail, getCoachDisplayName, getCurrentUserDisplayName, getProfileLabel, getProfileType, isVolunteerProfile } from './modules/profile-utils.js';
-import { syncHelloAssoMembers, getHelloAssoMembers, getLastSyncTime, parseHelloAssoCsv, importHelloAssoCsvData, importFfjdaCsv } from './modules/helloasso-service.js';
+import { syncHelloAssoMembers, getHelloAssoMembers, getLastSyncTime, parseHelloAssoCsv, importHelloAssoCsvData, importFfjdaCsv, correctMemberName, getReconciliation, getFfjdaMembers } from './modules/helloasso-service.js';
 
 // ===== Admin service (fully implemented) =====
 import { notifyAdminAlert, __isAdminForUi, initAdminService } from './modules/admin-service.js';
@@ -260,10 +260,14 @@ const __helloAssoUI = createHelloAssoUI({
   parseHelloAssoCsv,
   importHelloAssoCsvData,
   importFfjdaCsv,
+  correctMemberName,
+  getReconciliation,
+  getFfjdaMembers,
   escapeHtml: __escapeHtml,
 });
 
 const openHelloAssoModal = __helloAssoUI.openHelloAssoModal;
+const openReconciliationView = __helloAssoUI.openReconciliationView;
 
 // ===== Init competitions UI =====
 initCompetitionsUi({
