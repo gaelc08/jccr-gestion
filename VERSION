@@ -1,8 +1,8 @@
 # Gestion JCC — Version
 MAJOR=1
-MINOR=1
+MINOR=2
 PATCH=0
-VERSION=v1.1.0
+VERSION=v1.2.0
 DATE=2026-07-11
 STATUS=stable
-DESCRIPTION="Refonte CSS modulaire — style.css splitté en 14 fichiers par feature"
+DESCRIPTION="Section membres dans la fenêtre principale — TS migration complète — 4 onglets : liste, catégorie d'âge, WhatsApp, envois groupés"
