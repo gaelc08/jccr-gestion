@@ -24,7 +24,7 @@ export function loadCoaches() {
   if (selects.length === 0) return;
   const current = select ? select.value : (topSelect ? topSelect.value : '');
   selects.forEach((s) => {
-    s.innerHTML = '<option value="">-- Sélectionner --</option>';
+    s.innerHTML = '<option value="">-- S\u00e9lectionner --</option>';
     coaches.forEach((coach) => {
       const opt = document.createElement('option');
       opt.value = coach.id;
@@ -122,10 +122,33 @@ export async function loadAllDataFromSupabase({ isAdminOverride } = {}) {
   setTimeData(newTimeData);
 
   // --- Frozen timesheets ---
-  const frozenRes = await _restSelect('frozen_timesheets');
+  // Pour les non-admins : filtrer explicitement par les coach_id du profil
+  // afin de ne pas d\u00e9pendre uniquement de la RLS (qui peut retourner 0 lignes
+  // si la politique n'est pas encore configur\u00e9e pour les coaches).
+  let frozenRes;
+  if (isAdmin) {
+    frozenRes = await _restSelect('frozen_timesheets');
+  } else {
+    const coachIds = newCoaches.map(c => c.id);
+    if (coachIds.length > 0) {
+      // Charger les fiches gel\u00e9es pour chaque coach_id du profil
+      const allFrozen = [];
+      for (const cid of coachIds) {
+        const r = await _restSelect('frozen_timesheets', { filters: [['coach_id', 'eq', cid]] });
+        if (!r.error) allFrozen.push(...(r.data || []));
+      }
+      frozenRes = { data: allFrozen, error: null };
+    } else {
+      frozenRes = { data: [], error: null };
+    }
+  }
+
   if (!frozenRes.error) {
     const newFrozen = new Set();
     (frozenRes.data || []).forEach(r => newFrozen.add(`${r.coach_id}-${r.month}`));
+    console.log('DEBUG frozenMonths loaded:', [...newFrozen]);
     setFrozenMonths(newFrozen);
+  } else {
+    console.warn('DEBUG frozenMonths load error:', frozenRes.error);
   }
 }
