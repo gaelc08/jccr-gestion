@@ -76,7 +76,7 @@ let _visible = false;
 let _supabase: unknown;
 
 // List tab display options
-let _listDiscipline = 'all';
+let _listDisciplines: Record<string, boolean> = { judo: true, iaido: true, taiso: true };
 let _listSort = 'name-asc';
 const _listColumns: Record<string, boolean> = {
   name: true,
@@ -273,15 +273,12 @@ async function renderListTab(): Promise<void> {
   // ── Filter toolbar ──
   panel.innerHTML = `<div class="members-list-controls">
     <div class="members-filter-row">
-      <label style="display:flex;align-items:center;gap:4px;font-size:0.8rem;font-weight:600">
-        Discipline :
-        <select id="membersFilterDiscipline" class="members-filter-select">
-          <option value="all"${_listDiscipline === 'all' ? ' selected' : ''}>Toutes</option>
-          <option value="judo"${_listDiscipline === 'judo' ? ' selected' : ''}>Judo</option>
-          <option value="iaido"${_listDiscipline === 'iaido' ? ' selected' : ''}>Iaido</option>
-          <option value="taiso"${_listDiscipline === 'taiso' ? ' selected' : ''}>Taiso</option>
-        </select>
-      </label>
+      <span style="display:flex;align-items:center;gap:6px;font-size:0.75rem;font-weight:700;color:rgba(255,255,255,0.5)">
+        Disciplines :
+        <label class="members-disc-toggle ${_listDisciplines['judo'] ? 'active' : ''}"><input type="checkbox" data-disc="judo" ${_listDisciplines['judo'] ? 'checked' : ''}> Judo</label>
+        <label class="members-disc-toggle ${_listDisciplines['iaido'] ? 'active' : ''}"><input type="checkbox" data-disc="iaido" ${_listDisciplines['iaido'] ? 'checked' : ''}> Iaido</label>
+        <label class="members-disc-toggle ${_listDisciplines['taiso'] ? 'active' : ''}"><input type="checkbox" data-disc="taiso" ${_listDisciplines['taiso'] ? 'checked' : ''}> Taiso</label>
+      </span>
       <label style="display:flex;align-items:center;gap:4px;font-size:0.8rem;font-weight:600">
         Trier :
         <select id="membersFilterSort" class="members-filter-select">
@@ -308,18 +305,30 @@ async function renderListTab(): Promise<void> {
   </div>`;
 
   // ── Wire filter change events ──
-  const discSel = document.getElementById('membersFilterDiscipline') as HTMLSelectElement;
+  const discToggles = panel.querySelectorAll('.members-disc-toggle input[type="checkbox"]');
   const sortSel = document.getElementById('membersFilterSort') as HTMLSelectElement;
   const unsaisieChk = document.getElementById('membersUnsaisieList') as HTMLInputElement;
 
   const reRender = () => {
-    _listDiscipline = discSel?.value ?? 'all';
-    _listSort = sortSel?.value ?? 'name-asc';
     void renderListContent(panel);
   };
 
-  discSel?.addEventListener('change', reRender);
-  sortSel?.addEventListener('change', reRender);
+  // Wire discipline checkboxes
+  discToggles.forEach((cb) => {
+    cb.addEventListener('change', () => {
+      const disc = (cb as HTMLInputElement).dataset.disc ?? '';
+      const checked = (cb as HTMLInputElement).checked;
+      const label = (cb as HTMLInputElement).closest('.members-disc-toggle');
+      if (label) label.classList.toggle('active', checked);
+      if (disc) _listDisciplines[disc] = checked;
+      void renderListContent(panel);
+    });
+  });
+
+  sortSel?.addEventListener('change', () => {
+    _listSort = sortSel?.value ?? 'name-asc';
+    void renderListContent(panel);
+  });
   unsaisieChk?.addEventListener('change', () => {
     // Sync with the main toolbar checkbox
     const mainChk = document.getElementById('membersUnsaisieOnly') as HTMLInputElement;
@@ -347,10 +356,11 @@ async function renderListTab(): Promise<void> {
 }
 
 function renderListContent(panel: HTMLElement): void {
-  // Filter by discipline
+  // Filter by discipline (multi-select)
+  const selectedDiscs = Object.entries(_listDisciplines).filter(([, v]) => v).map(([k]) => k);
   let filtered = _members;
-  if (_listDiscipline !== 'all') {
-    filtered = filtered.filter((m) => (m.discipline ?? 'judo') === _listDiscipline);
+  if (selectedDiscs.length > 0 && selectedDiscs.length < 3) {
+    filtered = filtered.filter((m) => selectedDiscs.includes(m.discipline ?? 'judo'));
   }
 
   // Filter unsaisi
@@ -400,7 +410,9 @@ function renderListContent(panel: HTMLElement): void {
   const area = document.createElement('div');
   area.className = 'members-list-area';
 
-  if (_listDiscipline !== 'all') {
+  const selectedDiscsList = Object.entries(_listDisciplines).filter(([, v]) => v).map(([k]) => k);
+  if (selectedDiscsList.length > 0 && selectedDiscsList.length < 3) {
+    // Only some disciplines selected → flat list
     area.appendChild(createTable(sorted, cols));
   } else {
     const byDiscipline: Record<string, HaMember[]> = {};

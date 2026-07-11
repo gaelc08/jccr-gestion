@@ -28,7 +28,7 @@ let _lastSync = null;
 let _activeTab = "list";
 let _visible = false;
 let _supabase;
-let _listDiscipline = "all";
+let _listDisciplines = { judo: true, iaido: true, taiso: true };
 let _listSort = "name-asc";
 const _listColumns = {
   name: true,
@@ -202,15 +202,12 @@ async function renderListTab() {
   if (!panel) return;
   panel.innerHTML = `<div class="members-list-controls">
     <div class="members-filter-row">
-      <label style="display:flex;align-items:center;gap:4px;font-size:0.8rem;font-weight:600">
-        Discipline :
-        <select id="membersFilterDiscipline" class="members-filter-select">
-          <option value="all"${_listDiscipline === "all" ? " selected" : ""}>Toutes</option>
-          <option value="judo"${_listDiscipline === "judo" ? " selected" : ""}>Judo</option>
-          <option value="iaido"${_listDiscipline === "iaido" ? " selected" : ""}>Iaido</option>
-          <option value="taiso"${_listDiscipline === "taiso" ? " selected" : ""}>Taiso</option>
-        </select>
-      </label>
+      <span style="display:flex;align-items:center;gap:6px;font-size:0.75rem;font-weight:700;color:rgba(255,255,255,0.5)">
+        Disciplines :
+        <label class="members-disc-toggle ${_listDisciplines["judo"] ? "active" : ""}"><input type="checkbox" data-disc="judo" ${_listDisciplines["judo"] ? "checked" : ""}> Judo</label>
+        <label class="members-disc-toggle ${_listDisciplines["iaido"] ? "active" : ""}"><input type="checkbox" data-disc="iaido" ${_listDisciplines["iaido"] ? "checked" : ""}> Iaido</label>
+        <label class="members-disc-toggle ${_listDisciplines["taiso"] ? "active" : ""}"><input type="checkbox" data-disc="taiso" ${_listDisciplines["taiso"] ? "checked" : ""}> Taiso</label>
+      </span>
       <label style="display:flex;align-items:center;gap:4px;font-size:0.8rem;font-weight:600">
         Trier :
         <select id="membersFilterSort" class="members-filter-select">
@@ -235,16 +232,26 @@ async function renderListTab() {
       <label class="members-col-toggle ${_listColumns["status"] ? "active" : ""}"><input type="checkbox" data-col="status" ${_listColumns["status"] ? "checked" : ""}> FFJDA</label>
     </div>
   </div>`;
-  const discSel = document.getElementById("membersFilterDiscipline");
+  const discToggles = panel.querySelectorAll('.members-disc-toggle input[type="checkbox"]');
   const sortSel = document.getElementById("membersFilterSort");
   const unsaisieChk = document.getElementById("membersUnsaisieList");
   const reRender = () => {
-    _listDiscipline = discSel?.value ?? "all";
-    _listSort = sortSel?.value ?? "name-asc";
     void renderListContent(panel);
   };
-  discSel?.addEventListener("change", reRender);
-  sortSel?.addEventListener("change", reRender);
+  discToggles.forEach((cb) => {
+    cb.addEventListener("change", () => {
+      const disc = cb.dataset.disc ?? "";
+      const checked = cb.checked;
+      const label = cb.closest(".members-disc-toggle");
+      if (label) label.classList.toggle("active", checked);
+      if (disc) _listDisciplines[disc] = checked;
+      void renderListContent(panel);
+    });
+  });
+  sortSel?.addEventListener("change", () => {
+    _listSort = sortSel?.value ?? "name-asc";
+    void renderListContent(panel);
+  });
   unsaisieChk?.addEventListener("change", () => {
     const mainChk = document.getElementById("membersUnsaisieOnly");
     if (mainChk && mainChk !== unsaisieChk) mainChk.checked = unsaisieChk.checked;
@@ -266,9 +273,10 @@ async function renderListTab() {
   void renderListContent(panel);
 }
 function renderListContent(panel) {
+  const selectedDiscs = Object.entries(_listDisciplines).filter(([, v]) => v).map(([k]) => k);
   let filtered = _members;
-  if (_listDiscipline !== "all") {
-    filtered = filtered.filter((m) => (m.discipline ?? "judo") === _listDiscipline);
+  if (selectedDiscs.length > 0 && selectedDiscs.length < 3) {
+    filtered = filtered.filter((m) => selectedDiscs.includes(m.discipline ?? "judo"));
   }
   const unsaisieChk = document.getElementById("membersUnsaisieList");
   if (unsaisieChk?.checked) {
@@ -310,7 +318,8 @@ function renderListContent(panel) {
   if (existingArea) existingArea.remove();
   const area = document.createElement("div");
   area.className = "members-list-area";
-  if (_listDiscipline !== "all") {
+  const selectedDiscsList = Object.entries(_listDisciplines).filter(([, v]) => v).map(([k]) => k);
+  if (selectedDiscsList.length > 0 && selectedDiscsList.length < 3) {
     area.appendChild(createTable(sorted, cols));
   } else {
     const byDiscipline = {};

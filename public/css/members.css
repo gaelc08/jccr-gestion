@@ -298,6 +298,27 @@
   content: "☑";
   color: #e2b13c;
 }
+.members-disc-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.4);
+  cursor: pointer;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.04);
+  transition: all 0.15s ease;
+}
+.members-disc-toggle.active {
+  color: #e0e0e0;
+  background: rgba(76,175,80,0.15);
+  border: 1px solid rgba(76,175,80,0.3);
+}
+.members-disc-toggle input[type="checkbox"] {
+  display: none;
+}
 .members-group-card .group-count {
   font-size: 0.8rem;
   color: rgba(255,255,255,0.5);
