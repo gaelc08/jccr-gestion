@@ -1037,9 +1037,18 @@ async function renderReconciliationTab(): Promise<void> {
     const totalHa = data.total_ha as number || 0;
     const totalFfjda = data.total_ffjda as number || 0;
 
-    // Détecter les disciplines présentes
-    const disciplines = [...new Set(rec.map((r) => (r.ha_discipline as string || '').trim()).filter(Boolean))];
-    if (disciplines.length === 0) disciplines.push('judo', 'iaido', 'taiso');
+    // Constantes de mapping discipline
+    const DISC_MAP: Record<string, string> = { '1': 'judo', '13': 'iaido', '3': 'taiso' };
+    const DISC_LABELS: Record<string, string> = { 'judo': 'Judo', 'iaido': 'Iaido', 'taiso': 'Taiso' };
+    const DISC_ORDER = ['judo', 'iaido', 'taiso'];
+
+    // Normaliser les disciplines du talbeau
+    function normalizeDisc(val: unknown): string { return DISC_MAP[String(val || '').trim()] || ''; }
+
+    // Détecter les disciplines présentes (normalisées)
+    const disciplineSet = new Set(rec.map((r) => normalizeDisc(r.ha_discipline)).filter(Boolean));
+    const disciplines = DISC_ORDER.filter((d) => disciplineSet.has(d));
+    if (disciplines.length === 0) disciplines.push(...DISC_ORDER);
 
     // État des filtres (conservé entre re-renders via data attributes sur le panel)
     const currentSearch = panel.dataset.reconSearch ?? '';
@@ -1051,8 +1060,7 @@ async function renderReconciliationTab(): Promise<void> {
           Disciplines :
           ${disciplines.map((d) => {
             const active = currentDiscs.includes(d);
-            const label = d.charAt(0).toUpperCase() + d.slice(1);
-            return `<label class="members-disc-toggle ${active ? 'active' : ''}"><input type="checkbox" data-recon-disc="${esc(d)}" ${active ? 'checked' : ''}> ${esc(label)}</label>`;
+            return `<label class="members-disc-toggle ${active ? 'active' : ''}"><input type="checkbox" data-recon-disc="${esc(d)}" ${active ? 'checked' : ''}> ${esc(DISC_LABELS[d] || d)}</label>`;
           }).join('')}
         </span>
         <label style="display:flex;align-items:center;gap:4px;font-size:0.8rem;font-weight:600;margin-left:auto">
@@ -1074,10 +1082,11 @@ async function renderReconciliationTab(): Promise<void> {
 
     // Filtrer
     const filtered = rec.filter((r) => {
-      // Discipline filter
-      const disc = (r.ha_discipline as string || '').trim();
+      // Discipline filter (normalisée)
+      const disc = normalizeDisc(r.ha_discipline);
       if (disc && currentDiscs.length > 0 && !currentDiscs.includes(disc)) return false;
-      if (!disc && currentDiscs.length < disciplines.length) return false;
+      // Si pas de discipline ou si toutes sont cochées, ne pas filtrer
+      if (!disc && currentDiscs.length < disciplines.length && currentDiscs.length > 0) return false;
       // Name/email search
       if (currentSearch) {
         const q = currentSearch.toLowerCase();

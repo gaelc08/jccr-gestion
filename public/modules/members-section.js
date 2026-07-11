@@ -850,6 +850,9 @@ async function renderReconciliationTab() {
   if (!panel) return;
   panel.innerHTML = '<div class="members-empty" style="padding:20px;text-align:center">Chargement de la reconciliation...</div>';
   try {
+    let normalizeDisc = function(val) {
+      return DISC_MAP[String(val || "").trim()] || "";
+    };
     const data = await _deps.getReconciliation();
     if (!data?.reconciliation) {
       panel.innerHTML = `<div class="members-empty">Aucune donnee de reconciliation. Importez d abord un CSV FFJDA (bouton "CSV FFJDO" dans la barre d'outils).</div>`;
@@ -863,8 +866,12 @@ async function renderReconciliationTab() {
     const ffjdaOnly = data.ffjda_only || 0;
     const totalHa = data.total_ha || 0;
     const totalFfjda = data.total_ffjda || 0;
-    const disciplines = [...new Set(rec.map((r) => (r.ha_discipline || "").trim()).filter(Boolean))];
-    if (disciplines.length === 0) disciplines.push("judo", "iaido", "taiso");
+    const DISC_MAP = { "1": "judo", "13": "iaido", "3": "taiso" };
+    const DISC_LABELS = { "judo": "Judo", "iaido": "Iaido", "taiso": "Taiso" };
+    const DISC_ORDER = ["judo", "iaido", "taiso"];
+    const disciplineSet = new Set(rec.map((r) => normalizeDisc(r.ha_discipline)).filter(Boolean));
+    const disciplines = DISC_ORDER.filter((d) => disciplineSet.has(d));
+    if (disciplines.length === 0) disciplines.push(...DISC_ORDER);
     const currentSearch = panel.dataset.reconSearch ?? "";
     const currentDiscs = panel.dataset.reconDiscs ? panel.dataset.reconDiscs.split(",") : disciplines;
     const filterBar = `<div class="members-list-controls" style="margin-bottom:10px">
@@ -873,8 +880,7 @@ async function renderReconciliationTab() {
           Disciplines :
           ${disciplines.map((d) => {
       const active = currentDiscs.includes(d);
-      const label = d.charAt(0).toUpperCase() + d.slice(1);
-      return `<label class="members-disc-toggle ${active ? "active" : ""}"><input type="checkbox" data-recon-disc="${esc(d)}" ${active ? "checked" : ""}> ${esc(label)}</label>`;
+      return `<label class="members-disc-toggle ${active ? "active" : ""}"><input type="checkbox" data-recon-disc="${esc(d)}" ${active ? "checked" : ""}> ${esc(DISC_LABELS[d] || d)}</label>`;
     }).join("")}
         </span>
         <label style="display:flex;align-items:center;gap:4px;font-size:0.8rem;font-weight:600;margin-left:auto">
@@ -893,9 +899,9 @@ async function renderReconciliationTab() {
       <span style="margin-left:auto;color:rgba(255,255,255,0.5);font-size:0.82rem">${totalHa} HA \xB7 ${totalFfjda} FFJDA</span>
     </div>`;
     const filtered = rec.filter((r) => {
-      const disc = (r.ha_discipline || "").trim();
+      const disc = normalizeDisc(r.ha_discipline);
       if (disc && currentDiscs.length > 0 && !currentDiscs.includes(disc)) return false;
-      if (!disc && currentDiscs.length < disciplines.length) return false;
+      if (!disc && currentDiscs.length < disciplines.length && currentDiscs.length > 0) return false;
       if (currentSearch) {
         const q = currentSearch.toLowerCase();
         const haystack = [
