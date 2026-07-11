@@ -66,8 +66,8 @@ export const siteUrl = effectiveEnv === 'test'
   ? 'https://test.judo-cattenom.fr'
   : 'https://judo-cattenom.fr';
 
-export const VERSION_DATE = '2026-07-06';
-export const VERSION_INCREMENT = '02';
+export const VERSION_DATE = '2026-07-11';
+export const VERSION_INCREMENT = '01';
 export const BUILD_ID = `${VERSION_DATE}-r${VERSION_INCREMENT}`;
 
 if (effectiveEnv === 'dev' && !localDevKeyOverride) {
