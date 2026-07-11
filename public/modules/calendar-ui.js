@@ -399,6 +399,12 @@ export async function saveDay() {
     return;
   }
 
+  if (!saved || saved.length === 0) {
+    alert('Sauvegarde refusée : cette fiche est gelée ou vous n\'avez pas les droits.');
+    await updateCalendar();
+    return;
+  }
+
   // Normaliser la row retournée en camelCase pour éviter le décalage
   // snake_case/camelCase qui causait un affichage vide jusqu'au prochain F5.
   const newTimeData = { ...timeData };
@@ -440,14 +446,20 @@ export async function deleteDay() {
 
   if (!confirm(`Supprimer les données du ${selectedDay} ?`)) return;
 
-  const { error } = await _supabase
+  const { data: deleted, error } = await _supabase
     .from('time_data')
     .delete()
     .eq('coach_id', currentCoach.id)
-    .eq('date', selectedDay);
+    .eq('date', selectedDay)
+    .select();
 
   if (error) {
     alert('Erreur lors de la suppression : ' + error.message);
+    return;
+  }
+  if (!deleted || deleted.length === 0) {
+    alert('Suppression refusée : cette fiche est gelée ou vous n\'avez pas les droits.');
+    await updateCalendar();
     return;
   }
 
