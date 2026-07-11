@@ -23,6 +23,12 @@ function toggleCompetitionsSection(show) {
   _competitionsVisible = show !== undefined ? show : !_competitionsVisible;
   section.style.display = _competitionsVisible ? 'block' : 'none';
 
+  // Hide members section if competitions is shown
+  if (_competitionsVisible) {
+    const membersSection = document.getElementById('membersSection');
+    if (membersSection) membersSection.style.display = 'none';
+  }
+
   // Masquer le planning quand compétitions est affiché
   const planningEls = [
     document.getElementById('coachSelectorGroup'),
@@ -50,7 +56,7 @@ export function setupEventListeners() {
     inviteCoach, inviteAdmin,
     openDayModal, saveDay, deleteDay,
     toggleFreezeMonth,
-    openAuditLogsModal, loadAuditLogs, openHelloAssoModal,
+    openAuditLogsModal, loadAuditLogs, openHelloAssoModal, toggleMembersSection,
     exportDeclarationXLS, exportTimesheetHTML,
     exportExpenseHTML, exportMonthlyExpenses,
     openMileagePreviewModal, openMonthlySummaryPreviewModal,
@@ -157,7 +163,7 @@ export function setupEventListeners() {
 
   // Audit / HelloAsso / Competitions
   bindClick('auditLogsBtn', () => openAuditLogsModal?.());
-  bindClick('helloAssoBtn', () => openHelloAssoModal?.());
+  bindClick('helloAssoBtn', () => toggleMembersSection?.());
   bindClick('competitionsBtn', () => toggleCompetitionsSection());
 
   // Admin profile modal

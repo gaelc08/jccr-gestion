@@ -43,6 +43,7 @@ export interface EventListenerHandlers {
   openAuditLogsModal?: () => void;
   loadAuditLogs?: () => void;
   openHelloAssoModal?: () => void;
+  toggleMembersSection?: (show?: boolean) => void;
   exportDeclarationXLS?: () => void;
   exportTimesheetHTML?: () => void;
   exportExpenseHTML?: () => void;
@@ -75,6 +76,12 @@ function toggleCompetitionsSection(show?: boolean): void {
   _competitionsVisible = show !== undefined ? show : !_competitionsVisible;
   section.style.display = _competitionsVisible ? 'block' : 'none';
 
+  // Hide members section if competitions is shown
+  if (_competitionsVisible) {
+    const membersSection = document.getElementById('membersSection');
+    if (membersSection) membersSection.style.display = 'none';
+  }
+
   const planningEls: (Element | null)[] = [
     document.getElementById('coachSelectorGroup'),
     document.getElementById('monthSelect')?.closest('label') ?? null,
@@ -105,7 +112,7 @@ export function setupEventListeners(): void {
     inviteCoach, inviteAdmin,
     openDayModal, saveDay, deleteDay,
     toggleFreezeMonth,
-    openAuditLogsModal, loadAuditLogs, openHelloAssoModal,
+    openAuditLogsModal, loadAuditLogs, openHelloAssoModal, toggleMembersSection,
     exportDeclarationXLS, exportTimesheetHTML,
     exportExpenseHTML, exportMonthlyExpenses,
     openMileagePreviewModal, openMonthlySummaryPreviewModal,
@@ -211,7 +218,7 @@ export function setupEventListeners(): void {
 
   // Audit / HelloAsso / Competitions
   bindClick('auditLogsBtn',  () => openAuditLogsModal?.());
-  bindClick('helloAssoBtn',  () => openHelloAssoModal?.());
+  bindClick('helloAssoBtn', () => toggleMembersSection?.());
   bindClick('competitionsBtn', () => toggleCompetitionsSection());
 
   // Admin profile modal

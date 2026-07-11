@@ -116,6 +116,9 @@ import { createExportUI } from './modules/export-ui.js';
 // ===== HelloAsso UI (fully extracted) =====
 import { createHelloAssoUI } from './modules/helloasso-ui.js';
 
+// ===== Members section (main window) =====
+import { initMembersSection, toggleMembersSection, bootMembersSection } from './modules/members-section.js';
+
 // ===== Competitions UI =====
 import { initCompetitionsUi, showCompetitionsSection, hideCompetitionsSection } from './modules/competitions-ui.js';
 
@@ -269,6 +272,22 @@ const __helloAssoUI = createHelloAssoUI({
 const openHelloAssoModal = __helloAssoUI.openHelloAssoModal;
 const openReconciliationView = __helloAssoUI.openReconciliationView;
 
+// ===== Members section init =====
+initMembersSection({
+  syncHelloAssoMembers,
+  getHelloAssoMembers,
+  getLastSyncTime,
+  parseHelloAssoCsv,
+  importHelloAssoCsvData,
+  importFfjdaCsv,
+  correctMemberName,
+  getReconciliation,
+  getFfjdaMembers,
+  supabase,
+  escapeHtml: __escapeHtml,
+});
+bootMembersSection();
+
 // ===== Init competitions UI =====
 initCompetitionsUi({
   getCurrentAccessToken: () => currentAccessToken,
@@ -306,6 +325,7 @@ initEventListeners({
   openAuditLogsModal,
   loadAuditLogs,
   openHelloAssoModal,
+  toggleMembersSection,
   exportDeclarationXLS,
   exportTimesheetHTML,
   exportExpenseHTML,

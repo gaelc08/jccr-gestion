@@ -205,6 +205,73 @@
 
 <!-- Competitions section -->
       <div id="competitionsSection" class="competitions-section" style="display:none"></div>
+
+      <!-- Members section -->
+      <div id="membersSection" class="members-section" style="display:none">
+        <div class="members-header">
+          <h2>Gestion des membres</h2>
+          <p class="members-subtitle">Synchronisation HelloAsso · Réconciliation FFJDA · Groupes</p>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="members-toolbar">
+          <div class="members-toolbar-row">
+            <label class="toolbar-label">
+              <span>Saison</span>
+              <select id="membersCampaignSelect">
+                <option value="">Chargement...</option>
+              </select>
+            </label>
+            <button id="syncMembersBtn" class="btn-secondary" style="background:var(--judo-navy);color:#fff">Synchroniser</button>
+            <label class="btn-secondary" style="cursor:pointer;background:#e2b13c;color:#0a0f1c;font-weight:600">
+              CSV HelloAsso
+              <input type="file" id="membersCsvInput" accept=".csv" style="display:none">
+            </label>
+            <label class="btn-secondary" style="cursor:pointer;background:#1565c0;color:#fff;font-weight:600">
+              CSV FFJDO
+              <input type="file" id="membersFfjdaCsvInput" accept=".csv" style="display:none">
+            </label>
+            <button id="membersReconBtn" class="btn-secondary" style="background:#7b1fa2;color:#fff">Voir les écarts</button>
+          </div>
+          <div class="members-toolbar-row">
+            <label class="toolbar-label" style="flex-direction:row;align-items:center;gap:6px;font-size:13px;font-weight:600">
+              <input type="checkbox" id="membersUnsaisieOnly"> Non saisis seulement
+            </label>
+            <span id="membersCounter" class="members-counter"></span>
+            <span id="membersSyncInfo" class="members-sync-info"></span>
+          </div>
+        </div>
+
+        <!-- API Config (collapsible) -->
+        <div class="members-config" style="display:none">
+          <details class="members-config-details">
+            <summary class="members-config-summary">Configuration API HelloAsso</summary>
+            <div style="padding:12px;background:rgba(255,255,255,0.05);border-radius:8px;margin-top:8px">
+              <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px">Token API</label>
+              <input id="membersTokenInput" type="password" placeholder="jcc-sync-..." class="members-token-input">
+              <div style="display:flex;gap:6px;margin-top:8px">
+                <button id="membersTokenSave" class="btn-primary" style="font-size:12px;padding:4px 12px">Enregistrer</button>
+                <button id="membersTokenTest" class="btn-secondary" style="font-size:12px;padding:4px 12px">Tester</button>
+              </div>
+              <div id="membersTokenStatus" style="margin-top:6px;font-size:11px;display:none"></div>
+            </div>
+          </details>
+        </div>
+
+        <!-- Tabs -->
+        <div class="members-tabs" id="membersTabs">
+          <button class="members-tab is-active" data-tab="list">Liste des membres</button>
+          <button class="members-tab" data-tab="age">Par cat&eacute;gorie d&rsquo;&acirc;ge</button>
+          <button class="members-tab" data-tab="whatsapp">Groupes WhatsApp</button>
+          <button class="members-tab" data-tab="mail">Envois group&eacute;s</button>
+        </div>
+
+        <!-- Tab panels -->
+        <div id="membersTabList" class="members-tab-panel is-active"></div>
+        <div id="membersTabAge" class="members-tab-panel"></div>
+        <div id="membersTabWhatsapp" class="members-tab-panel"></div>
+        <div id="membersTabMail" class="members-tab-panel"></div>
+      </div>
     </div>
   </div>
 

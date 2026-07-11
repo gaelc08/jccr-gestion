@@ -23,6 +23,7 @@
 @import './css/audit.css';
 @import './css/help.css';
 @import './css/export.css';
+@import './css/members.css';
 
 /* -- Thème sombre -- */
 @import './css/dark-mode.css';
