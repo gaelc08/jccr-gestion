@@ -1,5 +1,5 @@
 // profile-utils.ts — Coach profile helpers
-import type { Coach, User } from '@types/index';
+import type { Coach, User } from '../../src/types/index.js';
 
 export type ProfileType = 'coach' | 'benevole' | 'admin';
 
@@ -24,7 +24,6 @@ export interface FindExistingProfileOptions {
 export function getCoachDisplayName(coach: Partial<Coach> | null | undefined): string {
   if (!coach) return '';
   const firstName = String(coach.first_name ?? '').trim();
-  // Note: some records use `name` instead of `last_name` — kept for compat
   const lastName = String((coach as Record<string, unknown>).name ?? coach.last_name ?? '').trim();
   return [lastName, firstName].filter(Boolean).join(' ').trim();
 }

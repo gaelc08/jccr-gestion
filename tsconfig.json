@@ -3,7 +3,7 @@
     /* === Targets === */
     "target": "ES2020",
     "module": "ESNext",
-    "moduleResolution": "bundler",
+    "moduleResolution": "node16",
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
 
     /* === Strictness — progressive migration === */
