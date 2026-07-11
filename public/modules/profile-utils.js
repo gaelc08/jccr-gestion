@@ -50,7 +50,7 @@ function getProfileLabel(profileOrType, { capitalized = false, plural = false } 
   } else if (type === "admin") {
     label = plural ? "administrateurs" : "administrateur";
   } else {
-    label = plural ? "entra\xEEneurs" : "entra\xEEneu";
+    label = plural ? "entra\xEEneurs" : "entra\xEEneur";
   }
   return capitalized ? label.charAt(0).toUpperCase() + label.slice(1) : label;
 }

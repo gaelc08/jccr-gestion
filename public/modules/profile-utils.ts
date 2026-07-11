@@ -96,7 +96,7 @@ export function getProfileLabel(
   } else if (type === 'admin') {
     label = plural ? 'administrateurs' : 'administrateur';
   } else {
-    label = plural ? 'entraîneurs' : 'entraîneu';
+    label = plural ? 'entraîneurs' : 'entraîneur';
   }
   return capitalized ? label.charAt(0).toUpperCase() + label.slice(1) : label;
 }
