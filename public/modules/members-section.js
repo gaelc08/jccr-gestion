@@ -28,6 +28,16 @@ let _lastSync = null;
 let _activeTab = "list";
 let _visible = false;
 let _supabase;
+let _listDiscipline = "all";
+let _listSort = "name-asc";
+const _listColumns = {
+  name: true,
+  age: true,
+  email: true,
+  birth: true,
+  amount: true,
+  status: true
+};
 function initMembersSection(deps) {
   _deps = deps;
   _supabase = deps.supabase;
@@ -190,51 +200,202 @@ function wireEditButtons(container) {
 async function renderListTab() {
   const panel = document.getElementById("membersTabList");
   if (!panel) return;
-  const unsaisieOnly = document.getElementById("membersUnsaisieOnly")?.checked;
+  panel.innerHTML = `<div class="members-list-controls">
+    <div class="members-filter-row">
+      <label style="display:flex;align-items:center;gap:4px;font-size:0.8rem;font-weight:600">
+        Discipline :
+        <select id="membersFilterDiscipline" class="members-filter-select">
+          <option value="all"${_listDiscipline === "all" ? " selected" : ""}>Toutes</option>
+          <option value="judo"${_listDiscipline === "judo" ? " selected" : ""}>Judo</option>
+          <option value="iaido"${_listDiscipline === "iaido" ? " selected" : ""}>Iaido</option>
+          <option value="taiso"${_listDiscipline === "taiso" ? " selected" : ""}>Taiso</option>
+        </select>
+      </label>
+      <label style="display:flex;align-items:center;gap:4px;font-size:0.8rem;font-weight:600">
+        Trier :
+        <select id="membersFilterSort" class="members-filter-select">
+          <option value="name-asc"${_listSort === "name-asc" ? " selected" : ""}>Nom A-Z</option>
+          <option value="name-desc"${_listSort === "name-desc" ? " selected" : ""}>Nom Z-A</option>
+          <option value="age-asc"${_listSort === "age-asc" ? " selected" : ""}>Age +</option>
+          <option value="age-desc"${_listSort === "age-desc" ? " selected" : ""}>Age -</option>
+          <option value="status"${_listSort === "status" ? " selected" : ""}>Non saisis d'abord</option>
+        </select>
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:0.8rem;font-weight:600;cursor:pointer">
+        <input type="checkbox" id="membersUnsaisieList" ${document.getElementById("membersUnsaisieOnly")?.checked ? "checked" : ""}> Non saisis seulement
+      </label>
+    </div>
+    <div class="members-columns-row">
+      <span style="font-size:0.75rem;font-weight:700;color:rgba(255,255,255,0.5)">Colonnes :</span>
+      <label class="members-col-toggle ${_listColumns["name"] ? "active" : ""}"><input type="checkbox" data-col="name" ${_listColumns["name"] ? "checked" : ""}> Nom</label>
+      <label class="members-col-toggle ${_listColumns["age"] ? "active" : ""}"><input type="checkbox" data-col="age" ${_listColumns["age"] ? "checked" : ""}> Age</label>
+      <label class="members-col-toggle ${_listColumns["email"] ? "active" : ""}"><input type="checkbox" data-col="email" ${_listColumns["email"] ? "checked" : ""}> Email</label>
+      <label class="members-col-toggle ${_listColumns["birth"] ? "active" : ""}"><input type="checkbox" data-col="birth" ${_listColumns["birth"] ? "checked" : ""}> Naissance</label>
+      <label class="members-col-toggle ${_listColumns["amount"] ? "active" : ""}"><input type="checkbox" data-col="amount" ${_listColumns["amount"] ? "checked" : ""}> Montant</label>
+      <label class="members-col-toggle ${_listColumns["status"] ? "active" : ""}"><input type="checkbox" data-col="status" ${_listColumns["status"] ? "checked" : ""}> FFJDA</label>
+    </div>
+  </div>`;
+  const discSel = document.getElementById("membersFilterDiscipline");
+  const sortSel = document.getElementById("membersFilterSort");
+  const unsaisieChk = document.getElementById("membersUnsaisieList");
+  const reRender = () => {
+    _listDiscipline = discSel?.value ?? "all";
+    _listSort = sortSel?.value ?? "name-asc";
+    void renderListContent(panel);
+  };
+  discSel?.addEventListener("change", reRender);
+  sortSel?.addEventListener("change", reRender);
+  unsaisieChk?.addEventListener("change", () => {
+    const mainChk = document.getElementById("membersUnsaisieOnly");
+    if (mainChk && mainChk !== unsaisieChk) mainChk.checked = unsaisieChk.checked;
+    void renderListContent(panel);
+  });
+  const colToggles = panel.querySelectorAll('.members-col-toggle input[type="checkbox"]');
+  colToggles.forEach((cb) => {
+    cb.addEventListener("change", () => {
+      const col = cb.dataset.col ?? "";
+      const checked = cb.checked;
+      const label = cb.closest(".members-col-toggle");
+      if (label) label.classList.toggle("active", checked);
+      if (col in _listColumns) {
+        _listColumns[col] = checked;
+      }
+      void renderListContent(panel);
+    });
+  });
+  void renderListContent(panel);
+}
+function renderListContent(panel) {
   let filtered = _members;
-  if (unsaisieOnly) {
-    filtered = _members.filter((m) => !m.raw_data?.saisie_ffjda);
+  if (_listDiscipline !== "all") {
+    filtered = filtered.filter((m) => (m.discipline ?? "judo") === _listDiscipline);
+  }
+  const unsaisieChk = document.getElementById("membersUnsaisieList");
+  if (unsaisieChk?.checked) {
+    filtered = filtered.filter((m) => !m.raw_data?.saisie_ffjda);
   }
   if (filtered.length === 0) {
-    const msg = unsaisieOnly ? "Tous les adherents sont saisis sur FFJDA !" : "Aucun membre synchronise. Cliquez sur Synchroniser.";
-    panel.innerHTML = `<div class="members-empty">${msg}</div>`;
+    appendTableHtml(panel, [], "Aucun membre correspondant aux filtres.");
     return;
   }
-  const sorted = [...filtered].sort((a, b) => (a.last_name ?? "").localeCompare(b.last_name ?? "", "fr"));
-  const byDiscipline = { judo: [], iaido: [], taiso: [] };
-  for (const m of sorted) {
-    const disc = m.discipline ?? "judo";
-    if (byDiscipline[disc]) byDiscipline[disc].push(m);
-    else byDiscipline.judo.push(m);
+  const sorted = [...filtered].sort((a, b) => {
+    const aName = `${a.last_name ?? ""} ${a.first_name ?? ""}`;
+    const bName = `${b.last_name ?? ""} ${b.first_name ?? ""}`;
+    switch (_listSort) {
+      case "name-desc":
+        return bName.localeCompare(aName, "fr");
+      case "age-asc": {
+        const aYear = a.date_of_birth ? parseInt(String(a.date_of_birth).match(/(\d{4})/)?.[1] ?? "0", 10) : 0;
+        const bYear = b.date_of_birth ? parseInt(String(b.date_of_birth).match(/(\d{4})/)?.[1] ?? "0", 10) : 0;
+        return bYear - aYear;
+      }
+      case "age-desc": {
+        const aYear = a.date_of_birth ? parseInt(String(a.date_of_birth).match(/(\d{4})/)?.[1] ?? "0", 10) : 0;
+        const bYear = b.date_of_birth ? parseInt(String(b.date_of_birth).match(/(\d{4})/)?.[1] ?? "0", 10) : 0;
+        return aYear - bYear;
+      }
+      case "status": {
+        const aStatus = a.raw_data?.saisie_ffjda ? 1 : 0;
+        const bStatus = b.raw_data?.saisie_ffjda ? 1 : 0;
+        return aStatus - bStatus;
+      }
+      default:
+        return aName.localeCompare(bName, "fr");
+    }
+  });
+  const cols = { ..._listColumns };
+  const hasAnyCol = Object.values(cols).some(Boolean);
+  if (!hasAnyCol) cols["name"] = true;
+  const existingArea = panel.querySelector(".members-list-area");
+  if (existingArea) existingArea.remove();
+  const area = document.createElement("div");
+  area.className = "members-list-area";
+  if (_listDiscipline !== "all") {
+    area.appendChild(createTable(sorted, cols));
+  } else {
+    const byDiscipline = {};
+    for (const m of sorted) {
+      const disc = m.discipline ?? "judo";
+      if (!byDiscipline[disc]) byDiscipline[disc] = [];
+      byDiscipline[disc].push(m);
+    }
+    for (const [disc, group] of Object.entries(byDiscipline)) {
+      if (group.length === 0) continue;
+      const discLabel = disc.charAt(0).toUpperCase() + disc.slice(1);
+      const heading = document.createElement("h3");
+      heading.style.cssText = "font-size:0.95rem;font-weight:700;color:#e2b13c;margin:14px 0 6px";
+      heading.textContent = `${discLabel} (${group.length})`;
+      area.appendChild(heading);
+      area.appendChild(createTable(group, cols));
+    }
   }
-  let html = "";
-  for (const [disc, group] of Object.entries(byDiscipline)) {
-    if (group.length === 0) continue;
-    const discLabel = disc.charAt(0).toUpperCase() + disc.slice(1);
-    const rows = group.map((m) => {
-      const amount = m.membership_amount != null ? `${Number(m.membership_amount).toLocaleString("fr-FR", { minimumFractionDigits: 2 })}` : "\u2014";
-      const catInfo = getFfjCategory(m.date_of_birth);
-      const catBadge = catInfo ? `<span class="members-age-badge">${esc(catInfo.label)}</span>` : "";
-      const saisie = m.raw_data?.saisie_ffjda;
-      const statusBadge = saisie ? '<span style="background:rgba(76,175,80,0.2);color:#81c784;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:600">\u2713 FFJDA</span>' : '<span style="background:rgba(244,67,54,0.2);color:#e57373;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:600">A saisir</span>';
-      const nameCell = renderEditableName(m.helloasso_id ?? m.id, m.first_name, m.last_name);
-      return `<tr>
-        <td>${nameCell}</td>
-        <td>${catBadge}</td>
-        <td>${esc(m.email ?? "")}</td>
-        <td>${esc(m.date_of_birth ?? "")}</td>
-        <td>${amount}</td>
-        <td>${statusBadge}</td>
-      </tr>`;
-    }).join("");
-    html += `<h3 style="font-size:0.95rem;font-weight:700;color:#e2b13c;margin:14px 0 6px">${discLabel} (${group.length})</h3>
-      <div class="members-table-wrap"><table class="members-table">
-        <thead><tr><th>Nom</th><th>Age</th><th>Email</th><th>Naissance</th><th>Montant</th><th>FFJDA</th></tr></thead>
-        <tbody>${rows}</tbody>
-      </table></div>`;
+  panel.appendChild(area);
+  wireEditButtons(area);
+}
+function createTable(members, cols) {
+  const table = document.createElement("table");
+  table.className = "members-table";
+  const thead = document.createElement("thead");
+  const tr = document.createElement("tr");
+  const colLabels = [
+    ["name", "Nom"],
+    ["age", "Age"],
+    ["email", "Email"],
+    ["birth", "Naissance"],
+    ["amount", "Montant"],
+    ["status", "FFJDA"]
+  ];
+  for (const [key, label] of colLabels) {
+    if (cols[key]) {
+      const th = document.createElement("th");
+      th.textContent = label;
+      tr.appendChild(th);
+    }
   }
-  panel.innerHTML = html;
-  wireEditButtons(panel);
+  thead.appendChild(tr);
+  table.appendChild(thead);
+  const tbody = document.createElement("tbody");
+  for (const m of members) {
+    const row = document.createElement("tr");
+    const cellValues = [
+      ["name", () => renderEditableName(m.helloasso_id ?? m.id, m.first_name, m.last_name)],
+      ["age", () => {
+        const catInfo = getFfjCategory(m.date_of_birth);
+        return catInfo ? `<span class="members-age-badge">${esc(catInfo.label)}</span>` : "\u2014";
+      }],
+      ["email", () => esc(m.email ?? "")],
+      ["birth", () => esc(m.date_of_birth ?? "")],
+      ["amount", () => m.membership_amount != null ? `${Number(m.membership_amount).toLocaleString("fr-FR", { minimumFractionDigits: 2 })}` : "\u2014"],
+      ["status", () => {
+        const saisie = m.raw_data?.saisie_ffjda;
+        return saisie ? '<span style="background:rgba(76,175,80,0.2);color:#81c784;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:600">\u2713 FFJDA</span>' : '<span style="background:rgba(244,67,54,0.2);color:#e57373;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:600">A saisir</span>';
+      }]
+    ];
+    for (const [key, fn] of cellValues) {
+      if (cols[key]) {
+        const td = document.createElement("td");
+        td.innerHTML = fn();
+        row.appendChild(td);
+      }
+    }
+    tbody.appendChild(row);
+  }
+  table.appendChild(tbody);
+  const wrap = document.createElement("div");
+  wrap.className = "members-table-wrap";
+  wrap.appendChild(table);
+  return wrap;
+}
+function appendTableHtml(panel, _members2, emptyMsg) {
+  const existingArea = panel.querySelector(".members-list-area");
+  if (existingArea) existingArea.remove();
+  const area = document.createElement("div");
+  area.className = "members-list-area";
+  const div = document.createElement("div");
+  div.className = "members-empty";
+  div.textContent = emptyMsg ?? "Aucun membre.";
+  area.appendChild(div);
+  panel.appendChild(area);
 }
 async function renderAgeTab() {
   const panel = document.getElementById("membersTabAge");
@@ -442,7 +603,7 @@ async function renderMailTab() {
     if (group.length === 0) continue;
     const label = status === "saisi" ? "Saisis FFJDA" : "Non saisis FFJDA";
     const emails = group.map((m) => m.email).filter(Boolean);
-    const mailto = `mailto:?bcc=${emails.join(",")}&subject=Judo Club Cattenom Rodemack - ${label}`;
+    const mailto = `mailto:?bcc=${emails.join(",")}&subject=Judo Club Cattenom Rodemark - ${label}`;
     html += `<div class="members-group-card">
       <h3>${esc(label)}</h3>
       <div class="group-count">${group.length} membres \xB7 ${emails.length} emails</div>
