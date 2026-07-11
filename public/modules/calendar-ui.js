@@ -34,6 +34,30 @@ export function initCalendarUi({ supabase, logAuditEvent, notifyAdminAlert }) {
   _notifyAdminAlert = notifyAdminAlert;
 }
 
+// ===== Normalisation row Supabase → objet camelCase interne =====
+// Utilisé après upsert(.select()) pour éviter le décalage snake_case/camelCase
+// qui causait l'absence d'affichage jusqu'au prochain F5.
+function _normalizeTimeRow(row) {
+  return {
+    hours:                  row.hours               || 0,
+    competition:            !!row.competition,
+    km:                     row.km                  || 0,
+    description:            row.description         || '',
+    departurePlace:         row.departure_place      || '',
+    arrivalPlace:           row.arrival_place        || '',
+    peage:                  row.peage               || 0,
+    justificationUrl:       row.justification_url   || '',
+    hotel:                  row.hotel               || 0,
+    hotelJustificationUrl:  row.hotel_justification_url || '',
+    achat:                  row.achat               || 0,
+    achatJustificationUrl:  row.achat_justification_url || '',
+    coachId:                row.coach_id            || null,
+    ownerUid:               row.owner_uid           || null,
+    ownerEmail:             row.owner_email         || null,
+    id:                     row.id,
+  };
+}
+
 // ===== Coach dropdown & form =====
 
 export function loadCoaches() {
@@ -220,10 +244,10 @@ async function handleDayClick(dateStr) {
     alert('Veuillez sélectionner un profil.');
     return;
   }
-  const isAdmin = await isCurrentUserAdminDB();
+  // Fiche gelée : personne ne peut éditer (ni coach, ni admin)
   const frozen = isCurrentMonthFrozen();
-  if (!isAdmin && frozen) {
-    alert('Cette fiche est gelée. Seul l\'administrateur peut la modifier.');
+  if (frozen) {
+    alert('Cette fiche est gelée. Dégeler la fiche avant de modifier.');
     return;
   }
   openDayModal(dateStr);
@@ -302,6 +326,12 @@ export async function saveDay() {
     return;
   }
 
+  // Garde côté client : bloquer la sauvegarde si le mois est gelé
+  if (isCurrentMonthFrozen()) {
+    alert('Cette fiche est gelée. Dégeler la fiche avant de modifier.');
+    return;
+  }
+
   const hours = parseFloat(document.getElementById('trainingHours')?.value) || 0;
   const km = parseFloat(document.getElementById('kilometers')?.value) || 0;
   const peage = parseFloat(document.getElementById('peage')?.value) || 0;
@@ -369,8 +399,10 @@ export async function saveDay() {
     return;
   }
 
+  // Normaliser la row retournée en camelCase pour éviter le décalage
+  // snake_case/camelCase qui causait un affichage vide jusqu'au prochain F5.
   const newTimeData = { ...timeData };
-  newTimeData[key] = saved?.[0] || payload;
+  newTimeData[key] = saved?.[0] ? _normalizeTimeRow(saved[0]) : _normalizeTimeRow(payload);
   setTimeData(newTimeData);
 
   await _logAuditEvent(
@@ -392,6 +424,12 @@ export async function saveDay() {
 
 export async function deleteDay() {
   if (!currentCoach || !selectedDay) return;
+
+  // Garde côté client : bloquer la suppression si le mois est gelé
+  if (isCurrentMonthFrozen()) {
+    alert('Cette fiche est gelée. Dégeler la fiche avant de supprimer.');
+    return;
+  }
 
   const key = `${currentCoach.id}-${selectedDay}`;
   const existing = timeData[key];
