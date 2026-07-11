@@ -15,6 +15,7 @@ interface HaMember {
   membership_date?: string | null;
   discipline?: string;
   judo_category?: string;
+  ffjda_licence?: string;
   raw_data?: { saisie_ffjda?: boolean; [key: string]: unknown };
 }
 
@@ -85,6 +86,7 @@ const _listColumns: Record<string, boolean> = {
   birth: true,
   amount: true,
   status: true,
+  licence: true,
 };
 
 // ─── Init ───────────────────────────────────────────────────────────────
@@ -304,6 +306,7 @@ async function renderListTab(): Promise<void> {
         <label class="members-col-toggle ${_listColumns['birth'] ? 'active' : ''}"><input type="checkbox" data-col="birth" ${_listColumns['birth'] ? 'checked' : ''}> Naissance</label>
         <label class="members-col-toggle ${_listColumns['amount'] ? 'active' : ''}"><input type="checkbox" data-col="amount" ${_listColumns['amount'] ? 'checked' : ''}> Montant</label>
         <label class="members-col-toggle ${_listColumns['status'] ? 'active' : ''}"><input type="checkbox" data-col="status" ${_listColumns['status'] ? 'checked' : ''}> FFJDA</label>
+        <label class="members-col-toggle ${_listColumns['licence'] ? 'active' : ''}"><input type="checkbox" data-col="licence" ${_listColumns['licence'] ? 'checked' : ''}> Licence</label>
       </div>
     </div>
   </div>`;
@@ -473,6 +476,7 @@ function createTable(members: HaMember[], cols: Record<string, boolean>): HTMLDi
     ['birth', 'Naissance'],
     ['amount', 'Montant'],
     ['status', 'FFJDA'],
+    ['licence', 'Licence'],
   ];
   for (const [key, label] of colLabels) {
     if (cols[key]) {
@@ -505,6 +509,7 @@ function createTable(members: HaMember[], cols: Record<string, boolean>): HTMLDi
           ? '<span style="background:rgba(76,175,80,0.2);color:#81c784;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:600">\u2713 FFJDA</span>'
           : '<span style="background:rgba(244,67,54,0.2);color:#e57373;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:600">A saisir</span>';
       }],
+      ['licence', () => esc(m.ffjda_licence ?? m.raw_data?.ffjda_licence ?? '')],
     ];
 
     for (const [key, fn] of cellValues) {

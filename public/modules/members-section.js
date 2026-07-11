@@ -36,7 +36,8 @@ const _listColumns = {
   email: true,
   birth: true,
   amount: true,
-  status: true
+  status: true,
+  licence: true
 };
 function initMembersSection(deps) {
   _deps = deps;
@@ -233,6 +234,7 @@ async function renderListTab() {
         <label class="members-col-toggle ${_listColumns["birth"] ? "active" : ""}"><input type="checkbox" data-col="birth" ${_listColumns["birth"] ? "checked" : ""}> Naissance</label>
         <label class="members-col-toggle ${_listColumns["amount"] ? "active" : ""}"><input type="checkbox" data-col="amount" ${_listColumns["amount"] ? "checked" : ""}> Montant</label>
         <label class="members-col-toggle ${_listColumns["status"] ? "active" : ""}"><input type="checkbox" data-col="status" ${_listColumns["status"] ? "checked" : ""}> FFJDA</label>
+        <label class="members-col-toggle ${_listColumns["licence"] ? "active" : ""}"><input type="checkbox" data-col="licence" ${_listColumns["licence"] ? "checked" : ""}> Licence</label>
       </div>
     </div>
   </div>`;
@@ -370,7 +372,8 @@ function createTable(members, cols) {
     ["email", "Email"],
     ["birth", "Naissance"],
     ["amount", "Montant"],
-    ["status", "FFJDA"]
+    ["status", "FFJDA"],
+    ["licence", "Licence"]
   ];
   for (const [key, label] of colLabels) {
     if (cols[key]) {
@@ -396,7 +399,8 @@ function createTable(members, cols) {
       ["status", () => {
         const saisie = m.raw_data?.saisie_ffjda;
         return saisie ? '<span style="background:rgba(76,175,80,0.2);color:#81c784;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:600">\u2713 FFJDA</span>' : '<span style="background:rgba(244,67,54,0.2);color:#e57373;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:600">A saisir</span>';
-      }]
+      }],
+      ["licence", () => esc(m.ffjda_licence ?? m.raw_data?.ffjda_licence ?? "")]
     ];
     for (const [key, fn] of cellValues) {
       if (cols[key]) {
