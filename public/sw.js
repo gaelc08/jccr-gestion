@@ -24,8 +24,8 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(request.url);
 
-  // Never cache Supabase API/Auth/Storage calls.
-  if (url.hostname.endsWith('.supabase.co')) {
+  // Never cache Supabase or esm.sh (CDN) calls.
+  if (url.hostname.endsWith('.supabase.co') || url.hostname.endsWith('esm.sh')) {
     return;
   }
 
