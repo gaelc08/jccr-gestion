@@ -1153,12 +1153,14 @@ async function renderReconciliationTab(): Promise<void> {
       });
     });
 
-    // Wire search input (debounced)
+    // Wire search input (debounced — 400ms)
     const searchInput = document.getElementById('reconSearchInput') as HTMLInputElement;
     if (searchInput) {
+      let debounceTimer: ReturnType<typeof setTimeout>;
       searchInput.addEventListener('input', () => {
         panel.dataset.reconSearch = searchInput.value;
-        void renderReconciliationTab();
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => void renderReconciliationTab(), 400);
       });
     }
 

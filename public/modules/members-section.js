@@ -958,9 +958,11 @@ async function renderReconciliationTab() {
     });
     const searchInput = document.getElementById("reconSearchInput");
     if (searchInput) {
+      let debounceTimer;
       searchInput.addEventListener("input", () => {
         panel.dataset.reconSearch = searchInput.value;
-        void renderReconciliationTab();
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => void renderReconciliationTab(), 400);
       });
     }
     panel.querySelectorAll(".ha-edit-btn").forEach((btn) => {
