@@ -1,0 +1,42 @@
+{
+  "compilerOptions": {
+    /* === Targets === */
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+
+    /* === Strictness — progressive migration === */
+    "strict": false,
+    "noImplicitAny": false,
+    "strictNullChecks": true,
+    "allowJs": true,
+    "checkJs": false,
+
+    /* === Interop === */
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+
+    /* === Output === */
+    "noEmit": true,
+    "skipLibCheck": true,
+
+    /* === Paths === */
+    "baseUrl": ".",
+    "paths": {
+      "@types/*": ["src/types/*"],
+      "@modules/*": ["public/modules/*"]
+    }
+  },
+  "include": [
+    "src/**/*.ts",
+    "public/modules/**/*.ts",
+    "vite.config.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}
