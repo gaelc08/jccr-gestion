@@ -1,0 +1,85 @@
+/* ===== Responsive ===== */
+@media (max-width: 640px) {
+  .header-logo { display: none; }
+  .header-subtitle { display: none; }
+}
+
+@media (min-width: 768px) {
+  .app-sidebar { transform: translateX(0) !important; box-shadow: none; border-right: 1px solid rgba(226, 177, 60, 0.15); }
+  .sidebar-overlay { display: none !important; }
+  .btn-hamburger { display: none; }
+  #appContainer, .app-header, .app-header-inner { margin-left: 280px; width: calc(100% - 280px); max-width: calc(100% - 280px); }
+  .app-header-inner { max-width: calc(1200px - 280px); }
+}
+
+@media (max-width: 768px) {
+  .header-actions .btn-help,
+  .header-actions .btn-logout,
+  .header-actions .btn-home { display: inline-flex; align-items: center; justify-content: center; min-height: 36px; }
+
+  .app-header-inner { padding: calc(10px + env(safe-area-inset-top, 0px)) calc(12px + env(safe-area-inset-right, 0px)) 10px calc(12px + env(safe-area-inset-left, 0px)); gap: 10px; }
+  .header-logo { width: 44px; height: 44px; }
+  .header-title { flex: 1 1 calc(100% - 56px); }
+  .header-title h1 { font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .header-title .header-subtitle { display: none; }
+  .header-actions { gap: 4px; }
+  .header-actions .btn-help, .header-actions .btn-logout, .header-actions .btn-home { font-size: 0.75rem; padding: 6px 10px; }
+  .app-header-inner > button:not(.btn-hamburger) { flex: 1 1 140px; min-width: 0; text-align: center; }
+  .btn-hamburger { display: flex !important; flex: 0 0 auto; color: #e8ecf4; }
+
+  .app-body { padding: 12px calc(12px + env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) calc(12px + env(safe-area-inset-left, 0px)); gap: 12px; }
+  .card { padding: 16px; }
+  .calendar { gap: 4px; }
+  .calendar-header, .calendar-day { min-width: 0; }
+  .calendar-day { padding: 4px; min-height: 44px; }
+  .day-number { font-size: 0.85rem; }
+  .day-info, .day-hours { font-size: 0.65rem; }
+  .modal-content { min-width: unset; width: 95vw; padding: 20px; }
+  .modal-content-audit { width: 95vw; min-width: unset; }
+
+  .toolbar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: end; gap: 12px; }
+  .toolbar-label { flex: initial; min-width: 0; }
+  .toolbar-label select, .toolbar-label input[type="month"] { min-width: 0; width: 100%; max-width: none; font-size: 0.9rem; }
+
+  .summary-grid { grid-template-columns: 1fr; }
+  .actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: stretch; }
+  .actions button { width: 100%; min-width: 0; }
+  .import-group { width: 100%; grid-column: 1 / -1; }
+  .admin-actions-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  .calendar.card { padding: 10px; overflow: hidden; }
+  .calendar { width: 100%; max-width: 100%; grid-template-columns: repeat(7, minmax(0, 1fr)); }
+  .calendar-header { font-size: 0.72rem; padding: 8px 2px; }
+  .calendar-day { min-height: 0; height: clamp(42px, 11vw, 58px); }
+
+  .audit-toolbar { flex-direction: column; align-items: stretch; }
+  .audit-toolbar label, .audit-toolbar button { width: 100%; }
+  .audit-table th, .audit-table td { font-size: 0.8rem; padding: 8px 10px; }
+
+  .monthly-summary-header, .monthly-summary-toolbar { flex-direction: column; align-items: stretch; }
+
+  .comp-toolbar { flex-direction: column; }
+  .comp-card-header { flex-direction: column; align-items: flex-start; }
+  .comp-select-btn { margin-left: 0; }
+}
+
+@media (max-width: 600px) {
+  .comp-cal-day { min-height: 32px; font-size: 0.75rem; }
+  .comp-cal-header-day { font-size: 0.65rem; }
+  .comp-cal-day-badge { font-size: 0.6rem; min-width: 14px; height: 14px; }
+}
+
+@media (max-width: 480px) {
+  .header-actions .btn-help span,
+  .header-actions .btn-logout,
+  .header-actions .btn-home { font-size: 0.7rem; padding: 5px 6px; min-height: 32px; line-height: 1; }
+  .header-actions .btn-help { padding: 5px 8px; min-height: 32px; line-height: 1; }
+  .header-title h1 { font-size: 0.78rem; }
+}
+
+@media (max-width: 380px) {
+  .header-title h1 { font-size: 0.7rem; }
+  .header-actions .btn-help span,
+  .header-actions .btn-logout,
+  .header-actions .btn-home { font-size: 0.65rem; padding: 4px 5px; min-height: 28px; }
+}
