@@ -5,6 +5,9 @@ export default defineConfig({
   // Racine de l'app (index.html dans public/)
   root: 'public',
 
+  // Chemin de base — l'app est servie sous /gestion/ en prod
+  base: '/gestion/',
+
   // Assets statiques (CSS, images, manifest)
   publicDir: '../public',
 

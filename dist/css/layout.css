@@ -1,0 +1,87 @@
+/* ===== App Body ===== */
+.app-body {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.app-body > * { min-width: 0; }
+
+/* ===== App Header ===== */
+.app-header {
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-subtle);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  width: 100%;
+}
+
+.app-header.jcc-header {
+  background: #0a0f1c;
+  border-bottom: 1px solid rgba(226, 177, 60, 0.25);
+  color: #e8ecf4;
+}
+.app-header.jcc-header .header-title h1 {
+  color: #e8ecf4;
+  letter-spacing: -0.01em;
+}
+.app-header.jcc-header .header-subtitle {
+  color: #8892a8;
+  font-weight: 400;
+}
+
+.app-header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.header-logo {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.header-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.header-title h1 {
+  color: var(--judo-navy) !important;
+  font-size: 1.1rem;
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.header-subtitle {
+  color: var(--judo-gold-light);
+  font-size: 0.78rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
