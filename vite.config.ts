@@ -5,8 +5,8 @@ export default defineConfig({
   // Racine de l'app (index.html dans public/)
   root: 'public',
 
-  // Chemin de base — l'app est servie sous /gestion/ en prod
-  base: '/gestion/',
+  // Chemins relatifs — supporte /gestion/ (judo-cattenom.fr) et / (gestion.judo-cattenom.fr)
+  base: '',
 
   // Assets statiques (CSS, images, manifest)
   publicDir: '../public',
