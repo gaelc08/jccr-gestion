@@ -4,11 +4,28 @@
  * Pour ajouter une règle, l'ajouter dans le fichier thématique correspondant.
  * ========================================= */
 
+/* -- Fondations -- */
 @import './css/base.css';
+
+/* -- Layout & sidebar -- */
 @import './css/layout.css';
+@import './css/sidebar.css';
+
+/* -- Composants génériques -- */
+@import './css/buttons.css';
+@import './css/modals.css';
 @import './css/components.css';
+
+/* -- Sections métier -- */
 @import './css/auth.css';
 @import './css/calendar.css';
 @import './css/competitions.css';
+@import './css/audit.css';
+@import './css/help.css';
 @import './css/export.css';
+
+/* -- Thème sombre -- */
+@import './css/dark-mode.css';
+
+/* -- Responsive -- */
 @import './css/responsive.css';
