@@ -58,7 +58,8 @@
         <span class="header-subtitle">Gestion du club</span>
       </div>
       <div class="header-actions">
-        <a href="https://judo-cattenom.fr/espace-membre/" class="btn-home" title="Espace membre">← Accueil</a>
+        <a href="https://judo-cattenom.fr/espace-membre/" class="btn-home" title="Espace membre" id="homeLink">← Accueil</a>
+        <script nonce="jcc">(function(){var h=location.hostname;var l=document.getElementById('homeLink');if(l){l.href=h==='test.judo-cattenom.fr'?'https://test.judo-cattenom.fr/espace-membre/':'https://judo-cattenom.fr/espace-membre/';}})();</script>
         <button id="helpBtn" class="btn-help" aria-label="Aide" title="Aide">❓</button>
         <button id="logoutBtnApp" class="btn-logout">Déconnexion</button>
       </div>
@@ -325,6 +326,19 @@
       <div id="helloAssoContent">Chargement…</div>
       <div class="modal-actions">
         <button id="closeHelloAsso" class="btn-primary">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reconciliation modal -->
+  <div id="reconciliationModal" class="modal">
+    <div class="modal-content modal-content-audit">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <h2 style="margin:0">Reconciliation HelloAsso / FFJDA</h2>
+      </div>
+      <div id="reconciliationContent">Chargement…</div>
+      <div class="modal-actions">
+        <button id="closeReconciliation" class="btn-primary">Fermer</button>
       </div>
     </div>
   </div>

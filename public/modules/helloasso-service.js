@@ -180,3 +180,29 @@ export async function importFfjdaCsv(csvText) {
     body: JSON.stringify({ csv_text: csvText }),
   });
 }
+
+/**
+ * Corrige le prénom/nom d'un adhérent HelloAsso.
+ * Les corrections sont stockées côté VPS et préservées lors des re-synchronisations.
+ */
+export async function correctMemberName(itemId, firstName, lastName) {
+  return await _apiCall('/correct-name', {
+    method: 'POST',
+    body: JSON.stringify({ item_id: parseInt(itemId, 10), first_name: firstName, last_name: lastName }),
+  });
+}
+
+/**
+ * Récupère les données de réconciliation (HA + FFJDA côte à côte).
+ */
+export async function getReconciliation() {
+  return await _apiCall('/reconciliation');
+}
+
+/**
+ * Récupère la liste des membres FFJDA importés.
+ */
+export async function getFfjdaMembers() {
+  const data = await _apiCall('/ffjda-members');
+  return data.members || [];
+}

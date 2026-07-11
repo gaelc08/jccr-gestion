@@ -15,8 +15,8 @@ Extension Chrome (Manifest V3) pour préremplir automatiquement le formulaire de
 
 1. Cloner ce repo :
    ```bash
-   git clone https://github.com/gaelc08/jccattenom-app.git
-   cd jccattenom-app/extension
+   git clone https://github.com/gaelc08/jccr-gestion.git
+   cd jccr-gestion/extension
    ```
 
 2. Ouvrir Chrome → `chrome://extensions`
@@ -126,7 +126,7 @@ Le token est stocké dans `chrome.storage.sync` (partage cross-devices si connec
 
 ## Support
 
-Pour remonter un bug ou demander une feature : ouvrir une issue sur [GitHub](https://github.com/gaelc08/jccattenom-app/issues).
+Pour remonter un bug ou demander une feature : ouvrir une issue sur [GitHub](https://github.com/gaelc08/jccr-gestion/issues).
 
 ---
 
