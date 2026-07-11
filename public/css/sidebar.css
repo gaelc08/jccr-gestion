@@ -154,3 +154,44 @@
   letter-spacing: 0.05em;
   margin-bottom: var(--space-1);
 }
+
+/* ===== Desktop ≥ 768px : sidebar persistante, contenu décalé ===== */
+@media (min-width: 768px) {
+  .app-sidebar {
+    transform: translateX(0) !important;
+    box-shadow: none;
+    border-right: 1px solid rgba(226, 177, 60, 0.15);
+  }
+
+  .sidebar-overlay {
+    display: none !important;
+  }
+
+  .btn-hamburger {
+    display: none;
+  }
+
+  #appContainer,
+  .app-header,
+  .app-header-inner {
+    margin-left: 280px;
+    width: calc(100% - 280px);
+    max-width: calc(100% - 280px);
+  }
+
+  .app-header-inner {
+    max-width: calc(1200px - 280px);
+  }
+
+  .app-body {
+    margin-left: 0;
+  }
+}
+
+/* ===== Dark mode ===== */
+[data-theme="dark"] .app-sidebar {
+  background: #1e293b;
+  border-right-color: #334155;
+}
+[data-theme="dark"] .sidebar-brand { border-bottom-color: #334155; }
+[data-theme="dark"] .sidebar-divider { background: #334155; }
