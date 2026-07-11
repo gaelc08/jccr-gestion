@@ -1037,24 +1037,72 @@ async function renderReconciliationTab(): Promise<void> {
     const totalHa = data.total_ha as number || 0;
     const totalFfjda = data.total_ffjda as number || 0;
 
-    let html = `
-      <div class="members-stats-bar" style="margin-bottom:12px">
-        <span class="members-stat matched">\u2705 <strong>${matched}</strong> match</span>
-        <span class="members-stat mismatch">\u26A0\uFE0F <strong>${nameMismatch}</strong> nom diff.</span>
-        <span class="members-stat corrected">\u270F\uFE0F <strong>${corrected}</strong> corrige</span>
-        <span class="members-stat unmatched">\u274C <strong>${unmatched}</strong> non matche</span>
-        <span class="members-stat ffjda-only">\uD83C\uDD95 <strong>${ffjdaOnly}</strong> FFJDA seul</span>
-        <span style="margin-left:auto;color:rgba(255,255,255,0.5);font-size:0.82rem">${totalHa} HA · ${totalFfjda} FFJDA</span>
-      </div>
-      <div class="members-table-wrap" style="max-height:55vh">
-        <table class="members-table" style="font-size:0.8rem">
-          <thead><tr>
-            <th>HelloAsso</th><th>FFJDA</th><th>Email HA</th><th>Email FFJDA</th>
-            <th>Naiss. HA</th><th>Naiss. FFJDA</th><th>Licence</th><th>Statut</th>
-          </tr></thead>
-          <tbody>`;
+    // Détecter les disciplines présentes
+    const disciplines = [...new Set(rec.map((r) => (r.ha_discipline as string || '').trim()).filter(Boolean))];
+    if (disciplines.length === 0) disciplines.push('judo', 'iaido', 'taiso');
 
-    for (const r of rec) {
+    // État des filtres (conservé entre re-renders via data attributes sur le panel)
+    const currentSearch = panel.dataset.reconSearch ?? '';
+    const currentDiscs = panel.dataset.reconDiscs ? panel.dataset.reconDiscs.split(',') : disciplines;
+
+    const filterBar = `<div class="members-list-controls" style="margin-bottom:10px">
+      <div class="members-filter-row" style="margin-bottom:0">
+        <span style="display:flex;align-items:center;gap:6px;font-size:0.75rem;font-weight:700;color:rgba(255,255,255,0.5)">
+          Disciplines :
+          ${disciplines.map((d) => {
+            const active = currentDiscs.includes(d);
+            const label = d.charAt(0).toUpperCase() + d.slice(1);
+            return `<label class="members-disc-toggle ${active ? 'active' : ''}"><input type="checkbox" data-recon-disc="${esc(d)}" ${active ? 'checked' : ''}> ${esc(label)}</label>`;
+          }).join('')}
+        </span>
+        <label style="display:flex;align-items:center;gap:4px;font-size:0.8rem;font-weight:600;margin-left:auto">
+          Rechercher :
+          <input type="text" id="reconSearchInput" value="${esc(currentSearch)}" placeholder="Nom ou email..."
+            style="background:rgba(255,255,255,0.08);color:#e0e0e0;border:1px solid rgba(255,255,255,0.12);border-radius:4px;padding:3px 8px;font-size:0.8rem;font-weight:600;width:200px">
+        </label>
+      </div>
+    </div>`;
+
+    const statsBar = `<div class="members-stats-bar" style="margin-bottom:8px">
+      <span class="members-stat matched">\u2705 <strong>${matched}</strong> match</span>
+      <span class="members-stat mismatch">\u26A0\uFE0F <strong>${nameMismatch}</strong> nom diff.</span>
+      <span class="members-stat corrected">\u270F\uFE0F <strong>${corrected}</strong> corrige</span>
+      <span class="members-stat unmatched">\u274C <strong>${unmatched}</strong> non matche</span>
+      <span class="members-stat ffjda-only">\uD83C\uDD95 <strong>${ffjdaOnly}</strong> FFJDA seul</span>
+      <span style="margin-left:auto;color:rgba(255,255,255,0.5);font-size:0.82rem">${totalHa} HA \u00B7 ${totalFfjda} FFJDA</span>
+    </div>`;
+
+    // Filtrer
+    const filtered = rec.filter((r) => {
+      // Discipline filter
+      const disc = (r.ha_discipline as string || '').trim();
+      if (disc && currentDiscs.length > 0 && !currentDiscs.includes(disc)) return false;
+      if (!disc && currentDiscs.length < disciplines.length) return false;
+      // Name/email search
+      if (currentSearch) {
+        const q = currentSearch.toLowerCase();
+        const haystack = [
+          r.ha_first_name, r.ha_last_name,
+          r.ffjda_first_name, r.ffjda_last_name,
+          r.ha_email, r.ffjda_email,
+          r.ffjda_licence,
+        ].filter(Boolean).map(String).join(' ').toLowerCase();
+        if (!haystack.includes(q)) return false;
+      }
+      return true;
+    });
+
+    const totalFiltered = filtered.length;
+
+    let tableHtml = `<div class="members-table-wrap" style="max-height:50vh">
+      <table class="members-table" style="font-size:0.8rem">
+        <thead><tr>
+          <th>HelloAsso</th><th>FFJDA</th><th>Email HA</th><th>Email FFJDA</th>
+          <th>Naiss. HA</th><th>Naiss. FFJDA</th><th>Licence</th><th>Statut</th>
+        </tr></thead>
+        <tbody>`;
+
+    for (const r of filtered) {
       const status = String(r.status ?? '');
       const statusBadge = getStatusHtml(status);
       const haName = (r.ha_first_name || r.ha_last_name)
@@ -1062,7 +1110,7 @@ async function renderReconciliationTab(): Promise<void> {
         : '\u2014';
       const ffjdaName = (r.ffjda_first_name || r.ffjda_last_name)
         ? `${esc(r.ffjda_first_name)} ${esc(r.ffjda_last_name)}` : '\u2014';
-      html += `<tr>
+      tableHtml += `<tr>
         <td>${haName}</td><td>${ffjdaName}</td>
         <td style="font-size:0.78rem">${r.ha_email ? esc(r.ha_email) : '\u2014'}</td>
         <td style="font-size:0.78rem">${r.ffjda_email ? esc(r.ffjda_email) : '\u2014'}</td>
@@ -1073,8 +1121,37 @@ async function renderReconciliationTab(): Promise<void> {
       </tr>`;
     }
 
-    html += `</tbody></table></div>`;
-    panel.innerHTML = html;
+    tableHtml += `</tbody></table>
+      <div style="text-align:right;font-size:0.75rem;color:rgba(255,255,255,0.4);padding:4px 8px">${totalFiltered} / ${rec.length} lignes</div>
+    </div>`;
+
+    panel.innerHTML = filterBar + statsBar + tableHtml;
+
+    // Wire discipline checkboxes
+    panel.querySelectorAll('.members-disc-toggle input[type="checkbox"]').forEach((cb) => {
+      cb.addEventListener('change', () => {
+        const disc = (cb as HTMLInputElement).dataset.reconDisc ?? '';
+        const checked = (cb as HTMLInputElement).checked;
+        const label = (cb as HTMLInputElement).closest('.members-disc-toggle');
+        if (label) label.classList.toggle('active', checked);
+        // Update dataset
+        const current = (panel.dataset.reconDiscs ?? disciplines.join(',')).split(',');
+        const updated = checked
+          ? [...current, disc]
+          : current.filter((d) => d !== disc);
+        panel.dataset.reconDiscs = updated.join(',');
+        void renderReconciliationTab();
+      });
+    });
+
+    // Wire search input (debounced)
+    const searchInput = document.getElementById('reconSearchInput') as HTMLInputElement;
+    if (searchInput) {
+      searchInput.addEventListener('input', () => {
+        panel.dataset.reconSearch = searchInput.value;
+        void renderReconciliationTab();
+      });
+    }
 
     // Wire edit buttons
     panel.querySelectorAll('.ha-edit-btn').forEach((btn) => {
