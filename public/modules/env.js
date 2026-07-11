@@ -1,5 +1,5 @@
 const PROD_SUPABASE_URL = 'https://ajbpzueanpeukozjhkiv.supabase.co';
-const PROD_SUPABASE_KEY = 'sb_publishable_efac8Xr0Gyfy1J6uFt_X1Q_Z5hB1pe9';
+const PROD_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFqYnB6dWVhbnBldWtvempoa2l2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4OTQyMTAsImV4cCI6MjA4ODQ3MDIxMH0.1i1nJ3DlHGVPIWKNjD64ZyHj3cxG4o-ikju-sO0T67A';
 
 // Test environment: self-hosted Supabase behind Caddy proxy
 const TEST_SUPABASE_URL = 'https://test.judo-cattenom.fr/supabase';
