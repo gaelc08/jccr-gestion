@@ -272,7 +272,7 @@ async function renderListTab(): Promise<void> {
 
   // ── Filter toolbar ──
   panel.innerHTML = `<div class="members-list-controls">
-    <div class="members-filter-row">
+    <div class="members-filter-row" style="margin-bottom:0">
       <span style="display:flex;align-items:center;gap:6px;font-size:0.75rem;font-weight:700;color:rgba(255,255,255,0.5)">
         Disciplines :
         <label class="members-disc-toggle ${_listDisciplines['judo'] ? 'active' : ''}"><input type="checkbox" data-disc="judo" ${_listDisciplines['judo'] ? 'checked' : ''}> Judo</label>
@@ -293,14 +293,18 @@ async function renderListTab(): Promise<void> {
         <input type="checkbox" id="membersUnsaisieList" ${(document.getElementById('membersUnsaisieOnly') as HTMLInputElement)?.checked ? 'checked' : ''}> Non saisis seulement
       </label>
     </div>
-    <div class="members-columns-row">
-      <span style="font-size:0.75rem;font-weight:700;color:rgba(255,255,255,0.5)">Colonnes :</span>
-      <label class="members-col-toggle ${_listColumns['name'] ? 'active' : ''}"><input type="checkbox" data-col="name" ${_listColumns['name'] ? 'checked' : ''}> Nom</label>
-      <label class="members-col-toggle ${_listColumns['age'] ? 'active' : ''}"><input type="checkbox" data-col="age" ${_listColumns['age'] ? 'checked' : ''}> Age</label>
-      <label class="members-col-toggle ${_listColumns['email'] ? 'active' : ''}"><input type="checkbox" data-col="email" ${_listColumns['email'] ? 'checked' : ''}> Email</label>
-      <label class="members-col-toggle ${_listColumns['birth'] ? 'active' : ''}"><input type="checkbox" data-col="birth" ${_listColumns['birth'] ? 'checked' : ''}> Naissance</label>
-      <label class="members-col-toggle ${_listColumns['amount'] ? 'active' : ''}"><input type="checkbox" data-col="amount" ${_listColumns['amount'] ? 'checked' : ''}> Montant</label>
-      <label class="members-col-toggle ${_listColumns['status'] ? 'active' : ''}"><input type="checkbox" data-col="status" ${_listColumns['status'] ? 'checked' : ''}> FFJDA</label>
+    <div class="members-col-selector" style="position:relative;display:inline-block;margin-top:6px">
+      <button id="membersColsBtn" class="members-col-btn" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);border-radius:4px;padding:2px 10px;font-size:0.78rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px">
+        \u2630 Colonnes <span style="font-size:0.7rem;opacity:0.5">\u25BC</span>
+      </button>
+      <div id="membersColsDropdown" class="members-cols-dropdown" style="display:none;position:absolute;top:100%;left:0;z-index:100;background:#1e2433;border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:6px;min-width:140px;margin-top:4px;box-shadow:0 4px 16px rgba(0,0,0,0.3)">
+        <label class="members-col-toggle ${_listColumns['name'] ? 'active' : ''}"><input type="checkbox" data-col="name" ${_listColumns['name'] ? 'checked' : ''}> Nom</label>
+        <label class="members-col-toggle ${_listColumns['age'] ? 'active' : ''}"><input type="checkbox" data-col="age" ${_listColumns['age'] ? 'checked' : ''}> Age</label>
+        <label class="members-col-toggle ${_listColumns['email'] ? 'active' : ''}"><input type="checkbox" data-col="email" ${_listColumns['email'] ? 'checked' : ''}> Email</label>
+        <label class="members-col-toggle ${_listColumns['birth'] ? 'active' : ''}"><input type="checkbox" data-col="birth" ${_listColumns['birth'] ? 'checked' : ''}> Naissance</label>
+        <label class="members-col-toggle ${_listColumns['amount'] ? 'active' : ''}"><input type="checkbox" data-col="amount" ${_listColumns['amount'] ? 'checked' : ''}> Montant</label>
+        <label class="members-col-toggle ${_listColumns['status'] ? 'active' : ''}"><input type="checkbox" data-col="status" ${_listColumns['status'] ? 'checked' : ''}> FFJDA</label>
+      </div>
     </div>
   </div>`;
 
@@ -336,8 +340,27 @@ async function renderListTab(): Promise<void> {
     void renderListContent(panel);
   });
 
-  // Column toggles
-  const colToggles = panel.querySelectorAll('.members-col-toggle input[type="checkbox"]');
+  // Column selector dropdown
+  const colsBtn = document.getElementById('membersColsBtn') as HTMLButtonElement;
+  const colsDropdown = document.getElementById('membersColsDropdown') as HTMLDivElement;
+
+  colsBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (colsDropdown) {
+      colsDropdown.style.display = colsDropdown.style.display === 'none' ? 'block' : 'none';
+    }
+  });
+
+  // Close dropdown on outside click
+  document.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement;
+    if (colsDropdown && colsDropdown.style.display !== 'none' &&
+        !target.closest('.members-col-selector')) {
+      colsDropdown.style.display = 'none';
+    }
+  });
+
+  const colToggles = (colsDropdown ?? panel).querySelectorAll('.members-col-toggle input[type="checkbox"]');
   colToggles.forEach((cb) => {
     cb.addEventListener('change', () => {
       const col = (cb as HTMLInputElement).dataset.col ?? '';
