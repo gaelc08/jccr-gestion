@@ -31,14 +31,17 @@ export function getFfjCategory(dateOfBirth?: string): { label: string; year: num
 
 // ─── State ───────────────────────────────────────────────────────────────────
 
-let _deps: ServiceDeps;
+let _deps: ServiceDeps | undefined;
 let _members: HaMember[] = [];
 let _lastSync: string | null = null;
 let _activeTab = 'list';
 let _supabase: unknown;
 let _membersVisible = false;
 
-export function getDeps(): ServiceDeps { return _deps; }
+export function getDeps(): ServiceDeps {
+  if (!_deps) throw new Error('[members] initMembersSection() doit être appelé avant toute utilisation du module.');
+  return _deps;
+}
 export function getMembers(): HaMember[] { return _members; }
 export function getLastSync(): string | null { return _lastSync; }
 export function getActiveTab(): string { return _activeTab; }
