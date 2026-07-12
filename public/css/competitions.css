@@ -111,14 +111,18 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .comp-card-date {
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 0.78rem;
   color: var(--judo-navy);
-  flex: 1 1 160px;
+  flex: 0 1 auto;
+  white-space: nowrap;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .comp-card-badges {
@@ -159,7 +163,7 @@
 }
 
 .comp-card-title {
-  font-size: 1rem;
+  font-size: 0.85rem;
   font-weight: 700;
   color: var(--gray-900);
 }
@@ -168,7 +172,7 @@
 .comp-card-categories,
 .comp-card-type,
 .comp-card-commentaire {
-  font-size: 0.86rem;
+  font-size: 0.78rem;
   color: var(--gray-700);
 }
 
@@ -181,7 +185,7 @@
 }
 
 .comp-card-link a {
-  font-size: 0.82rem;
+  font-size: 0.76rem;
   color: var(--judo-navy);
   text-decoration: underline;
 }
