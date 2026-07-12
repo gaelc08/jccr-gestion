@@ -119,7 +119,7 @@ export async function saveCoach() {
   if (!name) { alert('Veuillez saisir un nom.'); return; }
 
   if (email) {
-    const existing = __findExistingProfileByEmail(email, { excludeId: editMode ? editingCoachId : null });
+    const existing = __findExistingProfileByEmail(email, { excludeId: editingCoachId || undefined } as any);
     if (existing) { alert(`Un profil avec l'e-mail ${email} existe déjà.`); return; }
   }
 
@@ -162,7 +162,7 @@ export async function saveCoach() {
 
   if (wasEditMode) {
     setCoaches(coaches!.map((c: any) => (c.id === editedId ? saved : c)));
-    if (currentCoach?.id === editedId) {
+    if ((currentCoach?.id as any) === editedId) {
       setCurrentCoach(saved);
     }
   } else {
@@ -192,7 +192,7 @@ export async function deleteCoach() {
   if (!editingCoachId) { alert('Aucun profil sélectionné.'); return; }
 
   const coach = coaches!.find((c: any) => c.id === editingCoachId);
-  if (!confirm(`Supprimer le profil « ${coach?.name || editingCoachId} » ? Cette action est irréversible.`)) return;
+  if (!confirm(`Supprimer le profil « ${(coach as any)?.name || editingCoachId} » ? Cette action est irréversible.`)) return;
 
   if (coach?.owner_uid) {
     try {

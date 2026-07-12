@@ -3,8 +3,8 @@ import { supabaseUrl, supabaseKey } from './env.js';
 import { currentUser, currentAccessToken, currentSession } from './app-context.js';
 import { __hasAdminClaim } from './shared-utils.js';
 
-let __adminCache = { userId: null, value: null, atMs: 0 };
-let __adminInFlight = null;
+let __adminCache: { userId: string | null; value: boolean | null; atMs: number } = { userId: null, value: null, atMs: 0 };
+let __adminInFlight: any = null;
 const TTL_MS = 5 * 60 * 1000;
 
 export async function isCurrentUserAdminDB() {

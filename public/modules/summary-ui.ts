@@ -211,9 +211,9 @@ export function updateSummary(): void {
     if (data.competition) competitionDays++;
   }
 
-  const hourlyRate      = (coach as Record<string, number>).hourly_rate     ?? 0;
-  const dailyAllowance  = (coach as Record<string, number>).daily_allowance ?? 0;
-  const kmRate          = (coach as Record<string, number>).km_rate         ?? 0;
+  const hourlyRate      = (coach as unknown as Record<string, number>).hourly_rate     ?? 0;
+  const dailyAllowance  = (coach as unknown as Record<string, number>).daily_allowance ?? 0;
+  const kmRate          = (coach as unknown as Record<string, number>).km_rate         ?? 0;
 
   const salaryHours      = totalHours * hourlyRate;
   const salaryCompetition = competitionDays * dailyAllowance;
@@ -243,7 +243,7 @@ export function updateSummary(): void {
   setVal('reimbursementTotalPayment', currencyDisplay(totalReimbursement));
 
   _updateCEAButton({
-    nomCoach:         `${getCoachCivilite(coach)} ${(coach as Record<string, unknown>).name ?? ''} ${(coach as Record<string, unknown>).first_name ?? ''}`.trim(),
+    nomCoach:         `${getCoachCivilite(coach)} ${(coach as unknown as Record<string, unknown>).name ?? ''} ${(coach as unknown as Record<string, unknown>).first_name ?? ''}`.trim(),
     mois:             currentMonth,
     heures:           totalHours,
     tauxHoraire:      hourlyRate,

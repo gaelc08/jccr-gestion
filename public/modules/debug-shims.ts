@@ -2,7 +2,7 @@
 import { supabaseKey, supabaseUrl } from './env.js';
 
 const __originalFetch = globalThis.fetch?.bind(globalThis);
-const __supabaseFetchDebugWrapped = async (input, init = {}) => {
+const __supabaseFetchDebugWrapped = async (input: any, init: RequestInit = {}) => {
   const url = typeof input === 'string' ? input : (input?.url ?? '');
   const isSupabase = String(url).includes('.supabase.co');
   if (isSupabase) console.log('DEBUG fetch ->', url, init);
@@ -32,7 +32,7 @@ const __installLocksShim = () => {
     if (locks.__supabaseDebugWrapped) return;
     const originalRequest = locks.request.bind(locks);
     locks.__supabaseDebugWrapped = true;
-    locks.request = (name, options, callback) => {
+    (locks.request as any) = (name: any, options: any, callback: any) => {
       const lockName = String(name);
       const startedAt = performance.now();
       let finalOptions = options;

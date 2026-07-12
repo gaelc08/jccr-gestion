@@ -1,19 +1,19 @@
 // auth-forms.js — Login, register, logout, reset password form handlers
 import { handleSSOCallback, setupSSOButton } from './auth-sso.js';
 
-export function setupAuthForms(supabase, { onLogoutSuccess } = {}) {
+export function setupAuthForms(supabase, { onLogoutSuccess }: { onLogoutSuccess?: () => void } = {}) {
   // Handle SSO callback if present in URL
   if (new URLSearchParams(window.location.search).has('code')) {
     handleSSOCallback(supabase);
   }
 
-  const emailInput      = document.getElementById('authEmail');
-  const passwordInput   = document.getElementById('authPassword');
-  const registerBtn     = document.getElementById('registerBtn');
-  const loginBtn        = document.getElementById('loginBtn');
-  const resetPasswordBtn = document.getElementById('resetPasswordBtn');
-  const logoutBtn       = document.getElementById('logoutBtn');
-  const statusSpan      = document.getElementById('authStatus');
+  const emailInput      = document.getElementById('authEmail') as HTMLInputElement | null;
+  const passwordInput   = document.getElementById('authPassword') as HTMLInputElement | null;
+  const registerBtn     = document.getElementById('registerBtn') as HTMLButtonElement | null;
+  const loginBtn        = document.getElementById('loginBtn') as HTMLButtonElement | null;
+  const resetPasswordBtn = document.getElementById('resetPasswordBtn') as HTMLButtonElement | null;
+  const logoutBtn       = document.getElementById('logoutBtn') as HTMLButtonElement | null;
+  const statusSpan      = document.getElementById('authStatus') as HTMLElement | null;
 
   registerBtn?.addEventListener('click', async () => {
     const email = emailInput?.value.trim();

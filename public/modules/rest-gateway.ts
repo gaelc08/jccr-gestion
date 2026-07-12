@@ -14,7 +14,7 @@ export type FilterTuple = [string, string, string | number];
 export interface RestSelectOptions {
   select?: string;
   filters?: FilterTuple[];
-  order?: { column: string; direction?: 'asc' | 'desc' };
+  order?: { column: string; direction?: 'asc' | 'desc' } | null;
   limit?: number | null;
 }
 
@@ -118,7 +118,7 @@ export function createRestGateway(options: RestGatewayOptions): RestGateway {
   // — restSelect —
   async function restSelect<T = unknown>(
     table: string,
-    { select = '*', filters = [], order = null, limit = null }: RestSelectOptions = {}
+    { select = '*', filters = [], order = null as any, limit = null }: RestSelectOptions = {}
   ): Promise<RestResult<T>> {
     const accessToken = getAccessToken();
     if (!accessToken) {

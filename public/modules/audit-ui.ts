@@ -131,7 +131,7 @@ export function getAuditActionSummary(row) {
   return coachName || label;
 }
 
-export function formatAuditAction(row, { escapeHtml } = {}) {
+export function formatAuditAction(row, { escapeHtml }: Record<string, any> = {}) {
   const label = getAuditActionLabel(row?.action);
   const summary = getAuditActionSummary(row);
   const code = row?.action ? String(row.action) : '';
@@ -160,7 +160,7 @@ export function auditMatchesCurrentCoach(row, {
   currentMonth,
   normalizeEmail,
   normalizeMonth,
-} = {}) {
+}: Record<string, any> = {}) {
   if (!currentCoach) return true;
   const metadata = row?.metadata || {};
   const currentCoachEmail = normalizeEmail(currentCoach.email);
@@ -173,7 +173,7 @@ export function auditMatchesCurrentCoach(row, {
   );
 }
 
-export function formatAuditDetails(row, { escapeHtml } = {}) {
+export function formatAuditDetails(row, { escapeHtml }: Record<string, any> = {}) {
   const metadata = row?.metadata || {};
   const entries = getOrderedMetadataKeys(metadata)
     .map((key) => {
@@ -187,7 +187,7 @@ export function formatAuditDetails(row, { escapeHtml } = {}) {
     })
     .filter(Boolean);
 
-  return entries.length
-    ? `<div class="audit-meta">${entries.map((entry) => `<div class="audit-meta-row"><span class="audit-meta-label">${escapeHtml(entry.label)}</span><span class="audit-meta-item">${escapeHtml(entry.value)}</span></div>`).join('')}</div>`
+  return entries.filter(Boolean).length
+    ? `<div class="audit-meta">${entries.filter(Boolean).map((entry: any) => `<div class="audit-meta-row"><span class="audit-meta-label">${escapeHtml(entry.label)}</span><span class="audit-meta-item">${escapeHtml(entry.value)}</span></div>`).join('')}</div>`
     : '<span class="audit-empty">—</span>';
 }

@@ -11,8 +11,8 @@ export let coaches: Coach[] = [];
 export let timeData: Record<string, any> = {};
 export let currentCoach: Coach | null = null;
 export let frozenMonths: Set<string> = new Set();
-export let currentUser: Record<string, any> | null = null;
-export let currentSession: Record<string, any> | null = null;
+export let currentUser: any = null;
+export let currentSession: any = null;
 export let currentAccessToken: string | null = null;
 export let auditLogs: any[] = [];
 export let __eventListenersSetup = false;
@@ -87,7 +87,7 @@ export function __buildAuditPayload({
   targetUserId,
   targetEmail,
   metadata = {},
-} = {}) {
+}: Record<string, any> = {}) {
   const resolvedCoach = coach || currentCoach || null;
   const nextMetadata = { ...metadata };
   if (resolvedCoach?.id != null && nextMetadata.coach_id == null) {
@@ -111,7 +111,7 @@ export function __buildMonthlyAuditPayload({
   metadata = {},
   targetUserId,
   targetEmail,
-} = {}) {
+}: Record<string, any> = {}) {
   const resolvedMonth = month || currentMonth;
   const normalizedMonth = resolvedMonth ? __normalizeMonth(resolvedMonth) : null;
   return __buildAuditPayload({
