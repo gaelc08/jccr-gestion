@@ -46,6 +46,7 @@ export function showMileagePreviewModal(html, modalTitle = 'Aperçu') {
         <h2 id="previewModalTitle"></h2>
         <div class="export-preview-toolbar">
           <button id="previewPrintBtn" class="btn-primary">🖨️ Imprimer / PDF</button>
+          <button id="previewOpenBtn" class="btn-secondary">Ouvrir dans un onglet</button>
           <button id="previewCloseBtn" class="btn-danger">Fermer</button>
         </div>
         <iframe id="mileagePreviewFrame" class="export-preview-frame" title="Aperçu"></iframe>
@@ -61,21 +62,39 @@ export function showMileagePreviewModal(html, modalTitle = 'Aperçu') {
 
   const iframe = modal.querySelector('#mileagePreviewFrame') as HTMLIFrameElement | null;
   const printBtn = modal.querySelector('#previewPrintBtn') as HTMLButtonElement | null;
+  const openBtn = modal.querySelector('#previewOpenBtn') as HTMLButtonElement | null;
 
   if (printBtn) printBtn.disabled = true;
   if (iframe) {
+    // Use blob URL instead of srcdoc to avoid contentWindow.print() printing the parent page
+    const blob = new Blob([html], { type: 'text/html' });
+    const blobUrl = URL.createObjectURL(blob);
     iframe.onload = () => {
-      if (printBtn) printBtn.disabled = false;
-      printBtn!.onclick = () => {
-        try {
-          iframe.contentWindow?.focus();
-          iframe.contentWindow?.print();
-        } catch {
-          alert("Impossible d'imprimer. Essayez d'ouvrir la page dans un nouvel onglet.");
-        }
-      };
+      if (printBtn) {
+        printBtn.disabled = false;
+        printBtn.onclick = () => {
+          try {
+            iframe.contentWindow?.focus();
+            iframe.contentWindow?.print();
+          } catch {
+            alert("Impossible d'imprimer. Utilisez 'Ouvrir dans un onglet' puis Ctrl+P.");
+          }
+        };
+      }
+      if (openBtn) {
+        openBtn.disabled = false;
+        openBtn.onclick = () => {
+          const w = window.open('', '_blank', 'width=800,height=600');
+          if (w) {
+            w.document.write(html);
+            w.document.close();
+            w.focus();
+          }
+        };
+      }
+      URL.revokeObjectURL(blobUrl);
     };
-    iframe.srcdoc = html;
+    iframe.src = blobUrl;
   }
   modal.classList.add('active');
 }
