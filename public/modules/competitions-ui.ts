@@ -144,9 +144,11 @@ function renderFilters(competitions: Competition[], isAdmin: boolean): string {
   const syncBtn          = isAdmin ? `<button id="compSyncBtn" class="btn-secondary">🔄 Synchroniser</button>` : '';
   return `
     <div class="comp-toolbar">
-      <label class="toolbar-label"><span>Niveau</span><select id="compNiveauFilter"><option value="">Tous</option>${niveauOptions}</select></label>
-      ${categories.length > 0 ? `<label class="toolbar-label"><span>Catégorie</span><select id="compCategoryFilter"><option value="">Toutes</option>${categoryOptions}</select></label>` : ''}
-      <label class="toolbar-label"><span>Type</span><select id="compTypeFilter"><option value="">Tous</option>${typeOptions}</select></label>
+      <div class="comp-toolbar-filters">
+        <label class="toolbar-label"><span>Niveau</span><select id="compNiveauFilter"><option value="">Tous</option>${niveauOptions}</select></label>
+        ${categories.length > 0 ? `<label class="toolbar-label"><span>Catégorie</span><select id="compCategoryFilter"><option value="">Toutes</option>${categoryOptions}</select></label>` : ''}
+        <label class="toolbar-label"><span>Type</span><select id="compTypeFilter"><option value="">Tous</option>${typeOptions}</select></label>
+      </div>
       <div class="comp-toolbar-actions">${syncBtn}</div>
     </div>`;
 }
