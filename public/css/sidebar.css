@@ -81,7 +81,11 @@
   gap: 8px;
 }
 /* Icônes SVG jaunes du menu (style line-icons Feather/Lucide, accent club) */
-.sidebar-nav-btn svg { color: #e2b13c; }
+.sidebar-nav-btn svg {
+  color: #e2b13c;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
 .sidebar-admin-title svg {
   color: #e2b13c;
   vertical-align: middle;
