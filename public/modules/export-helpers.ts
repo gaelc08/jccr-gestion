@@ -35,66 +35,61 @@ export function getMonthlyExpenseReceiptIssues(coachId, year, month, getTimeData
   return issues;
 }
 
-export function showMileagePreviewModal(html, modalTitle = 'Aperçu') {
-  let modal = document.getElementById('mileagePreviewModal');
-  if (!modal) {
-    modal = document.createElement('div');
-    modal.id = 'mileagePreviewModal';
-    modal.className = 'modal export-preview-modal';
-    modal.innerHTML = `
-      <div class="modal-content export-preview-content">
-        <h2 id="previewModalTitle"></h2>
-        <div class="export-preview-toolbar">
-          <button id="previewPrintBtn" class="btn-primary">🖨️ Imprimer / PDF</button>
-          <button id="previewOpenBtn" class="btn-secondary">Ouvrir dans un onglet</button>
-          <button id="previewCloseBtn" class="btn-danger">Fermer</button>
-        </div>
-        <iframe id="mileagePreviewFrame" class="export-preview-frame" title="Aperçu"></iframe>
+function _printInNewWindow(html: string): void {
+  const w = window.open('', '_blank', 'width=800,height=600');
+  if (!w) { alert('Veuillez autoriser les popups pour imprimer.'); return; }
+  w.document.write(html);
+  w.document.close();
+  w.focus();
+  // Give the browser a moment to render before triggering print
+  setTimeout(() => { try { w.print(); } catch { /* silent */ } }, 100);
+}
+
+export function showMileagePreviewModal(html: string, modalTitle = 'Aperçu') {
+  // Remove any existing modal to get a clean slate (avoids stale DOM elements)
+  const oldModal = document.getElementById('mileagePreviewModal');
+  if (oldModal) oldModal.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'mileagePreviewModal';
+  modal.className = 'modal export-preview-modal';
+  modal.innerHTML = `
+    <div class="modal-content export-preview-content">
+      <h2 id="previewModalTitle"></h2>
+      <div class="export-preview-toolbar">
+        <button id="previewPrintBtn" class="btn-primary">🖨️ Imprimer / PDF</button>
+        <button id="previewOpenInTabBtn" class="btn-secondary">Ouvrir dans un onglet</button>
+        <button id="previewCloseBtn" class="btn-danger">Fermer</button>
       </div>
-    `;
-    document.body.appendChild(modal);
-    modal.addEventListener('click', (e) => { if (e.target === modal) closeMileagePreviewModal(); });
-    modal.querySelector('#previewCloseBtn')?.addEventListener('click', closeMileagePreviewModal);
-  }
+      <iframe id="mileagePreviewFrame" class="export-preview-frame" title="Aperçu"></iframe>
+    </div>
+  `;
+  document.body.appendChild(modal);
 
   const titleEl = modal.querySelector('#previewModalTitle');
   if (titleEl) titleEl.textContent = modalTitle;
 
   const iframe = modal.querySelector('#mileagePreviewFrame') as HTMLIFrameElement | null;
   const printBtn = modal.querySelector('#previewPrintBtn') as HTMLButtonElement | null;
-  const openBtn = modal.querySelector('#previewOpenBtn') as HTMLButtonElement | null;
+  const openInTabBtn = modal.querySelector('#previewOpenInTabBtn') as HTMLButtonElement | null;
+  const closeBtn = modal.querySelector('#previewCloseBtn') as HTMLButtonElement | null;
 
-  if (printBtn) printBtn.disabled = true;
-  if (iframe) {
-    // Use blob URL instead of srcdoc to avoid contentWindow.print() printing the parent page
-    const blob = new Blob([html], { type: 'text/html' });
-    const blobUrl = URL.createObjectURL(blob);
-    iframe.onload = () => {
-      if (printBtn) {
-        printBtn.disabled = false;
-        printBtn.onclick = () => {
-          try {
-            iframe.contentWindow?.focus();
-            iframe.contentWindow?.print();
-          } catch {
-            alert("Impossible d'imprimer. Utilisez 'Ouvrir dans un onglet' puis Ctrl+P.");
-          }
-        };
-      }
-      if (openBtn) {
-        openBtn.disabled = false;
-        openBtn.onclick = () => {
-          const w = window.open('', '_blank', 'width=800,height=600');
-          if (w) {
-            w.document.write(html);
-            w.document.close();
-            w.focus();
-          }
-        };
-      }
-      URL.revokeObjectURL(blobUrl);
-    };
-    iframe.src = blobUrl;
+  if (closeBtn) closeBtn.addEventListener('click', closeMileagePreviewModal);
+  modal.addEventListener('click', (e) => { if (e.target === modal) closeMileagePreviewModal(); });
+
+  if (openInTabBtn) {
+    openInTabBtn.addEventListener('click', () => _printInNewWindow(html));
   }
+
+  if (printBtn && iframe) {
+    printBtn.disabled = true;
+    // Use srcdoc for reliable display in the iframe
+    iframe.onload = () => {
+      printBtn.disabled = false;
+      printBtn.onclick = () => _printInNewWindow(html);
+    };
+    iframe.srcdoc = html;
+  }
+
   modal.classList.add('active');
 }
