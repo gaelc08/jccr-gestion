@@ -117,6 +117,9 @@
   letter-spacing: 0.4px;
 }
 
+.admin-top-bar-label > span { display: inline-flex; align-items: center; gap: 6px; }
+.admin-top-bar-label span svg { color: #e2b13c; }
+
 .admin-top-bar-label select,
 .admin-top-bar-label input[type="month"] {
   padding: 10px 12px;

@@ -225,3 +225,6 @@
 [data-theme="dark"] .frozen-banner { background: rgba(192,57,43,0.15); }
 [data-theme="dark"] .legend { color: var(--text-secondary); }
 [data-theme="dark"] .legend-item { color: var(--text-secondary); }
+
+.sidebar-label > span { display: inline-flex; align-items: center; gap: 6px; }
+.sidebar-label span svg { color: #e2b13c; }
