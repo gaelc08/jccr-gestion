@@ -78,7 +78,7 @@
   cursor: pointer;
   transition: background-color 0.15s ease-out, color 0.15s ease-out, padding-left 0.2s;
   margin: 2px var(--space-3);
-  gap: 8px;
+  gap: 12px;
 }
 /* Icônes SVG jaunes du menu (style line-icons Feather/Lucide, accent club) */
 .sidebar-nav-btn svg { color: #e2b13c; }
