@@ -190,46 +190,60 @@ export function createExportUI({
   }
 
   function __showMileagePreviewModal(html: string, modalTitle = 'Aperçu'): void {
-    let modal = document.getElementById('mileagePreviewModal');
-    if (!modal) {
-      modal = document.createElement('div');
-      modal.id = 'mileagePreviewModal';
-      modal.className = 'modal export-preview-modal';
-      modal.innerHTML = `
-        <div class="modal-content export-preview-content">
-          <h2 id="previewModalTitle"></h2>
-          <div class="export-preview-toolbar">
-            <button id="previewPrintBtn" class="btn-primary">🖨️ Imprimer / PDF</button>
-            <button id="previewCloseBtn" class="btn-danger">Fermer</button>
-          </div>
-          <iframe id="mileagePreviewFrame" class="export-preview-frame" title="Aperçu"></iframe>
+    // Remove any existing modal for a clean slate
+    const oldModal = document.getElementById('mileagePreviewModal');
+    if (oldModal) oldModal.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'mileagePreviewModal';
+    modal.className = 'modal export-preview-modal';
+    modal.innerHTML = `
+      <div class="modal-content export-preview-content">
+        <h2 id="previewModalTitle"></h2>
+        <div class="export-preview-toolbar">
+          <button id="previewPrintBtn" class="btn-primary">🖨️ Imprimer / PDF</button>
+          <button id="previewOpenInTabBtn" class="btn-secondary">Ouvrir dans un onglet</button>
+          <button id="previewCloseBtn" class="btn-danger">Fermer</button>
         </div>
-      `;
-      document.body.appendChild(modal);
-      modal.addEventListener('click', (e) => { if (e.target === modal) __closeMileagePreviewModal(); });
-      modal.querySelector('#previewCloseBtn')?.addEventListener('click', __closeMileagePreviewModal);
-    }
+        <iframe id="mileagePreviewFrame" class="export-preview-frame" title="Aperçu"></iframe>
+      </div>
+    `;
+    document.body.appendChild(modal);
 
     const titleEl = modal.querySelector('#previewModalTitle') as HTMLElement | null;
     if (titleEl) titleEl.textContent = modalTitle;
 
-    const iframe    = modal.querySelector('#mileagePreviewFrame') as HTMLIFrameElement | null;
-    const printBtn  = modal.querySelector('#previewPrintBtn')    as HTMLButtonElement | null;
+    const iframe      = modal.querySelector('#mileagePreviewFrame')  as HTMLIFrameElement | null;
+    const printBtn    = modal.querySelector('#previewPrintBtn')     as HTMLButtonElement | null;
+    const openInTabBtn = modal.querySelector('#previewOpenInTabBtn') as HTMLButtonElement | null;
+    const closeBtn    = modal.querySelector('#previewCloseBtn')     as HTMLButtonElement | null;
 
-    if (printBtn) printBtn.disabled = true;
-    if (iframe) {
+    if (closeBtn) closeBtn.addEventListener('click', __closeMileagePreviewModal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) __closeMileagePreviewModal(); });
+
+    if (openInTabBtn) {
+      openInTabBtn.addEventListener('click', () => {
+        const w = window.open('', '_blank', 'width=800,height=600');
+        if (!w) { alert('Veuillez autoriser les popups pour imprimer.'); return; }
+        w.document.write(html);
+        w.document.close();
+        w.focus();
+        setTimeout(() => { try { w.print(); } catch { /* silent */ } }, 100);
+      });
+    }
+
+    if (printBtn && iframe) {
+      printBtn.disabled = true;
       iframe.onload = () => {
-        if (printBtn) {
-          printBtn.disabled = false;
-          printBtn.onclick = () => {
-            try {
-              iframe.contentWindow?.focus();
-              iframe.contentWindow?.print();
-            } catch {
-              alert("Impossible d'imprimer.");
-            }
-          };
-        }
+        printBtn.disabled = false;
+        printBtn.onclick = () => {
+          const w = window.open('', '_blank', 'width=800,height=600');
+          if (!w) { alert('Veuillez autoriser les popups pour imprimer.'); return; }
+          w.document.write(html);
+          w.document.close();
+          w.focus();
+          setTimeout(() => { try { w.print(); } catch { /* silent */ } }, 100);
+        };
       };
       iframe.srcdoc = html;
     }
