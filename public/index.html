@@ -106,7 +106,7 @@
           <button id="inviteAdminBtn" class="sidebar-nav-btn btn-secondary" style="display:none">✉️ Inviter admin</button>
           <button id="freezeBtn" class="sidebar-nav-btn btn-secondary" style="display:none">🔒 Geler la fiche</button>
           <button id="auditLogsBtn" class="sidebar-nav-btn btn-secondary" style="display:none">📜 Historique</button>
-          <button id="helloAssoBtn" class="sidebar-nav-btn btn-secondary" style="display:none">🥋 Membres HelloAsso</button>
+          <button id="helloAssoBtn" class="sidebar-nav-btn btn-secondary" style="display:none">🥋 Adhérents</button>
           <button id="exportMonthlyExpensesBtn" class="sidebar-nav-btn btn-secondary" style="display:none">📊 Voir synthèse du mois</button>
           <button id="backupBtn" class="sidebar-nav-btn btn-secondary" style="display:none">💾 Exporter backup JSON</button>
           <input id="importFile" type="file" accept=".json" style="display:none">
@@ -209,8 +209,8 @@
       <!-- Members section -->
       <div id="membersSection" class="members-section" style="display:none">
         <div class="members-header">
-          <h2>Gestion des membres</h2>
-          <p class="members-subtitle">Synchronisation HelloAsso · Réconciliation FFJDA · Groupes</p>
+          <h2>Adhérents</h2>
+          <p class="members-subtitle">Pointage HelloAsso ↔ FFJDA · Liste consolidée · Groupes</p>
         </div>
 
         <!-- Toolbar -->
@@ -358,56 +358,6 @@
 
       <div class="modal-actions">
         <button id="closeAuditLogs" class="btn-primary">Fermer</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- HelloAsso members modal -->
-  <div id="helloAssoModal" class="modal">
-    <div class="modal-content modal-content-audit">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-        <h2 style="margin:0">🥋 Membres HelloAsso</h2>
-        <button id="helloAssoConfigBtn" class="btn-secondary" style="font-size:12px;padding:4px 10px">⚙️ API</button>
-      </div>
-      <div id="helloAssoConfig" style="display:none;margin-bottom:14px;padding:10px;background:#f8f9fa;border-radius:6px;border:1px solid #dee2e6">
-        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px">Token API HelloAsso Sync</label>
-        <input id="helloAssoTokenInput" type="password" placeholder="jcc-sync-..." style="width:100%;padding:6px 10px;font-size:12px;border:1px solid #ccc;border-radius:4px;font-family:monospace">
-        <div style="display:flex;gap:6px;margin-top:8px">
-          <button id="helloAssoTokenSave" class="btn-primary" style="font-size:12px;padding:4px 12px">💾 Enregistrer</button>
-          <button id="helloAssoTokenTest" class="btn-secondary" style="font-size:12px;padding:4px 12px">🔌 Tester</button>
-        </div>
-        <div id="helloAssoTokenStatus" style="margin-top:6px;font-size:11px;display:none"></div>
-        <div style="margin-top:6px;font-size:10px;color:#888;line-height:1.4">
-          Token disponible sur le VPS dans <code>/home/hermes/.hermes/.env</code><br>(clé <b>HELLOASSO_API_TOKEN</b>)
-        </div>
-      </div>
-      <div id="helloAssoToolbar" style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap">
-        <label style="font-size:12px;font-weight:600;color:#555">Saison :
-          <select id="haCampaignSelect" style="padding:4px 8px;font-size:12px;border:1px solid #ccc;border-radius:4px">
-            <option value="">Chargement...</option>
-          </select>
-        </label>
-        <label style="font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer;color:#555;font-weight:600">
-          <input type="checkbox" id="haUnsaisieOnly"> Non saisis seulement
-        </label>
-        <span id="haCounter" style="font-size:12px;color:#888;margin-left:auto"></span>
-      </div>
-      <div id="helloAssoContent">Chargement…</div>
-      <div class="modal-actions">
-        <button id="closeHelloAsso" class="btn-primary">Fermer</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Reconciliation modal -->
-  <div id="reconciliationModal" class="modal">
-    <div class="modal-content modal-content-audit">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-        <h2 style="margin:0">Reconciliation HelloAsso / FFJDA</h2>
-      </div>
-      <div id="reconciliationContent">Chargement…</div>
-      <div class="modal-actions">
-        <button id="closeReconciliation" class="btn-primary">Fermer</button>
       </div>
     </div>
   </div>

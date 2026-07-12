@@ -52,7 +52,6 @@ function setupEventListeners() {
     toggleFreezeMonth,
     openAuditLogsModal,
     loadAuditLogs,
-    openHelloAssoModal,
     toggleMembersSection,
     exportDeclarationXLS,
     exportTimesheetHTML,
@@ -246,7 +245,7 @@ function setupEventListeners() {
   document.querySelectorAll(".modal-close-btn").forEach((btn) => {
     btn.onclick = () => btn.closest(".modal")?.classList.remove("active");
   });
-  ["closeAuditLogs", "closeHelloAsso", "closeReconciliation", "closeHelp"].forEach((id) => {
+  ["closeAuditLogs", "closeHelp"].forEach((id) => {
     bindClick(id, () => document.getElementById(id)?.closest(".modal")?.classList.remove("active"));
   });
   bindClick("helpBtn", () => document.getElementById("helpModal")?.classList.add("active"));

@@ -132,7 +132,7 @@ export async function debugSupabaseHealthFetch() {
 
 // ===== Auth storage override (avoid getSession/storage lock hangs) =====
 const __authStorage = createAuthStorage();
-const __authNoHangLock = createAuthNoHangLock({ logger: console });
+const __authNoHangLock = createAuthNoHangLock({ logger: null });
 
 // Detect invite flow from URL before createClient's detectSessionInUrl consumes the hash.
 export let __inviteFlowActive = detectInviteFlowFromUrlHash(window.location.hash);

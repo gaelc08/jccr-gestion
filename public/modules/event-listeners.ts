@@ -42,7 +42,6 @@ export interface EventListenerHandlers {
   toggleFreezeMonth?: () => void;
   openAuditLogsModal?: () => void;
   loadAuditLogs?: () => void;
-  openHelloAssoModal?: () => void;
   toggleMembersSection?: (show?: boolean) => void;
   exportDeclarationXLS?: () => void;
   exportTimesheetHTML?: () => void;
@@ -112,7 +111,7 @@ export function setupEventListeners(): void {
     inviteCoach, inviteAdmin,
     openDayModal, saveDay, deleteDay,
     toggleFreezeMonth,
-    openAuditLogsModal, loadAuditLogs, openHelloAssoModal, toggleMembersSection,
+    openAuditLogsModal, loadAuditLogs, toggleMembersSection,
     exportDeclarationXLS, exportTimesheetHTML,
     exportExpenseHTML, exportMonthlyExpenses,
     openMileagePreviewModal, openMonthlySummaryPreviewModal,
@@ -319,7 +318,7 @@ export function setupEventListeners(): void {
     (btn as HTMLElement).onclick = () => btn.closest('.modal')?.classList.remove('active');
   });
 
-  ['closeAuditLogs', 'closeHelloAsso', 'closeReconciliation', 'closeHelp'].forEach((id) => {
+  ['closeAuditLogs', 'closeHelp'].forEach((id) => {
     bindClick(id, () => document.getElementById(id)?.closest('.modal')?.classList.remove('active'));
   });
 

@@ -113,9 +113,6 @@ import { notifyAdminAlert, __isAdminForUi, initAdminService } from './modules/ad
 // ===== Export UI (fully extracted) =====
 import { createExportUI } from './modules/export-ui.js';
 
-// ===== HelloAsso UI (fully extracted) =====
-import { createHelloAssoUI } from './modules/helloasso-ui.js';
-
 // ===== Members section (main window) =====
 import { initMembersSection, toggleMembersSection, bootMembersSection } from './modules/members-section.js';
 
@@ -254,24 +251,6 @@ const importCoachData                = __exportUI.importCoachData;
 const openMileagePreviewModal        = __exportUI.openMileagePreviewModal;
 const openMonthlySummaryPreviewModal = __exportUI.openMonthlySummaryPreviewModal;
 
-// ===== HelloAsso UI =====
-const __helloAssoUI = createHelloAssoUI({
-  supabase,
-  syncHelloAssoMembers,
-  getHelloAssoMembers,
-  getLastSyncTime,
-  parseHelloAssoCsv,
-  importHelloAssoCsvData,
-  importFfjdaCsv,
-  correctMemberName,
-  getReconciliation,
-  getFfjdaMembers,
-  escapeHtml: __escapeHtml,
-});
-
-const openHelloAssoModal = __helloAssoUI.openHelloAssoModal;
-const openReconciliationView = __helloAssoUI.openReconciliationView;
-
 // ===== Members section init =====
 initMembersSection({
   syncHelloAssoMembers,
@@ -324,7 +303,6 @@ initEventListeners({
   toggleFreezeMonth,
   openAuditLogsModal,
   loadAuditLogs,
-  openHelloAssoModal,
   toggleMembersSection,
   exportDeclarationXLS,
   exportTimesheetHTML,

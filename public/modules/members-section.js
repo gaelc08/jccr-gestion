@@ -30,6 +30,7 @@ let _visible = false;
 let _supabase;
 let _listDisciplines = { judo: true, iaido: true, taiso: true };
 let _listSort = "name-asc";
+let _listSearch = "";
 const _listColumns = {
   name: true,
   age: true,
@@ -205,6 +206,10 @@ async function renderListTab() {
   const panel = document.getElementById("membersTabList");
   if (!panel) return;
   panel.innerHTML = `<div class="members-list-controls">
+    <div class="members-search-row" style="margin-bottom:8px">
+      <input type="text" id="membersListSearch" value="${esc(_listSearch)}" placeholder="Rechercher (nom, email, naissance, licence, discipline, statut...)"
+        style="width:100%;max-width:440px;background:rgba(255,255,255,0.08);color:#e0e0e0;border:1px solid rgba(255,255,255,0.12);border-radius:4px;padding:5px 10px;font-size:0.85rem;font-weight:600">
+    </div>
     <div class="members-filter-row" style="margin-bottom:0">
       <span style="display:flex;align-items:center;gap:6px;font-size:0.75rem;font-weight:700;color:rgba(255,255,255,0.5)">
         Disciplines :
@@ -266,6 +271,15 @@ async function renderListTab() {
     if (mainChk && mainChk !== unsaisieChk) mainChk.checked = unsaisieChk.checked;
     void renderListContent(panel);
   });
+  const searchInput = document.getElementById("membersListSearch");
+  if (searchInput) {
+    let searchTimer;
+    searchInput.addEventListener("input", () => {
+      _listSearch = searchInput.value;
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => renderListContent(panel), 200);
+    });
+  }
   const colsBtn = document.getElementById("membersColsBtn");
   const colsDropdown = document.getElementById("membersColsDropdown");
   colsBtn?.addEventListener("click", (e) => {
@@ -304,6 +318,20 @@ function renderListContent(panel) {
   const unsaisieChk = document.getElementById("membersUnsaisieList");
   if (unsaisieChk?.checked) {
     filtered = filtered.filter((m) => !m.raw_data?.saisie_ffjda);
+  }
+  const q = _listSearch.trim().toLowerCase();
+  if (q) {
+    filtered = filtered.filter((m) => {
+      const cat = getFfjCategory(m.date_of_birth)?.label ?? "";
+      const saisie = m.raw_data?.saisie_ffjda ? "saisi oui ffjda" : "a saisir non unsaisi";
+      const haystack = [
+        m.first_name, m.last_name, m.email, m.date_of_birth, m.discipline,
+        m.ffjda_licence, m.raw_data?.ffjda_licence,
+        m.membership_amount != null ? String(m.membership_amount) : "",
+        cat, saisie
+      ].filter(Boolean).map(String).join(" ").toLowerCase();
+      return haystack.includes(q);
+    });
   }
   if (filtered.length === 0) {
     appendTableHtml(panel, [], "Aucun membre correspondant aux filtres.");
@@ -873,19 +901,41 @@ async function renderReconciliationTab() {
     const disciplines = DISC_ORDER.filter((d) => disciplineSet.has(d));
     if (disciplines.length === 0) disciplines.push(...DISC_ORDER);
     const currentSearch = panel.dataset.reconSearch ?? "";
-    const currentDiscs = panel.dataset.reconDiscs ? panel.dataset.reconDiscs.split(",") : disciplines;
+    const currentDiscs = "reconDiscs" in panel.dataset
+      ? panel.dataset.reconDiscs.split(",").filter(Boolean)
+      : disciplines.slice();
+    const STATUS_ORDER = ["matched", "name_mismatch", "corrected", "unmatched", "ffjda_only"];
+    const STATUS_LABELS = {
+      matched: "\u2705 Match",
+      name_mismatch: "\u26A0\uFE0F Nom diff.",
+      corrected: "\u270F\uFE0F Corrige",
+      unmatched: "\u274C Non matche",
+      ffjda_only: "\u{1F195} FFJDA seul"
+    };
+    const statusSet = new Set(rec.map((r) => String(r.status ?? "")));
+    const statuses = STATUS_ORDER.filter((s) => statusSet.has(s));
+    const currentStatuses = "reconStatuses" in panel.dataset
+      ? panel.dataset.reconStatuses.split(",").filter(Boolean)
+      : statuses.slice();
     const filterBar = `<div class="members-list-controls" style="margin-bottom:10px">
-      <div class="members-filter-row" style="margin-bottom:0">
-        <span style="display:flex;align-items:center;gap:6px;font-size:0.75rem;font-weight:700;color:rgba(255,255,255,0.5)">
+      <div class="members-filter-row" style="margin-bottom:0;flex-wrap:wrap;gap:10px">
+        <span style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:0.75rem;font-weight:700;color:rgba(255,255,255,0.5)">
           Disciplines :
           ${disciplines.map((d) => {
       const active = currentDiscs.includes(d);
       return `<label class="members-disc-toggle ${active ? "active" : ""}"><input type="checkbox" data-recon-disc="${esc(d)}" ${active ? "checked" : ""}> ${esc(DISC_LABELS[d] || d)}</label>`;
     }).join("")}
         </span>
+        <span style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:0.75rem;font-weight:700;color:rgba(255,255,255,0.5)">
+          Statut :
+          ${statuses.map((s) => {
+      const active = currentStatuses.includes(s);
+      return `<label class="members-disc-toggle ${active ? "active" : ""}"><input type="checkbox" data-recon-status="${esc(s)}" ${active ? "checked" : ""}> ${esc(STATUS_LABELS[s] || s)}</label>`;
+    }).join("")}
+        </span>
         <label style="display:flex;align-items:center;gap:4px;font-size:0.8rem;font-weight:600;margin-left:auto">
           Rechercher :
-          <input type="text" id="reconSearchInput" value="${esc(currentSearch)}" placeholder="Nom ou email..."
+          <input type="text" id="reconSearchInput" value="${esc(currentSearch)}" placeholder="Nom, email, licence..."
             style="background:rgba(255,255,255,0.08);color:#e0e0e0;border:1px solid rgba(255,255,255,0.12);border-radius:4px;padding:3px 8px;font-size:0.8rem;font-weight:600;width:200px">
         </label>
       </div>
@@ -899,6 +949,8 @@ async function renderReconciliationTab() {
       <span style="margin-left:auto;color:rgba(255,255,255,0.5);font-size:0.82rem">${totalHa} HA \xB7 ${totalFfjda} FFJDA</span>
     </div>`;
     const filtered = rec.filter((r) => {
+      const st = String(r.status ?? "");
+      if (!currentStatuses.includes(st)) return false;
       const disc = normalizeDisc(r.ha_discipline);
       if (disc && currentDiscs.length > 0 && !currentDiscs.includes(disc)) return false;
       if (!disc && currentDiscs.length < disciplines.length && currentDiscs.length > 0) return false;
@@ -944,15 +996,25 @@ async function renderReconciliationTab() {
       <div style="text-align:right;font-size:0.75rem;color:rgba(255,255,255,0.4);padding:4px 8px">${totalFiltered} / ${rec.length} lignes</div>
     </div>`;
     panel.innerHTML = filterBar + statsBar + tableHtml;
-    panel.querySelectorAll('.members-disc-toggle input[type="checkbox"]').forEach((cb) => {
+    panel.querySelectorAll("input[data-recon-disc]").forEach((cb) => {
       cb.addEventListener("change", () => {
         const disc = cb.dataset.reconDisc ?? "";
         const checked = cb.checked;
         const label = cb.closest(".members-disc-toggle");
         if (label) label.classList.toggle("active", checked);
-        const current = (panel.dataset.reconDiscs ?? disciplines.join(",")).split(",");
-        const updated = checked ? [...current, disc] : current.filter((d) => d !== disc);
+        const updated = checked ? [...currentDiscs, disc] : currentDiscs.filter((d) => d !== disc);
         panel.dataset.reconDiscs = updated.join(",");
+        void renderReconciliationTab();
+      });
+    });
+    panel.querySelectorAll("input[data-recon-status]").forEach((cb) => {
+      cb.addEventListener("change", () => {
+        const st = cb.dataset.reconStatus ?? "";
+        const checked = cb.checked;
+        const label = cb.closest(".members-disc-toggle");
+        if (label) label.classList.toggle("active", checked);
+        const updated = checked ? [...currentStatuses, st] : currentStatuses.filter((s) => s !== st);
+        panel.dataset.reconStatuses = updated.join(",");
         void renderReconciliationTab();
       });
     });
@@ -975,69 +1037,6 @@ async function renderReconciliationTab() {
   } catch (e) {
     console.error("Reconciliation render error:", e);
     panel.innerHTML = `<div class="members-empty">Erreur : ${esc(String(e))}</div>`;
-  }
-}
-async function loadReconciliationContent() {
-  const content = document.getElementById("reconciliationContent");
-  if (!content) return;
-  try {
-    const data = await _deps.getReconciliation();
-    if (!data?.reconciliation) {
-      content.innerHTML = '<p class="audit-status">Aucune donnee de reconciliation. Importez d abord un CSV FFJDA.</p>';
-      return;
-    }
-    const rec = data.reconciliation;
-    const matched = data.matched || 0;
-    const nameMismatch = data.name_mismatch || 0;
-    const corrected = data.corrected || 0;
-    const unmatched = data.unmatched || 0;
-    const ffjdaOnly = data.ffjda_only || 0;
-    const totalHa = data.total_ha || 0;
-    const totalFfjda = data.total_ffjda || 0;
-    const statsHtml = `
-      <div class="members-stats-bar">
-        <span class="members-stat matched">\u2705 <strong>${matched}</strong> match</span>
-        <span class="members-stat mismatch">\u26A0\uFE0F <strong>${nameMismatch}</strong> nom diff.</span>
-        <span class="members-stat corrected">\u270F\uFE0F <strong>${corrected}</strong> corrige</span>
-        <span class="members-stat unmatched">\u274C <strong>${unmatched}</strong> non matche</span>
-        <span class="members-stat ffjda-only">\u{1F195} <strong>${ffjdaOnly}</strong> FFJDA seul</span>
-        <span style="margin-left:auto;color:rgba(255,255,255,0.5);font-size:0.82rem">${totalHa} HA \xB7 ${totalFfjda} FFJDA</span>
-      </div>`;
-    const rows = rec.map((r) => {
-      const status = String(r.status ?? "");
-      const statusBadge = getStatusHtml(status);
-      const haName = r.ha_first_name || r.ha_last_name ? renderEditableName(r.item_id, r.ha_first_name, r.ha_last_name) : "\u2014";
-      const ffjdaName = r.ffjda_first_name || r.ffjda_last_name ? `${esc(r.ffjda_first_name)} ${esc(r.ffjda_last_name)}` : "\u2014";
-      return `<tr>
-        <td>${haName}</td><td>${ffjdaName}</td>
-        <td style="font-size:0.78rem">${r.ha_email ? esc(r.ha_email) : "\u2014"}</td>
-        <td style="font-size:0.78rem">${r.ffjda_email ? esc(r.ffjda_email) : "\u2014"}</td>
-        <td style="font-size:0.78rem">${r.ha_dob ? esc(r.ha_dob) : "\u2014"}</td>
-        <td style="font-size:0.78rem">${r.ffjda_dob ? esc(r.ffjda_dob) : "\u2014"}</td>
-        <td style="font-size:0.78rem">${r.ffjda_licence ? esc(r.ffjda_licence) : "\u2014"}</td>
-        <td>${statusBadge}</td>
-      </tr>`;
-    }).join("");
-    content.innerHTML = statsHtml + `
-      <div class="members-table-wrap" style="max-height:55vh">
-        <table class="members-table" style="font-size:0.8rem">
-          <thead><tr>
-            <th>HelloAsso</th><th>FFJDA</th><th>Email HA</th><th>Email FFJDA</th>
-            <th>Naiss. HA</th><th>Naiss. FFJDA</th><th>Licence</th><th>Statut</th>
-          </tr></thead>
-          <tbody>${rows}</tbody>
-        </table>
-      </div>`;
-    content.querySelectorAll(".ha-edit-btn").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const b = btn;
-        openInlineEdit(b.dataset.itemId, b.dataset.first ?? "", b.dataset.last ?? "");
-      });
-    });
-  } catch (e) {
-    console.error("Reconciliation load error:", e);
-    content.innerHTML = `<div class="members-empty">Erreur : ${esc(String(e))}</div>`;
   }
 }
 function getStatusHtml(status) {
