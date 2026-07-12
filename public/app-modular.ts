@@ -112,6 +112,7 @@ import { notifyAdminAlert, __isAdminForUi, initAdminService } from './modules/ad
 
 // ===== Export UI (fully extracted) =====
 import { createExportUI } from './modules/export-ui.js';
+import { createExportTimesheet } from './modules/export-timesheet.js';
 
 // ===== Members section (main window) =====
 import { initMembersSection, toggleMembersSection, bootMembersSection } from './modules/members-section.js';
@@ -244,12 +245,29 @@ const __exportUI = createExportUI({
 
 const exportDeclarationXLS           = __exportUI.exportDeclarationXLS;
 const exportExpenseHTML              = __exportUI.exportExpenseHTML;
-const exportTimesheetHTML            = __exportUI.exportTimesheetHTML;
 const exportMonthlyExpenses          = __exportUI.exportMonthlyExpenses;
 const exportBackupJSON               = __exportUI.exportBackupJSON;
 const importCoachData                = __exportUI.importCoachData;
 const openMileagePreviewModal        = __exportUI.openMileagePreviewModal;
-const openMonthlySummaryPreviewModal = __exportUI.openMonthlySummaryPreviewModal;
+
+// ===== Export Timesheet (full HTML layout) =====
+const __exportTimesheet = createExportTimesheet({
+  getCurrentCoach:             () => currentCoach,
+  getCurrentMonth:             () => currentMonth,
+  getTimeData:                 () => timeData,
+  getCoaches:                  () => coaches,
+  escapeHtml:                  __escapeHtml,
+  getCoachDisplayName:         __getCoachDisplayName,
+  getProfileLabel:             __getProfileLabel,
+  isVolunteerProfile:          __isVolunteerProfile,
+  isAdminProfile:              __isAdminProfile,
+  getMonthlyMileageBreakdown:  __getMonthlyMileageBreakdown,
+  logAuditEvent:               __logAuditEvent,
+  buildMonthlyAuditPayload:    __buildMonthlyAuditPayload,
+});
+// Override with the full-format versions
+const exportTimesheetHTML            = __exportTimesheet.exportTimesheetHTML;
+const openMonthlySummaryPreviewModal = __exportTimesheet.openMonthlySummaryPreviewModal;
 
 // ===== Members section init =====
 initMembersSection({
