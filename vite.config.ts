@@ -18,6 +18,10 @@ export default defineConfig({
     },
   },
 
+  esbuild: {
+    drop: ['console'],
+  },
+
   build: {
     // Dossier de sortie à la racine du projet
     outDir: '../dist',
