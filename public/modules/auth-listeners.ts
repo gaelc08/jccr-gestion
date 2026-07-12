@@ -409,7 +409,7 @@ export function setupAuthListeners(): void {
           el.style.display = isAdmin ? 'flex' : 'none';
         } else {
           const inSidebar = el.closest('#appSidebar');
-          el.style.display = isAdmin ? (inSidebar ? 'block' : 'inline-block') : 'none';
+          el.style.display = isAdmin ? (inSidebar ? 'flex' : 'inline-block') : 'none';
         }
       });
 
