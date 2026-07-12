@@ -139,7 +139,7 @@ function renderFilters(competitions: Competition[], isAdmin: boolean): string {
   const categories = getAllCategories(competitions);
   const niveaux    = Object.keys(NIVEAU_CONFIG) as NiveauKey[];
   const niveauOptions    = niveaux.map((n) => `<option value="${n}"${_filteredNiveau === n ? ' selected' : ''}>${NIVEAU_CONFIG[n].label}</option>`).join('');
-  const categoryOptions  = categories.map((c) => `<option value="${c}"${_filteredCategory === c ? ' selected' : ''}>${escapeHtml(c)}</option>`).join('');
+  const categoryOptions  = categories.map((c) => `<option value="${escapeHtml(c)}"${_filteredCategory === c ? ' selected' : ''}>${escapeHtml(c)}</option>`).join('');
   const typeOptions      = TYPE_OPTIONS.map((t) => `<option value="${t}"${_filteredType === t ? ' selected' : ''}>${escapeHtml(t)}</option>`).join('');
   const syncBtn          = isAdmin ? `<button id="compSyncBtn" class="btn-secondary">🔄 Synchroniser</button>` : '';
   return `

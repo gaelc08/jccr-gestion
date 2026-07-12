@@ -559,6 +559,7 @@ export function createExportUI({
         globalThis.fetch(`${supabaseUrl}/rest/v1/users?select=*`,     { headers: { apikey: supabaseKey, Authorization: `Bearer ${currentAccessToken}` } }),
         globalThis.fetch(`${supabaseUrl}/rest/v1/time_data?select=*`, { headers: { apikey: supabaseKey, Authorization: `Bearer ${currentAccessToken}` } }),
       ]);
+      if (!coachesRes.ok || !timeDataRes.ok) throw new Error(`Erreur Supabase (users: ${coachesRes.status}, time_data: ${timeDataRes.status})`);
       const coachesData   = await coachesRes.json();
       const timeDataData  = await timeDataRes.json();
       const backup        = { exportedAt: new Date().toISOString(), coaches: coachesData, time_data: timeDataData };
@@ -574,13 +575,20 @@ export function createExportUI({
     if (!data?.coaches || !data?.time_data) { alert('Format de fichier JSON invalide.'); return; }
     if (!confirm(`Importer ${data.coaches.length} profil(s) et ${data.time_data.length} entrée(s) ?`)) return;
     try {
-      for (const coach of data.coaches) {
-        await globalThis.fetch(`${supabaseUrl}/rest/v1/users`, { method: 'POST', headers: { apikey: supabaseKey, Authorization: `Bearer ${currentAccessToken}`, 'Content-Type': 'application/json', Prefer: 'return=representation,resolution=merge-duplicates' }, body: JSON.stringify(coach) });
+      const failures: string[] = [];
+      for (const [i, coach] of data.coaches.entries()) {
+        const res = await globalThis.fetch(`${supabaseUrl}/rest/v1/users`, { method: 'POST', headers: { apikey: supabaseKey, Authorization: `Bearer ${currentAccessToken}`, 'Content-Type': 'application/json', Prefer: 'return=representation,resolution=merge-duplicates' }, body: JSON.stringify(coach) });
+        if (!res.ok) failures.push(`coach #${i + 1}: HTTP ${res.status} ${(await res.text()).slice(0, 200)}`);
       }
-      for (const row of data.time_data) {
-        await globalThis.fetch(`${supabaseUrl}/rest/v1/time_data`, { method: 'POST', headers: { apikey: supabaseKey, Authorization: `Bearer ${currentAccessToken}`, 'Content-Type': 'application/json', Prefer: 'return=representation,resolution=merge-duplicates' }, body: JSON.stringify(row) });
+      for (const [i, row] of data.time_data.entries()) {
+        const res = await globalThis.fetch(`${supabaseUrl}/rest/v1/time_data`, { method: 'POST', headers: { apikey: supabaseKey, Authorization: `Bearer ${currentAccessToken}`, 'Content-Type': 'application/json', Prefer: 'return=representation,resolution=merge-duplicates' }, body: JSON.stringify(row) });
+        if (!res.ok) failures.push(`time_data #${i + 1}: HTTP ${res.status} ${(await res.text()).slice(0, 200)}`);
       }
-      alert('Import terminé avec succès.');
+      if (failures.length > 0) {
+        alert(`Import terminé avec ${failures.length} échec(s) :\n` + failures.join('\n'));
+      } else {
+        alert('Import terminé avec succès.');
+      }
     } catch (e) { alert("Erreur lors de l'import : " + (e as Error).message); }
   }
 

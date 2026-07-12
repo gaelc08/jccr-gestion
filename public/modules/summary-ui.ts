@@ -82,6 +82,7 @@ export async function toggleFreezeMonth(): Promise<void> {
   const frozen         = isCurrentMonthFrozen();
   const key            = `${coach.id}-${normalizedMonth}`;
 
+  try {
   if (frozen) {
     const urlObj = new URL(`${supabaseUrl}/rest/v1/frozen_timesheets`);
     urlObj.searchParams.set('coach_id', `eq.${coach.id}`);
@@ -132,6 +133,10 @@ export async function toggleFreezeMonth(): Promise<void> {
     await _logAuditEvent!('timesheet.freeze', 'frozen_timesheet', __buildMonthlyAuditPayload({
       coach, entityId: key, month: normalizedMonth,
     }));
+  }
+  } catch (e) {
+    alert('Erreur réseau lors du gel/dégel : ' + ((e as Error)?.message || e));
+    return;
   }
   setCurrentMonth(normalizedMonth);
   updateFreezeUI();

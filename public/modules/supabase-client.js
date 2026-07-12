@@ -12,7 +12,7 @@ const __originalFetch = globalThis.fetch?.bind(globalThis);
 
 export const __supabaseFetchDebugWrapped = async (input, init = {}) => {
   const url = typeof input === 'string' ? input : (input?.url ?? '');
-  const isSupabase = String(url).includes('.supabase.co');
+  const isSupabase = String(url).startsWith(supabaseUrl);
 
   if (isSupabase) {
     console.log('DEBUG fetch ->', url, init);

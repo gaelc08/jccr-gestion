@@ -31,6 +31,7 @@ let _supabase;
 let _listDisciplines = { judo: true, iaido: true, taiso: true };
 let _listSort = "name-asc";
 let _listSearch = "";
+let _colsDropdownListenerAttached = false;
 const _listColumns = {
   name: true,
   age: true,
@@ -288,12 +289,16 @@ async function renderListTab() {
       colsDropdown.style.display = colsDropdown.style.display === "none" ? "block" : "none";
     }
   });
-  document.addEventListener("click", (e) => {
-    const target = e.target;
-    if (colsDropdown && colsDropdown.style.display !== "none" && !target.closest(".members-col-selector")) {
-      colsDropdown.style.display = "none";
-    }
-  });
+  if (!_colsDropdownListenerAttached) {
+    _colsDropdownListenerAttached = true;
+    document.addEventListener("click", (e) => {
+      const target = e.target;
+      const dropdown = document.getElementById("membersColsDropdown");
+      if (dropdown && dropdown.style.display !== "none" && !target.closest(".members-col-selector")) {
+        dropdown.style.display = "none";
+      }
+    });
+  }
   const colToggles = (colsDropdown ?? panel).querySelectorAll('.members-col-toggle input[type="checkbox"]');
   colToggles.forEach((cb) => {
     cb.addEventListener("change", () => {

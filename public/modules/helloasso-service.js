@@ -46,19 +46,29 @@ async function _apiCall(endpoint, options = {}) {
     fetchOptions.body = options.body;
   }
   const r = await fetch(`${SYNC_API_BASE}${endpoint}`, fetchOptions);
-  const data = await r.json();
+  const text = await r.text();
   if (!r.ok) {
     let msg;
-    if (Array.isArray(data.detail)) {
-      msg = data.detail.map(e => e.msg || JSON.stringify(e)).join('; ');
-    } else if (typeof data.detail === 'string') {
-      msg = data.detail;
-    } else {
-      msg = JSON.stringify(data);
+    try {
+      const data = JSON.parse(text);
+      if (Array.isArray(data.detail)) {
+        msg = data.detail.map(e => e.msg || JSON.stringify(e)).join('; ');
+      } else if (typeof data.detail === 'string') {
+        msg = data.detail;
+      } else {
+        msg = JSON.stringify(data);
+      }
+    } catch {
+      // Réponse non-JSON (ex. page d'erreur HTML 502/504)
+      msg = text.slice(0, 200);
     }
     throw new Error(msg || `HelloAsso API error ${r.status}`);
   }
-  return data;
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error(`Réponse HelloAsso invalide (JSON attendu) : ${text.slice(0, 200)}`);
+  }
 }
 
 export async function syncHelloAssoMembers(_supabase) {

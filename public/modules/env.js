@@ -41,8 +41,12 @@ export const effectiveEnv = isTestHost
   ? 'test'
   : (effectiveOverride || ((isLocalHost || isDevHost) ? 'dev' : 'prod'));
 
-const localDevUrlOverride = window.localStorage.getItem('jct.dev.supabase.url');
-const localDevKeyOverride = window.localStorage.getItem('jct.dev.supabase.key');
+let localDevUrlOverride = null;
+let localDevKeyOverride = null;
+try {
+  localDevUrlOverride = window.localStorage.getItem('jct.dev.supabase.url');
+  localDevKeyOverride = window.localStorage.getItem('jct.dev.supabase.key');
+} catch {}
 
 export const supabaseUrl = effectiveEnv === 'test'
   ? TEST_SUPABASE_URL

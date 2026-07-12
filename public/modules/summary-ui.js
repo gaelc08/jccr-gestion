@@ -56,6 +56,7 @@ async function toggleFreezeMonth() {
   const normalizedMonth = __normalizeMonth(currentMonth);
   const frozen = isCurrentMonthFrozen();
   const key = `${coach.id}-${normalizedMonth}`;
+  try {
   if (frozen) {
     const urlObj = new URL(`${supabaseUrl}/rest/v1/frozen_timesheets`);
     urlObj.searchParams.set("coach_id", `eq.${coach.id}`);
@@ -110,6 +111,10 @@ async function toggleFreezeMonth() {
       entityId: key,
       month: normalizedMonth
     }));
+  }
+  } catch (e) {
+    alert("Erreur r\xE9seau lors du gel/d\xE9gel : " + (e?.message || e));
+    return;
   }
   setCurrentMonth(normalizedMonth);
   updateFreezeUI();

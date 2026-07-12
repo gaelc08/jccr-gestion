@@ -80,6 +80,7 @@ let _supabase: unknown;
 let _listDisciplines: Record<string, boolean> = { judo: true, iaido: true, taiso: true };
 let _listSort = 'name-asc';
 let _listSearch = '';
+let _colsDropdownListenerAttached = false;
 const _listColumns: Record<string, boolean> = {
   name: true,
   age: true,
@@ -370,14 +371,18 @@ async function renderListTab(): Promise<void> {
     }
   });
 
-  // Close dropdown on outside click
-  document.addEventListener('click', (e) => {
-    const target = e.target as HTMLElement;
-    if (colsDropdown && colsDropdown.style.display !== 'none' &&
-        !target.closest('.members-col-selector')) {
-      colsDropdown.style.display = 'none';
-    }
-  });
+  // Close dropdown on outside click (attach once to avoid listener leak)
+  if (!_colsDropdownListenerAttached) {
+    _colsDropdownListenerAttached = true;
+    document.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+      const dropdown = document.getElementById('membersColsDropdown');
+      if (dropdown && dropdown.style.display !== 'none' &&
+          !target.closest('.members-col-selector')) {
+        dropdown.style.display = 'none';
+      }
+    });
+  }
 
   const colToggles = (colsDropdown ?? panel).querySelectorAll('.members-col-toggle input[type="checkbox"]');
   colToggles.forEach((cb) => {
