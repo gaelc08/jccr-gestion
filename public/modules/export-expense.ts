@@ -1,6 +1,23 @@
 // export-expense.js — Note de frais HTML (aperçu + impression)
 import { getMonthlyExpenseReceiptIssues, showMileagePreviewModal } from './export-helpers.js';
 
+interface ExpenseRow {
+  date: string;
+  description?: string;
+  departurePlace?: string;
+  arrivalPlace?: string;
+  km?: number;
+  mileageAmount: number;
+  tollAmount: number;
+  hotelAmount: number;
+  purchaseAmount: number;
+  amount: number;
+  effectiveRate?: number;
+  justificationUrl?: string;
+  hotelJustificationUrl?: string;
+  achatJustificationUrl?: string;
+}
+
 export function createExportExpense({
   getCurrentCoach,
   getCurrentMonth,

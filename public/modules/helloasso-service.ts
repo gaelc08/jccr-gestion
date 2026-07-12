@@ -15,10 +15,10 @@ async function _getApiToken() {
   // Fallback to chrome.storage.sync (extension context)
   if (!token && typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
     try {
-      const result = await new Promise((resolve) => {
+      const result = await new Promise<{ jcc_api_token?: string }>((resolve) => {
         chrome.storage.sync.get(['jcc_api_token'], resolve);
       });
-      token = result.jcc_api_token;
+      token = result.jcc_api_token ?? null;
     } catch (e) { /* ignore */ }
   }
   

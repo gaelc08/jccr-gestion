@@ -1,6 +1,6 @@
 export function createAuthStorage() {
   const store = new Map();
-  let persistentStorage = null;
+  let persistentStorage: Storage | null = null;
 
   try {
     const probeKey = '__judo_coach_tracker_auth_probe__';

@@ -1,60 +1,65 @@
-// holidays-data.ts — French public holidays (static data)
+export const publicHolidaysFallback = {
+  2025: {
+    "2025-01-01": "Jour de l'An",
+    "2025-04-21": "Lundi de Pâques",
+    "2025-05-01": "Fête du Travail",
+    "2025-05-08": "Victoire 1945",
+    "2025-05-29": "Ascension",
+    "2025-06-09": "Lundi de Pentecôte",
+    "2025-07-14": "Fête Nationale",
+    "2025-08-15": "Assomption",
+    "2025-11-01": "Toussaint",
+    "2025-11-11": "Armistice",
+    "2025-12-25": "Noël"
+  },
+  2026: {
+    "2026-01-01": "Jour de l'An",
+    "2026-04-06": "Lundi de Pâques",
+    "2026-05-01": "Fête du Travail",
+    "2026-05-08": "Victoire 1945",
+    "2026-05-14": "Ascension",
+    "2026-05-25": "Lundi de Pentecôte",
+    "2026-07-14": "Fête Nationale",
+    "2026-08-15": "Assomption",
+    "2026-11-01": "Toussaint",
+    "2026-11-11": "Armistice",
+    "2026-12-25": "Noël"
+  },
+  2027: {
+    "2027-01-01": "Jour de l'An",
+    "2027-03-29": "Lundi de Pâques",
+    "2027-05-01": "Fête du Travail",
+    "2027-05-08": "Victoire 1945",
+    "2027-05-06": "Ascension",
+    "2027-05-17": "Lundi de Pentecôte",
+    "2027-07-14": "Fête Nationale",
+    "2027-08-15": "Assomption",
+    "2027-11-01": "Toussaint",
+    "2027-11-11": "Armistice",
+    "2027-12-25": "Noël"
+  }
+};
 
-export interface Holiday {
-  /** ISO date YYYY-MM-DD */
-  date: string;
-  label: string;
-}
-
-/**
- * Returns French public holidays for a given year.
- * Covers fixed-date holidays + Easter-based moveable feasts.
- */
-export function getFrenchHolidays(year: number): Holiday[] {
-  // Easter Sunday (Anonymous Gregorian algorithm)
-  const a = year % 19;
-  const b = Math.floor(year / 100);
-  const c = year % 100;
-  const d = Math.floor(b / 4);
-  const e = b % 4;
-  const f = Math.floor((b + 8) / 25);
-  const g = Math.floor((b - f + 1) / 3);
-  const h = (19 * a + b - d - g + 15) % 30;
-  const i = Math.floor(c / 4);
-  const k = c % 4;
-  const l = (32 + 2 * e + 2 * i - h - k) % 7;
-  const m = Math.floor((a + 11 * h + 22 * l) / 451);
-  const easterMonth = Math.floor((h + l - 7 * m + 114) / 31); // 1-based
-  const easterDay = ((h + l - 7 * m + 114) % 31) + 1;
-
-  const easter = new Date(year, easterMonth - 1, easterDay);
-
-  const addDays = (base: Date, days: number): string => {
-    const d = new Date(base);
-    d.setDate(d.getDate() + days);
-    return d.toISOString().slice(0, 10);
-  };
-
-  const fmt = (month: number, day: number): string =>
-    `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-
-  return [
-    { date: fmt(1, 1),   label: 'Jour de l\'an' },
-    { date: addDays(easter, 1),  label: 'Lundi de Pâques' },
-    { date: fmt(5, 1),   label: 'Fête du Travail' },
-    { date: fmt(5, 8),   label: 'Victoire 1945' },
-    { date: addDays(easter, 39), label: 'Ascension' },
-    { date: addDays(easter, 50), label: 'Lundi de Pentecôte' },
-    { date: fmt(7, 14),  label: 'Fête Nationale' },
-    { date: fmt(8, 15),  label: 'Assomption' },
-    { date: fmt(11, 1),  label: 'Toussaint' },
-    { date: fmt(11, 11), label: 'Armistice' },
-    { date: fmt(12, 25), label: 'Noël' },
-  ];
-}
-
-/** Quick lookup: is a given ISO date a French public holiday? */
-export function isFrenchHoliday(isoDate: string, year?: number): boolean {
-  const y = year ?? parseInt(isoDate.slice(0, 4), 10);
-  return getFrenchHolidays(y).some((h) => h.date === isoDate);
-}
+export const schoolHolidaysFallback = {
+  2025: [
+    { start: "2025-02-22", end: "2025-03-09", name: "Vacances d'Hiver" },
+    { start: "2025-04-19", end: "2025-05-04", name: "Vacances de Printemps" },
+    { start: "2025-07-05", end: "2025-09-01", name: "Vacances d'Été" },
+    { start: "2025-10-18", end: "2025-11-03", name: "Vacances de Toussaint" },
+    { start: "2025-12-20", end: "2026-01-05", name: "Vacances de Noël" }
+  ],
+  2026: [
+    { start: "2026-02-14", end: "2026-03-02", name: "Vacances d'Hiver" },
+    { start: "2026-04-11", end: "2026-04-27", name: "Vacances de Printemps" },
+    { start: "2026-07-04", end: "2026-08-31", name: "Vacances d'Été" },
+    { start: "2026-10-17", end: "2026-11-02", name: "Vacances de Toussaint" },
+    { start: "2026-12-19", end: "2027-01-04", name: "Vacances de Noël" }
+  ],
+  2027: [
+    { start: "2027-02-13", end: "2027-03-01", name: "Vacances d'Hiver" },
+    { start: "2027-04-10", end: "2027-04-26", name: "Vacances de Printemps" },
+    { start: "2027-07-03", end: "2027-08-31", name: "Vacances d'Été" },
+    { start: "2027-10-23", end: "2027-11-08", name: "Vacances de Toussaint" },
+    { start: "2027-12-18", end: "2028-01-03", name: "Vacances de Noël" }
+  ]
+};

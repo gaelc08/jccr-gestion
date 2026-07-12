@@ -1,5 +1,10 @@
+interface BeforeInstallPromptEvent extends Event {
+  prompt(): Promise<void>;
+  readonly userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
+
 export function setupPWA() {
-  let deferredInstallPrompt = null;
+  let deferredInstallPrompt: BeforeInstallPromptEvent | null = null;
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', async () => {
@@ -21,7 +26,7 @@ export function setupPWA() {
 
   window.addEventListener('beforeinstallprompt', (event) => {
     event.preventDefault();
-    deferredInstallPrompt = event;
+    deferredInstallPrompt = event as BeforeInstallPromptEvent;
     installBtn.style.display = 'inline-block';
   });
 

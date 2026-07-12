@@ -4,6 +4,7 @@
 import { __normalizeEmail, __normalizeMonth, __hasAdminClaim } from './shared-utils.js';
 import { getCoachDisplayName, getCurrentUserDisplayName, getProfileType, isVolunteerProfile, isAdminProfile, getProfileLabel, findExistingProfileByEmail } from './profile-utils.js';
 import { parseFiscalPower, getMileageScaleBand, getLegacyKmRateFromFiscalPower, formatNumberFr, getMileageScaleDescription, calculateAnnualMileageAmount, getMileageYearBreakdown, getMonthlyMileageBreakdown } from './mileage-service.js';
+import type { Coach } from '../../src/types/index.js';
 
 // ===== In-memory state =====
 export let coaches = [];

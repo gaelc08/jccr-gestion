@@ -2,6 +2,7 @@
 // Fetches competitions from Supabase and triggers sync via Edge Function.
 
 import { supabaseUrl, supabaseKey, effectiveEnv } from './env.js';
+import type { Competition } from '../../src/types/index.js';
 
 /**
  * Fetch competitions from Supabase with optional filters.
@@ -11,7 +12,7 @@ import { supabaseUrl, supabaseKey, effectiveEnv } from './env.js';
  * @param {boolean} opts.upcoming   - Only return future competitions (date >= today - 7d)
  * @returns {Promise<Array>}
  */
-export async function fetchCompetitions({ niveau = null, categories = null, upcoming = true } = {}) {
+export async function fetchCompetitions({ niveau = null, categories = null, upcoming = true }: { niveau?: string | null; categories?: string[] | null; upcoming?: boolean } = {}): Promise<Competition[]> {
   const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
   const supabase = createClient(supabaseUrl, supabaseKey);
 
