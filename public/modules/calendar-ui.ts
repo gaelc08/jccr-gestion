@@ -286,13 +286,18 @@ async function handleDayClick(dateStr: string): Promise<void> {
   const isAdmin = await isCurrentUserAdminDB();
   const frozen = isCurrentMonthFrozen();
   if (!isAdmin && frozen) { alert("Cette fiche est gelée. Seul l'administrateur peut la modifier."); return; }
-  openDayModal(dateStr);
+  await openDayModal(dateStr);
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Day modal
 // ──────────────────────────────────────────────────────────────────────────────
-export function openDayModal(dateStr: string): void {
+export async function openDayModal(dateStr: string): Promise<void> {
+  if (!currentCoach) { alert('Veuillez sélectionner un profil.'); return; }
+  const isAdmin = await isCurrentUserAdminDB();
+  const frozen = isCurrentMonthFrozen();
+  if (frozen && !isAdmin) { alert("Cette fiche est gelée. Seul l'administrateur peut la modifier."); return; }
+
   setSelectedDay(dateStr);
 
   const coach = currentCoach as Coach;
