@@ -6,8 +6,8 @@ export function createInviteDebugTools({
   getCurrentSession,
   getCurrentAccessToken,
   getInviteDebugLast = () => window.__inviteDebugLast || null,
-} = {}) {
-  function collectInviteDebug({ token = getCurrentAccessToken?.(), inviteEmail, ...extra } = {}) {
+}: Record<string, any> = {}) {
+  function collectInviteDebug({ token = getCurrentAccessToken?.(), inviteEmail, ...extra } = {} as any) {
     const currentUser = getCurrentUser?.() || null;
     const currentSession = getCurrentSession?.() || null;
     return {

@@ -3,7 +3,7 @@ export function createHolidayService({
   schoolFallback,
   fetchImpl = globalThis.fetch?.bind(globalThis),
   logger = console,
-} = {}) {
+}: Record<string, any> = {}) {
   const fetchFn = fetchImpl || globalThis.fetch?.bind(globalThis);
   if (!fetchFn) {
     throw new Error('fetch is not available in this browser environment');

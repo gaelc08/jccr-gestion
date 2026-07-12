@@ -76,7 +76,7 @@ export function __describeJwt(token: unknown): JwtDescription {
     segments: value.split('.').length,
     sub: payload?.sub ?? null,
     email: __maskEmail(payload?.email),
-    appMetadataIsAdmin: payload?.app_metadata?.is_admin ?? null,
+    appMetadataIsAdmin: payload?.app_metadata?.is_admin as boolean ?? null,
     role: payload?.role ?? null,
     aud: payload?.aud ?? null,
     iss: payload?.iss ?? null,

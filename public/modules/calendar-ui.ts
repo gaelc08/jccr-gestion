@@ -79,7 +79,7 @@ interface DayElementOptions {
 // ──────────────────────────────────────────────────────────────────────────────
 // Holiday service
 // ──────────────────────────────────────────────────────────────────────────────
-const __holidayService = createHolidayService({
+const __holidayService = (createHolidayService as any)({
   publicFallback: publicHolidaysFallback,
   schoolFallback: schoolHolidaysFallback,
   fetchImpl: globalThis.fetch?.bind(globalThis),
@@ -145,7 +145,7 @@ export function updateCoachGreeting(
     (user as { user_metadata?: Record<string, string> }).user_metadata?.first_name?.trim() ||
     (user as { user_metadata?: Record<string, string> }).user_metadata?.firstname?.trim() ||
     null;
-  const displayName = firstName || (coach ? __getCoachDisplayName(coach) : (user.email || user.id));
+  const displayName = firstName || (coach ? __getCoachDisplayName(coach as any) : (user.email || user.id));
   el.textContent = `Bonjour ${displayName},`;
   el.style.display = '';
 }
@@ -304,8 +304,8 @@ export function openDayModal(dateStr: string): void {
 
   const isVolunteerOrAdmin =
     __isVolunteerProfile(coach) ||
-    (coach as Record<string, unknown>).profile_type === 'admin' ||
-    (coach as Record<string, unknown>).role === 'admin';
+    (coach as unknown as Record<string, unknown>).profile_type === 'admin' ||
+    (coach as unknown as Record<string, unknown>).role === 'admin';
   const hoursGroup = document.getElementById('trainingHoursGroup') as HTMLElement | null;
   if (hoursGroup) hoursGroup.style.display = isVolunteerOrAdmin ? 'none' : '';
 
@@ -420,7 +420,7 @@ export async function saveDay(): Promise<void> {
   );
 
   if (_notifyAdminAlert) {
-    const coachName = __getCoachDisplayName(coach) || (coach as Record<string, unknown>).name as string || 'Inconnu';
+    const coachName = __getCoachDisplayName(coach) || (coach as unknown as Record<string, unknown>).name as string || 'Inconnu';
     _notifyAdminAlert(coachName, selectedDay, { hours, km, peage, hotel, achat, competition }).catch(() => {});
   }
 

@@ -52,27 +52,27 @@ export function setupAuthStateChange(supabase, {
 
     // --- Invite flow ---
     if (event === 'SIGNED_IN' && getInviteFlowActive?.() && session?.user) {
-      document.getElementById('invitePasswordModal')?.classList.add('active');
-      const inviteSetPasswordBtn = document.getElementById('inviteSetPasswordBtn');
+      (document.getElementById('invitePasswordModal') as HTMLInputElement | null)?.classList.add('active');
+      const inviteSetPasswordBtn = document.getElementById('inviteSetPasswordBtn') as HTMLInputElement | null;
       if (!inviteSetPasswordBtn) return;
       inviteSetPasswordBtn.onclick = async () => {
-        const newPass     = document.getElementById('inviteNewPasswordInput')?.value;
-        const confirmPass = document.getElementById('inviteConfirmPasswordInput')?.value;
+        const newPass     = (document.getElementById('inviteNewPasswordInput') as HTMLInputElement | null)?.classList;
+        const confirmPass = (document.getElementById('inviteConfirmPasswordInput') as HTMLInputElement | null)?.classList;
         if (!newPass)                  { alert('Veuillez saisir un mot de passe.'); return; }
         if (newPass.length < 8)        { alert('Le mot de passe doit contenir au moins 8 caractères.'); return; }
         if (newPass !== confirmPass)   { alert('Les mots de passe ne correspondent pas.'); return; }
         setInviteFlowActive(false);
-        document.getElementById('invitePasswordModal')?.classList.remove('active');
+        (document.getElementById('invitePasswordModal') as HTMLInputElement | null)?.classList.remove('active');
         const { error } = await supabase.auth.updateUser({ password: newPass });
         if (error) {
           setInviteFlowActive(true);
-          document.getElementById('invitePasswordModal')?.classList.add('active');
-          document.getElementById('inviteNewPasswordInput').value    = '';
-          document.getElementById('inviteConfirmPasswordInput').value = '';
+          (document.getElementById('invitePasswordModal') as HTMLInputElement | null)?.classList.add('active');
+          (document.getElementById('inviteNewPasswordInput') as HTMLInputElement).value    = '';
+          (document.getElementById('inviteConfirmPasswordInput') as HTMLInputElement).value = '';
           alert(error.message);
         } else {
-          document.getElementById('inviteNewPasswordInput').value    = '';
-          document.getElementById('inviteConfirmPasswordInput').value = '';
+          (document.getElementById('inviteNewPasswordInput') as HTMLInputElement).value    = '';
+          (document.getElementById('inviteConfirmPasswordInput') as HTMLInputElement).value = '';
         }
       };
       return;
@@ -80,12 +80,12 @@ export function setupAuthStateChange(supabase, {
 
     // --- Password recovery ---
     if (event === 'PASSWORD_RECOVERY') {
-      document.getElementById('passwordResetModal')?.classList.add('active');
-      const updatePasswordBtn = document.getElementById('updatePasswordBtn');
+      (document.getElementById('passwordResetModal') as HTMLInputElement | null)?.classList.add('active');
+      const updatePasswordBtn = document.getElementById('updatePasswordBtn') as HTMLInputElement | null;
       if (!updatePasswordBtn) return;
       updatePasswordBtn.onclick = async () => {
-        const newPass     = document.getElementById('newPasswordInput')?.value;
-        const confirmPass = document.getElementById('confirmPasswordInput')?.value;
+        const newPass     = (document.getElementById('newPasswordInput') as HTMLInputElement | null)?.classList;
+        const confirmPass = (document.getElementById('confirmPasswordInput') as HTMLInputElement | null)?.classList;
         if (!newPass)                { alert('Veuillez saisir un nouveau mot de passe.'); return; }
         if (newPass.length < 8)     { alert('Le mot de passe doit contenir au moins 8 caractères.'); return; }
         if (newPass !== confirmPass) { alert('Les mots de passe ne correspondent pas.'); return; }
@@ -93,9 +93,9 @@ export function setupAuthStateChange(supabase, {
         if (error) {
           alert(error.message);
         } else {
-          document.getElementById('newPasswordInput').value    = '';
-          document.getElementById('confirmPasswordInput').value = '';
-          document.getElementById('passwordResetModal')?.classList.remove('active');
+          (document.getElementById('newPasswordInput') as HTMLInputElement).value    = '';
+          (document.getElementById('confirmPasswordInput') as HTMLInputElement).value = '';
+          (document.getElementById('passwordResetModal') as HTMLInputElement | null)?.classList.remove('active');
           alert('Mot de passe mis à jour avec succès. Veuillez vous reconnecter.');
           await supabase.auth.signOut();
         }
@@ -103,15 +103,15 @@ export function setupAuthStateChange(supabase, {
       return;
     }
 
-    const statusSpan = document.getElementById('authStatus');
-    const select     = document.getElementById('coachSelect');
+    const statusSpan = document.getElementById('authStatus') as HTMLInputElement | null;
+    const select     = document.getElementById('coachSelect') as HTMLInputElement | null;
     const user       = session?.user;
 
     if (user) {
       setCurrentUser(user);
       if (statusSpan) statusSpan.textContent = `Connecté : ${user.email}`;
-      document.getElementById('authContainer').style.display = 'none';
-      document.getElementById('appContainer').style.display  = 'block';
+      (document.getElementById('authContainer') as HTMLElement).style.display = 'none';
+      (document.getElementById('appContainer') as HTMLElement).style.display  = 'block';
 
       if (__uiInitializedForUser === user.id) return;
       __uiInitializedForUser = user.id;
@@ -120,8 +120,8 @@ export function setupAuthStateChange(supabase, {
       applyAdminUI(isAdmin);
 
       if (isAdmin) {
-        const topMonth    = document.getElementById('adminTopBarMonthSelect');
-        const sidebarMonth = document.getElementById('monthSelect');
+        const topMonth    = document.getElementById('adminTopBarMonthSelect') as HTMLInputElement | null;
+        const sidebarMonth = document.getElementById('monthSelect') as HTMLInputElement | null;
         if (topMonth && sidebarMonth) topMonth.value = sidebarMonth.value;
       }
 
@@ -142,7 +142,7 @@ export function setupAuthStateChange(supabase, {
           }
         }
         if (isAdmin) {
-          const topCoach = document.getElementById('adminTopBarCoachSelect');
+          const topCoach = document.getElementById('adminTopBarCoachSelect') as HTMLInputElement | null;
           if (topCoach && select) topCoach.value = select.value;
         }
       } catch (e) {
@@ -176,7 +176,7 @@ export function setupAuthStateChange(supabase, {
 
       if (!currentCoach) {
         import('./competitions-ui.js').then(m => {
-          const section = document.getElementById('competitionsSection');
+          const section = document.getElementById('competitionsSection') as HTMLInputElement | null;
           if (section) section.style.display = 'block';
           m.showCompetitionsSection();
         }).catch(() => {});
@@ -195,8 +195,8 @@ export function setupAuthStateChange(supabase, {
       __adminFirstNameCache  = null;
       if (select) select.innerHTML = '<option value="">-- Sélectionner --</option>';
       if (statusSpan) statusSpan.textContent = 'Non connecté.';
-      document.getElementById('authContainer').style.display = 'flex';
-      document.getElementById('appContainer').style.display  = 'none';
+      (document.getElementById('authContainer') as HTMLElement).style.display = 'flex';
+      (document.getElementById('appContainer') as HTMLElement).style.display  = 'none';
       updateCoachGreeting?.(null, null, true);
     }
   });

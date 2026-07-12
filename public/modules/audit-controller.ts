@@ -13,9 +13,9 @@ export function createAuditController({
   auditMatchesCurrentCoach,
   normalizeEmail,
   normalizeMonth,
-  getElementById = (id) => document.getElementById(id),
-  alertFn = (message) => window.alert(message),
-} = {}) {
+  getElementById = (id: string) => document.getElementById(id),
+  alertFn = (message: string) => window.alert(message),
+}: Record<string, any> = {}) {
   function renderAuditLogs() {
     const body = getElementById('auditLogsTableBody');
     const status = getElementById('auditLogsStatus');

@@ -1,5 +1,10 @@
 // export-helpers.js — Shared private helpers for export modules
 
+interface ExpenseReceiptIssue {
+  date: string;
+  missing: string[];
+}
+
 export function formatMonthLabel(monthValue, normalizeMonth) {
   const normalized = normalizeMonth(monthValue);
   const [year, month] = String(normalized || '').split('-');
@@ -14,14 +19,14 @@ export function closeMileagePreviewModal() {
 
 export function getMonthlyExpenseReceiptIssues(coachId, year, month, getTimeData) {
   const timeData = getTimeData();
-  const issues = [];
+  const issues: ExpenseReceiptIssue[] = [];
   Object.keys(timeData)
     .filter((key) => key.startsWith(`${coachId}-${year}-${month}`))
     .sort()
     .forEach((key) => {
       const date = key.split('-').slice(-3).join('-');
       const data = timeData[key] || {};
-      const missing = [];
+      const missing: string[] = [];
       if ((data.peage || 0) > 0 && !data.justificationUrl) missing.push('péage');
       if ((data.hotel || 0) > 0 && !data.hotelJustificationUrl) missing.push('hôtel');
       if ((data.achat || 0) > 0 && !data.achatJustificationUrl) missing.push('achat');
@@ -54,14 +59,14 @@ export function showMileagePreviewModal(html, modalTitle = 'Aperçu') {
   const titleEl = modal.querySelector('#previewModalTitle');
   if (titleEl) titleEl.textContent = modalTitle;
 
-  const iframe = modal.querySelector('#mileagePreviewFrame');
-  const printBtn = modal.querySelector('#previewPrintBtn');
+  const iframe = modal.querySelector('#mileagePreviewFrame') as HTMLIFrameElement | null;
+  const printBtn = modal.querySelector('#previewPrintBtn') as HTMLButtonElement | null;
 
   if (printBtn) printBtn.disabled = true;
   if (iframe) {
     iframe.onload = () => {
       if (printBtn) printBtn.disabled = false;
-      printBtn.onclick = () => {
+      printBtn!.onclick = () => {
         try {
           iframe.contentWindow?.focus();
           iframe.contentWindow?.print();

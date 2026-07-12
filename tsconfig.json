@@ -32,8 +32,7 @@
   },
   "include": [
     "src/**/*.ts",
-    "public/modules/**/*.ts",
-    "vite.config.ts"
+    "public/modules/**/*.ts"
   ],
   "exclude": [
     "node_modules",

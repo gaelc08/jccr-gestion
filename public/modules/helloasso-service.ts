@@ -15,10 +15,10 @@ async function _getApiToken() {
   // Fallback to chrome.storage.sync (extension context)
   if (!token && typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
     try {
-      const result = await new Promise((resolve) => {
+      const result = await new Promise<{ jcc_api_token?: string }>((resolve) => {
         chrome.storage.sync.get(['jcc_api_token'], resolve);
       });
-      token = result.jcc_api_token;
+      token = result.jcc_api_token ?? null;
     } catch (e) { /* ignore */ }
   }
   
@@ -30,20 +30,20 @@ async function _getApiToken() {
   return token;
 }
 
-async function _apiCall(endpoint, options = {}) {
+async function _apiCall(endpoint, options: Record<string, any> = {}) {
   const token = await _getApiToken();
   if (!token) {
     throw new Error('Token API HelloAsso non configuré. Configurez-le depuis l\'extension Chrome (⚙️ Paramètres).');
   }
-  const fetchOptions = {
+  const fetchOptions: any = {
     method: options.method || 'GET',
     headers: {
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json',
     },
   };
-  if (options.body) {
-    fetchOptions.body = options.body;
+  if ((options as any).body) {
+    fetchOptions.body = (options as any).body;
   }
   const r = await fetch(`${SYNC_API_BASE}${endpoint}`, fetchOptions);
   const text = await r.text();
@@ -139,13 +139,13 @@ export function parseHelloAssoCsv(csvText) {
   const iFirstName = find('prénom', 'prenom', 'firstname', 'first name');
   const iLastName  = find('nom', 'lastname', 'last name', 'surname');
 
-  const results = [];
+  const results: any[] = [];
   for (let i = 1; i < lines.length; i++) {
     const cols = lines[i].split(sep).map((c) => c.trim().replace(/^"|"$/g, ''));
     const email = iEmail >= 0 ? cols[iEmail]?.toLowerCase().trim() : null;
     const dob   = iBirth >= 0 ? cols[iBirth]?.trim() : null;
     if (!email || !dob) continue;
-    results.push({
+    (results as any[]).push({
       email,
       date_of_birth: dob,
       first_name: iFirstName >= 0 ? cols[iFirstName] : null,
@@ -161,7 +161,7 @@ export function parseHelloAssoCsv(csvText) {
  */
 export async function importHelloAssoCsvData(supabase, rows) {
   let updated = 0;
-  const notFound = [];
+  const notFound: any[] = [];
 
   for (const row of rows) {
     if (!row.email || !row.date_of_birth) continue;

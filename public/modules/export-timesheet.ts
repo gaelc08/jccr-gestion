@@ -1,6 +1,16 @@
 // export-timesheet.js — Relevé d'heures & synthèse mensuelle HTML
 import { showMileagePreviewModal } from './export-helpers.js';
 
+interface TimesheetRow {
+  date: string;
+  hours: number;
+  competition: boolean;
+  trainingAmount: number;
+  competitionAllowance: number;
+  lineTotal: number;
+  description: string;
+}
+
 export function createExportTimesheet({
   getCurrentCoach,
   getCurrentMonth,
@@ -32,7 +42,7 @@ export function createExportTimesheet({
     const esc = (v, fb = '') => escapeHtml(v || fb);
 
     let totalHours = 0, competitionDays = 0, totalCompetitionAllowance = 0, totalTrainingAmount = 0, totalAmount = 0;
-    const rows = [];
+    const rows: TimesheetRow[] = [];
     Object.keys(timeData).filter((key) => key.startsWith(`${currentCoach.id}-${year}-${month}`)).sort().forEach((key) => {
       const date = key.split('-').slice(-3).join('-');
       const data = timeData[key];

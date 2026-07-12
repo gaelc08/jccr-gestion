@@ -313,7 +313,7 @@ async function loadCompetitions(): Promise<void> {
   _loading = true;
   await renderSection();
   try {
-    _competitions = (await fetchCompetitions({ upcoming: true })) as Competition[];
+    _competitions = (await fetchCompetitions({ upcoming: true })) as any as Competition[];
   } catch (e) {
     console.error('competitions-ui: loadCompetitions error', e);
     _competitions = [];

@@ -1,6 +1,23 @@
 // export-expense.js — Note de frais HTML (aperçu + impression)
 import { getMonthlyExpenseReceiptIssues, showMileagePreviewModal } from './export-helpers.js';
 
+interface ExpenseRow {
+  date: string;
+  description?: string;
+  departurePlace?: string;
+  arrivalPlace?: string;
+  km?: number;
+  mileageAmount: number;
+  tollAmount: number;
+  hotelAmount: number;
+  purchaseAmount: number;
+  amount: number;
+  effectiveRate?: number;
+  justificationUrl?: string;
+  hotelJustificationUrl?: string;
+  achatJustificationUrl?: string;
+}
+
 export function createExportExpense({
   getCurrentCoach,
   getCurrentMonth,
@@ -32,7 +49,7 @@ export function createExportExpense({
       return;
     }
 
-    const rows = [];
+    const rows: any[] = [];
     let total = 0;
     Object.keys(timeData)
       .filter((key) => key.startsWith(`${currentCoach.id}-${year}-${month}`))
@@ -45,7 +62,7 @@ export function createExportExpense({
         const mileage = mileageBreakdown.byKey?.[key] || { amount: 0, effectiveRate: 0 };
         const amount = mileage.amount + (data.peage || 0) + (data.hotel || 0) + (data.achat || 0);
         total += amount;
-        rows.push({ date, ...data, mileageAmount: mileage.amount, tollAmount: data.peage || 0, hotelAmount: data.hotel || 0, purchaseAmount: data.achat || 0, amount, effectiveRate: mileage.effectiveRate });
+        (rows as any[]).push({ date, ...data, mileageAmount: mileage.amount, tollAmount: data.peage || 0, hotelAmount: data.hotel || 0, purchaseAmount: data.achat || 0, amount, effectiveRate: mileage.effectiveRate });
       });
 
     if (total === 0) { alert('Aucune dépense saisie pour ce mois.'); return; }
@@ -67,7 +84,7 @@ export function createExportExpense({
       try { const u = new URL(String(v), window.location.href); if (!['http:', 'https:'].includes(u.protocol.toLowerCase())) return ''; return escapeHtml(u.href); } catch { return ''; }
     };
     const buildJustifLinks = (row) => {
-      const links = [];
+      const links: string[] = [];
       const t = sanitizeUrl(row.justificationUrl); const h = sanitizeUrl(row.hotelJustificationUrl); const a = sanitizeUrl(row.achatJustificationUrl);
       if (t) links.push(`<a href="${t}" target="_blank" rel="noopener noreferrer">Péage</a>`);
       if (h) links.push(`<a href="${h}" target="_blank" rel="noopener noreferrer">Hôtel</a>`);

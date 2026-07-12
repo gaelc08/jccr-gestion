@@ -10,7 +10,7 @@ import { createAuthNoHangLock, createAuthStorage, detectInviteFlowFromUrlHash } 
 // We pass a custom fetch into createClient so requests can't bypass our logs.
 const __originalFetch = globalThis.fetch?.bind(globalThis);
 
-export const __supabaseFetchDebugWrapped = async (input, init = {}) => {
+export const __supabaseFetchDebugWrapped = async (input: any, init: RequestInit = {}) => {
   const url = typeof input === 'string' ? input : (input?.url ?? '');
   const isSupabase = String(url).startsWith(supabaseUrl);
 
@@ -63,7 +63,7 @@ export const __installLocksShim = () => {
     if (locks.__supabaseDebugWrapped) return;
     const originalRequest = locks.request.bind(locks);
     locks.__supabaseDebugWrapped = true;
-    locks.request = (name, options, callback) => {
+    (locks.request as any) = (name, options, callback) => {
       const lockName = String(name);
       const startedAt = performance.now();
       let finalOptions = options;
@@ -132,7 +132,7 @@ export async function debugSupabaseHealthFetch() {
 
 // ===== Auth storage override (avoid getSession/storage lock hangs) =====
 const __authStorage = createAuthStorage();
-const __authNoHangLock = createAuthNoHangLock({ logger: null });
+const __authNoHangLock = createAuthNoHangLock({ logger: undefined });
 
 // Detect invite flow from URL before createClient's detectSessionInUrl consumes the hash.
 export let __inviteFlowActive = detectInviteFlowFromUrlHash(window.location.hash);

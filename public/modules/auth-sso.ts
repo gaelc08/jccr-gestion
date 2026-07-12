@@ -69,11 +69,10 @@ export async function handleSSOCallback(supabase) {
 
 // ===== SSO button handler =====
 export function setupSSOButton(supabase) {
-  const ssoBtn = document.getElementById('ssoBtn');
-  if (!ssoBtn) return;
-  ssoBtn.addEventListener('click', () => {
-    ssoBtn.disabled = true;
-    ssoBtn.textContent = 'Redirection...';
+    const ssoBtn = document.getElementById('ssoBtn') as HTMLButtonElement | null;
+  ssoBtn!.addEventListener('click', () => {
+    ssoBtn!.disabled = true;
+    ssoBtn!.textContent = 'Redirection...';
     const codeVerifier = generateCodeVerifier();
     sessionStorage.setItem('pkce_verifier', codeVerifier);
     generateCodeChallenge(codeVerifier)

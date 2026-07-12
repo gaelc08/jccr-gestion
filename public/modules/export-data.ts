@@ -13,7 +13,7 @@ export function createExportData({
     const currentAccessToken = getCurrentAccessToken();
     const resolvedMonth = month || getCurrentMonth();
     if (!resolvedMonth) { alert('Veuillez sélectionner un mois.'); return; }
-    const btn = document.getElementById('exportMonthlyExpensesBtn');
+    const btn = document.getElementById('exportMonthlyExpensesBtn') as HTMLButtonElement | null;
     if (btn) { btn.disabled = true; btn.textContent = '⏳ Export en cours…'; }
     try {
       const res = await globalThis.fetch(`${supabaseUrl}/functions/v1/export-monthly-expenses`, {

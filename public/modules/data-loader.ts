@@ -83,7 +83,7 @@ export function loadCoaches(): void {
       const label = getProfileLabel(coach, { capitalized: true });
       const displayName =
         getCoachDisplayName(coach) ||
-        (coach as Record<string, unknown>).name as string ||
+        (coach as unknown as Record<string, unknown>).name as string ||
         coach.email ||
         String(coach.id);
       opt.textContent = `${displayName} (${label})`;
@@ -113,7 +113,7 @@ export async function loadAllDataFromSupabase(
   if (isAdmin) {
     const res = await _restSelect<Coach>('profiles');
     if (res.error) throw new Error(res.error.message);
-    newCoaches = (res.data ?? []).map((d) => ({ id: d.id, ...d }));
+    newCoaches = (res.data ?? []).map((d) => ({ ...d }));
   } else {
     let res = await _restSelect<Coach>('profiles', {
       filters: [['owner_uid', 'eq', (currentUser as { id: string }).id] as unknown as RestFilter],
@@ -142,7 +142,7 @@ export async function loadAllDataFromSupabase(
         console.warn('DEBUG claim_user_profile failed:', claimRes.status, text);
       }
     }
-    newCoaches = rows.map((d) => ({ id: d.id, ...d }));
+    newCoaches = rows.map((d) => ({ ...d }));
   }
   setCoaches(newCoaches);
   loadCoaches();

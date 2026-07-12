@@ -258,10 +258,10 @@ export function createExportUI({
         const date = key.split('-').slice(-3).join('-');
         const data = timeData[key];
         const hours = Number(data.hours) || 0;
-        const hourlyRate = Number((currentCoach as Record<string, number>).hourly_rate) || 0;
+        const hourlyRate = Number((currentCoach as unknown as Record<string, number>).hourly_rate) || 0;
         const trainingAmount = hours * hourlyRate;
         const competitionAllowance = data.competition
-          ? (Number((currentCoach as Record<string, number>).daily_allowance) || 0)
+          ? (Number((currentCoach as unknown as Record<string, number>).daily_allowance) || 0)
           : 0;
         return {
           date,
@@ -280,7 +280,7 @@ export function createExportUI({
     const totalTrainingAmount      = rows.reduce((s, r) => s + r.trainingAmount,      0);
     const totalCompetitionAllowance = rows.reduce((s, r) => s + r.competitionAllowance, 0);
     const grandTotal               = rows.reduce((s, r) => s + r.declaredTotal,      0);
-    const coachDisplayName         = getCoachDisplayName(currentCoach) || (currentCoach as Record<string, unknown>).name as string;
+    const coachDisplayName         = getCoachDisplayName(currentCoach) || (currentCoach as unknown as Record<string, unknown>).name as string;
     const exportDate               = new Date().toLocaleDateString('fr-FR');
 
     const ExcelJS = await loadExcelJs();
@@ -316,7 +316,7 @@ export function createExportUI({
     worksheet.getCell('C2').value = `Judo Club Cattenom Rodemack — période ${month}/${year}`;
     worksheet.getCell('C2').font = { name: 'Calibri', size: 11, color: { argb: 'FF526274' } };
 
-    const coach = currentCoach as Record<string, unknown>;
+    const coach = currentCoach as unknown as Record<string, unknown>;
     const metaRows: unknown[][] = [
       ['Intervenant', coachDisplayName || 'Non renseigné', 'Mois déclaré', `${month}/${year}`],
       ['Adresse', coach.address || 'Non renseignée', 'Taux horaire', Number(coach.hourly_rate) || 0],
@@ -374,7 +374,7 @@ export function createExportUI({
     nc.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF8FBFF' } };
 
     const buffer = await workbook.xlsx.writeBuffer();
-    const safeName = String((currentCoach as Record<string, unknown>).name || 'intervenant').replace(/[^a-z0-9_\-]/gi, '_');
+    const safeName = String((currentCoach as unknown as Record<string, unknown>).name || 'intervenant').replace(/[^a-z0-9_\-]/gi, '_');
     downloadBlob(new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), `declaration_salaire_${safeName}_${currentMonth}.xlsx`);
     await logAuditEvent('export.declaration_xlsx', 'export', buildMonthlyAuditPayload({ coach: currentCoach, entityId: `${currentCoach.id}-${currentMonth}`, metadata: { coach_name: coachDisplayName ?? null, total_hours: totalHours, competition_days: competitionDays, total_amount: grandTotal } }));
   }
@@ -417,7 +417,7 @@ export function createExportUI({
     if (total === 0) { alert('Aucune dépense saisie pour ce mois.'); return; }
 
     const logoUrl           = new URL('logo-jcc.png', window.location.href).href;
-    const coachDisplayName  = getCoachDisplayName(currentCoach) || (currentCoach as Record<string, unknown>).name as string;
+    const coachDisplayName  = getCoachDisplayName(currentCoach) || (currentCoach as unknown as Record<string, unknown>).name as string;
     const profileLabel      = getProfileLabel(currentCoach, { capitalized: true });
     const signatureLabel    = isVolunteerProfile(currentCoach) || isAdminProfile(currentCoach) ? 'Signature du bénévole / administrateur' : 'Signature du salarié';
     const totalMileageAmount  = rows.reduce((s, r) => s + (r.mileageAmount  || 0), 0);
@@ -425,7 +425,7 @@ export function createExportUI({
     const totalHotelAmount    = rows.reduce((s, r) => s + (r.hotelAmount    || 0), 0);
     const totalPurchaseAmount = rows.reduce((s, r) => s + (r.purchaseAmount || 0), 0);
     const totalMileageKm      = rows.reduce((s, r) => s + (Number(r.km)    || 0), 0);
-    const mileageScaleDescription = getMileageScaleDescription((currentCoach as Record<string, unknown>).fiscal_power);
+    const mileageScaleDescription = getMileageScaleDescription((currentCoach as unknown as Record<string, unknown>).fiscal_power);
 
     const esc = (v: unknown, fb = '') => escapeHtml(v || fb);
     const sanitizeUrl = (v: unknown): string => {
@@ -442,12 +442,12 @@ export function createExportUI({
       return links.length ? `<div class="justif-links">${links.join('')}</div>` : '<span class="meta-line">Aucun justificatif</span>';
     };
 
-    const safeCoachName           = esc((currentCoach as Record<string, unknown>).name);
+    const safeCoachName           = esc((currentCoach as unknown as Record<string, unknown>).name);
     const safeCoachDisplayName    = esc(coachDisplayName, 'Non renseigné');
-    const safeAddress             = esc((currentCoach as Record<string, unknown>).address, 'Non renseignée');
+    const safeAddress             = esc((currentCoach as unknown as Record<string, unknown>).address, 'Non renseignée');
     const safeProfileLabel        = esc(profileLabel);
-    const safeVehicle             = esc((currentCoach as Record<string, unknown>).vehicle, 'Non renseigné');
-    const safeFiscalPower         = esc((currentCoach as Record<string, unknown>).fiscal_power, 'Non renseignée');
+    const safeVehicle             = esc((currentCoach as unknown as Record<string, unknown>).vehicle, 'Non renseigné');
+    const safeFiscalPower         = esc((currentCoach as unknown as Record<string, unknown>).fiscal_power, 'Non renseignée');
     const safeMileageScaleDescription = esc(mileageScaleDescription);
     const safeSignatureLabel      = esc(signatureLabel);
 
@@ -479,12 +479,12 @@ export function createExportUI({
     const [year, month] = currentMonth.split('-');
     const today = new Date().toLocaleDateString('fr-FR');
     const logoUrl        = new URL('logo-jcc.png', window.location.href).href;
-    const coachDisplayName = getCoachDisplayName(currentCoach) || (currentCoach as Record<string, unknown>).name as string;
+    const coachDisplayName = getCoachDisplayName(currentCoach) || (currentCoach as unknown as Record<string, unknown>).name as string;
     const profileLabel   = getProfileLabel(currentCoach, { capitalized: true });
     const signatureLabel = isVolunteerProfile(currentCoach) || isAdminProfile(currentCoach)
       ? 'Signature du bénévole / administrateur' : 'Signature du salarié';
-    const hourlyRate     = Number((currentCoach as Record<string, number>).hourly_rate)    || 0;
-    const dailyAllowance = Number((currentCoach as Record<string, number>).daily_allowance) || 0;
+    const hourlyRate     = Number((currentCoach as unknown as Record<string, number>).hourly_rate)    || 0;
+    const dailyAllowance = Number((currentCoach as unknown as Record<string, number>).daily_allowance) || 0;
     const esc = (v: unknown, fb = '') => escapeHtml(v || fb);
 
     let totalHours = 0, competitionDays = 0, totalCompetitionAllowance = 0, totalTrainingAmount = 0, totalAmount = 0;
@@ -521,7 +521,7 @@ export function createExportUI({
         <td class="amount">${r.lineTotal.toFixed(2).replace('.', ',')} €</td>
       </tr>`).join('');
 
-    const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Relevé heures - ${esc((currentCoach as Record<string,unknown>).name)} - ${month}/${year}</title></head><body>${tableRows}</body></html>`;
+    const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Relevé heures - ${esc((currentCoach as unknown as Record<string,unknown>).name)} - ${month}/${year}</title></head><body>${tableRows}</body></html>`;
     __showMileagePreviewModal(html, 'Aperçu pointage mensuel');
     await logAuditEvent('export.timesheet_html', 'export', buildMonthlyAuditPayload({ coach: currentCoach, entityId: `${currentCoach.id}-${currentMonth}`, metadata: { total_hours: totalHours, competition_days: competitionDays } }));
   }
@@ -617,7 +617,7 @@ export function createExportUI({
       const totalMileageAmount = mileage?.total ?? 0;
       const salary           = isVolunteerProfile(coach) || isAdminProfile(coach)
         ? 0
-        : totalHours * ((coach as Record<string, number>).hourly_rate ?? 0);
+        : totalHours * ((coach as unknown as Record<string, number>).hourly_rate ?? 0);
       return { coach, totalHours, totalCompetitions, totalKm, totalMileageAmount, salary };
     }).filter((r) => r.totalHours > 0 || r.totalKm > 0);
 
