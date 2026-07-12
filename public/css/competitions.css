@@ -78,7 +78,7 @@
 .comp-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .comp-status {
@@ -98,8 +98,8 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 14px 16px;
+  gap: 4px;
+  padding: 10px 14px;
   transition: box-shadow 0.15s;
 }
 
@@ -191,28 +191,28 @@
 .comp-calendar {
   background: rgba(255,255,255,0.97);
   border-radius: var(--radius);
-  padding: 14px 16px;
+  padding: 10px 12px;
   box-shadow: var(--shadow-sm);
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .comp-cal-nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   gap: 8px;
 }
 
 .comp-cal-month-label {
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 0.9rem;
   color: var(--judo-navy);
 }
 
 .comp-cal-nav .btn-secondary {
-  padding: 5px 12px;
-  font-size: 0.82rem;
+  padding: 4px 10px;
+  font-size: 0.78rem;
   background: var(--judo-navy);
   color: white;
   border: 1px solid var(--judo-navy);
@@ -239,17 +239,17 @@
 }
 
 .comp-cal-day {
-  min-height: 40px;
+  min-height: 32px;
   border-radius: var(--radius-sm);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   position: relative;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   color: var(--gray-700);
   user-select: none;
-  padding: 2px;
+  padding: 1px;
 }
 
 .comp-cal-day--empty {
@@ -295,17 +295,17 @@
 .comp-day-detail {
   background: rgba(255,255,255,0.97);
   border-radius: var(--radius);
-  padding: 14px 16px;
+  padding: 10px 14px;
   box-shadow: var(--shadow-sm);
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   border-left: 4px solid var(--judo-gold);
 }
 
 .comp-day-detail-title {
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 700;
   color: var(--judo-navy);
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .comp-day-detail-list {
@@ -314,6 +314,7 @@
   gap: 10px;
 }
 
+/* ─── Dark mode overrides ─────────────────────────────────────── */
 [data-theme="dark"] .comp-toolbar,
 [data-theme="dark"] .comp-calendar,
 [data-theme="dark"] .comp-day-detail,
@@ -321,4 +322,29 @@
 [data-theme="dark"] .comp-card {
   background: #1a2744;
   color: var(--text-primary);
+}
+
+[data-theme="dark"] .comp-cal-month-label,
+[data-theme="dark"] .comp-cal-header-day,
+[data-theme="dark"] .comp-cal-day,
+[data-theme="dark"] .comp-cal-day--has-events,
+[data-theme="dark"] .comp-card-date,
+[data-theme="dark"] .comp-day-detail-title {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .comp-cal-day {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .comp-cal-day--has-events {
+  background: rgba(60, 100, 200, 0.2);
+}
+
+[data-theme="dark"] .comp-cal-day--has-events:hover {
+  background: rgba(60, 100, 200, 0.3);
+}
+
+[data-theme="dark"] .comp-cal-day--selected {
+  background: rgba(60, 100, 200, 0.25) !important;
 }

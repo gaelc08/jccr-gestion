@@ -224,8 +224,8 @@
   }
 
   .comp-cal-day {
-    min-height: 32px;
-    font-size: 0.75rem;
+    min-height: 28px;
+    font-size: 0.7rem;
   }
   .comp-cal-header-day {
     font-size: 0.65rem;
