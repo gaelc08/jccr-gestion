@@ -86,6 +86,11 @@
   flex-shrink: 0;
   vertical-align: middle;
 }
+.sidebar-nav-btn span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .sidebar-admin-title svg {
   color: #e2b13c;
   vertical-align: middle;

@@ -61,13 +61,13 @@ export function updateFreezeUI(): void {
   const btn    = document.getElementById('freezeBtn')    as HTMLButtonElement | null;
   if (banner) banner.style.display = frozen ? 'block' : 'none';
   if (btn) {
-    // Keep the SVG icon, only update the text node after it
-    const textNode = btn.childNodes[1] ?? btn.lastChild;
+    // Keep the SVG icon, only update the text in the span
+    const span = btn.querySelector('span');
     if (frozen) {
-      if (textNode && textNode.nodeType === Node.TEXT_NODE) textNode.textContent = ' Dégeler la fiche';
+      if (span) span.textContent = 'Dégeler la fiche';
       btn.classList.add('frozen');
     } else {
-      if (textNode && textNode.nodeType === Node.TEXT_NODE) textNode.textContent = ' Geler la fiche';
+      if (span) span.textContent = 'Geler la fiche';
       btn.classList.remove('frozen');
     }
   }
