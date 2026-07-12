@@ -78,7 +78,7 @@
 .comp-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .comp-status {
@@ -98,8 +98,8 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 10px 14px;
+  gap: 2px;
+  padding: 8px 12px;
   transition: box-shadow 0.15s;
 }
 
@@ -110,7 +110,7 @@
 .comp-card-header {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   flex-wrap: wrap;
 }
 
@@ -295,23 +295,23 @@
 .comp-day-detail {
   background: rgba(255,255,255,0.97);
   border-radius: var(--radius);
-  padding: 10px 14px;
+  padding: 8px 12px;
   box-shadow: var(--shadow-sm);
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   border-left: 4px solid var(--judo-gold);
 }
 
 .comp-day-detail-title {
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 700;
   color: var(--judo-navy);
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 
 .comp-day-detail-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
 }
 
 /* ─── Dark mode overrides ─────────────────────────────────────── */
