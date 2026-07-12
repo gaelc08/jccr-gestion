@@ -7,7 +7,7 @@ import {
   setTimeData, setSelectedDay,
   __getCoachDisplayName, __getProfileLabel, __isVolunteerProfile, __buildAuditPayload,
 } from './app-context.js';
-import { isCurrentUserAdminDB, __isAdminForUi } from './admin-service.js';
+import { __isAdminForUi } from './admin-service.js';
 import { createHolidayService } from './holidays-service.js';
 import { publicHolidaysFallback, schoolHolidaysFallback } from './holidays-data.js';
 import { updateSummary, updateFreezeUI, isCurrentMonthFrozen } from './summary-ui.js';
@@ -283,9 +283,8 @@ function createDayElement(day: number, dateStr: string, { publicHolidayDates, sc
 
 async function handleDayClick(dateStr: string): Promise<void> {
   if (!currentCoach) { alert('Veuillez sélectionner un profil.'); return; }
-  const isAdmin = await isCurrentUserAdminDB();
   const frozen = isCurrentMonthFrozen();
-  if (!isAdmin && frozen) { alert("Cette fiche est gelée. Seul l'administrateur peut la modifier."); return; }
+  if (frozen) { alert("Cette fiche est gelée. Seul l'administrateur peut la modifier."); return; }
   await openDayModal(dateStr);
 }
 
@@ -294,9 +293,8 @@ async function handleDayClick(dateStr: string): Promise<void> {
 // ──────────────────────────────────────────────────────────────────────────────
 export async function openDayModal(dateStr: string): Promise<void> {
   if (!currentCoach) { alert('Veuillez sélectionner un profil.'); return; }
-  const isAdmin = await isCurrentUserAdminDB();
   const frozen = isCurrentMonthFrozen();
-  if (frozen && !isAdmin) { alert("Cette fiche est gelée. Seul l'administrateur peut la modifier."); return; }
+  if (frozen) { alert("Cette fiche est gelée. Seul l'administrateur peut la modifier."); return; }
 
   setSelectedDay(dateStr);
 
