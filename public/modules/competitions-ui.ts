@@ -236,7 +236,7 @@ async function renderSection(): Promise<void> {
 
   container.innerHTML = `
     <div class="comp-header">
-      <h2>📅 Agenda</h2>
+      <h2>Agenda</h2>
       <p class="comp-subtitle">Source : <a href="https://www.judo-moselle.fr/evenement" target="_blank" rel="noopener">judo-moselle.fr</a></p>
     </div>
     ${filtersHtml}${calendarHtml}${dayDetailHtml}

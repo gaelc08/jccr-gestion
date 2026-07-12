@@ -84,11 +84,11 @@ function toggleCompetitionsSection(show?: boolean): void {
   const planningEls: (Element | null)[] = [
     document.getElementById('coachSelectorGroup'),
     document.getElementById('monthSelect')?.closest('label') ?? null,
+    document.getElementById('adminTopBar'),
     document.getElementById('frozenBanner'),
     document.getElementById('calendar'),
     document.querySelector('.summary.card'),
     document.querySelector('.legend.card'),
-    document.getElementById('coachGreeting'),
   ];
   planningEls.forEach((el) => {
     if (el) (el as HTMLElement).style.display = _competitionsVisible ? 'none' : '';

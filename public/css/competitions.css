@@ -52,6 +52,13 @@
   gap: 8px;
   padding-bottom: 2px;
   flex-shrink: 0;
+  margin-left: auto;
+}
+
+/* Smaller basis for filter labels inside the agenda toolbar */
+.comp-toolbar .toolbar-label {
+  flex: 1 1 140px;
+  min-width: 0;
 }
 
 /* btn-secondary sur fond clair (toolbar, section competitions) */
