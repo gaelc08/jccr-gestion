@@ -15,9 +15,9 @@ import { updateSummary } from './summary-ui.js';
 import { updateCalendar } from './calendar-ui.js';
 import { loadCoaches } from './data-loader.js';
 
-let _supabase = null;
-let _coachWriteViaRest = null;
-let _logAuditEvent = null;
+let _supabase: any = null;
+let _coachWriteViaRest: ((data: any, opts: { editingId: string | null }) => Promise<any>) | null = null;
+let _logAuditEvent: ((action: string, entity: string, payload: any) => Promise<any>) | null = null;
 
 export function initCoachManager({ supabase, coachWriteViaRest, logAuditEvent }) {
   _supabase = supabase;
@@ -26,15 +26,15 @@ export function initCoachManager({ supabase, coachWriteViaRest, logAuditEvent })
 }
 
 // ===== Modal open helper =====
-export function fillCoachForm(coach) {
+export function fillCoachForm(coach: Record<string, any>) {
   if (!coach) return;
   const profileType = coach.profile_type || coach.role || 'coach';
-  const profileTypeEl = document.getElementById('coachProfileType');
+  const profileTypeEl = document.getElementById('coachProfileType') as HTMLSelectElement | null;
   if (profileTypeEl) profileTypeEl.value = profileType;
-  const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val ?? ''; };
+  const set = (id: string, val: any) => { const el = document.getElementById(id) as HTMLInputElement | null; if (el) el.value = val ?? ''; };
   set('coachName',        coach.name);
   set('coachFirstName',   coach.first_name);
-  const civiliteEl = document.getElementById('coachCivilite');
+  const civiliteEl = document.getElementById('coachCivilite') as HTMLSelectElement | null;
   if (civiliteEl) civiliteEl.value = coach.civilite || 'MR';
   set('coachEmail',       coach.email);
   set('coachAddress',     coach.address);
@@ -46,87 +46,85 @@ export function fillCoachForm(coach) {
   updateCoachFormProfileUI(profileType);
 }
 
-export function openCoachModal(mode, coach = null) {
-  const modal = document.getElementById('coachModal');
+export function openCoachModal(mode: string, coach: Record<string, any> | null = null) {
+  const modal = document.getElementById('coachModal') as HTMLElement | null;
   if (!modal) return;
   if (mode === 'edit') {
-    document.getElementById('coachModalTitle').textContent = 'Modifier le profil';
+    (document.getElementById('coachModalTitle') as HTMLElement).textContent = 'Modifier le profil';
     setEditMode(true);
     if (coach) {
       setEditingCoachId(coach.id);
       fillCoachForm(coach);
     }
   } else {
-    document.getElementById('coachModalTitle').textContent = 'Ajouter un profil';
+    (document.getElementById('coachModalTitle') as HTMLElement).textContent = 'Ajouter un profil';
     clearCoachForm();
     setEditMode(false);
-    setEditingCoachId(null);
+    setEditingCoachId(null as any);
   }
   modal.classList.add('active');
 }
 
 // ===== Form helpers =====
-export function updateCoachFormProfileUI(profileType = null) {
-  const resolvedType = __getProfileType(profileType || document.getElementById('coachProfileType')?.value);
+export function updateCoachFormProfileUI(profileType: string | null = null) {
+  const profileTypeEl = document.getElementById('coachProfileType') as HTMLSelectElement | null;
+  const resolvedType = __getProfileType(profileType || profileTypeEl?.value);
   const isVolunteer = resolvedType === 'benevole';
   const isAdmin = resolvedType === 'admin';
-  const title = document.getElementById('coachModalTitle');
-  const rateGroup = document.getElementById('coachRateGroup');
-  const allowanceGroup = document.getElementById('dailyAllowanceGroup');
-  // Titre du modal : Bénévole / Administrateur / Entraîneur
-  if (title) title.textContent = isVolunteer ? 'B\u00e9n\u00e9vole' : (isAdmin ? 'Administrateur' : 'Entra\u00eeneur');
+  const title = document.getElementById('coachModalTitle') as HTMLElement | null;
+  const rateGroup = document.getElementById('coachRateGroup') as HTMLElement | null;
+  const allowanceGroup = document.getElementById('dailyAllowanceGroup') as HTMLElement | null;
+  if (title) title.textContent = isVolunteer ? 'Bénévole' : (isAdmin ? 'Administrateur' : 'Entraîneur');
   if (rateGroup) rateGroup.style.display = isVolunteer ? 'none' : '';
   if (allowanceGroup) allowanceGroup.style.display = isVolunteer ? 'none' : '';
 }
 
 export function clearCoachForm() {
-  document.getElementById('coachProfileType').value = 'coach';
-  document.getElementById('coachName').value = '';
-  document.getElementById('coachFirstName').value = '';
-  const civiliteResetEl = document.getElementById('coachCivilite');
+  (document.getElementById('coachProfileType')! as HTMLInputElement).value = 'coach';
+  (document.getElementById('coachName')! as HTMLInputElement).value = '';
+  (document.getElementById('coachFirstName')! as HTMLInputElement).value = '';
+  const civiliteResetEl = document.getElementById('coachCivilite') as HTMLInputElement | null;
   if (civiliteResetEl) civiliteResetEl.value = 'MR';
-  document.getElementById('coachEmail').value = '';
-  document.getElementById('coachAddress').value = '';
-  document.getElementById('coachVehicle').value = '';
-  document.getElementById('coachFiscalPower').value = '';
-  document.getElementById('coachRate').value = '';
-  document.getElementById('dailyAllowance').value = '';
+  (document.getElementById('coachEmail')! as HTMLInputElement).value = '';
+  (document.getElementById('coachAddress')! as HTMLInputElement).value = '';
+  (document.getElementById('coachVehicle')! as HTMLInputElement).value = '';
+  (document.getElementById('coachFiscalPower')! as HTMLInputElement).value = '';
+  (document.getElementById('coachRate')! as HTMLInputElement).value = '';
+  (document.getElementById('dailyAllowance')! as HTMLInputElement).value = '';
   updateCoachFormProfileUI('coach');
 }
 
 // ===== Save coach =====
 export async function saveCoach() {
   console.log('DEBUG saveCoach START');
-  if (!currentUser) { alert('Aucun utilisateur connect\u00e9.'); return; }
+  if (!currentUser) { alert('Aucun utilisateur connecté.'); return; }
   const isAdmin = await isCurrentUserAdminDB();
   if (!isAdmin) { alert("Seul l'administrateur peut effectuer cette action."); return; }
 
-  const name = document.getElementById('coachName').value.trim();
-  const profileType = __getProfileType(document.getElementById('coachProfileType').value);
+  const name = (document.getElementById('coachName')! as HTMLInputElement).value.trim();
+  const profileType = __getProfileType((document.getElementById('coachProfileType')! as HTMLInputElement).value);
   const isVolunteer = profileType === 'benevole';
   const isAdminProfile = profileType === 'admin';
-  const firstName = document.getElementById('coachFirstName').value.trim();
-  const email = __normalizeEmail(document.getElementById('coachEmail').value);
-  const address = document.getElementById('coachAddress').value.trim();
-  const vehicle = document.getElementById('coachVehicle').value.trim();
-  const fiscalPower = document.getElementById('coachFiscalPower').value.trim();
-  const rate = isVolunteer ? 0 : (parseFloat(document.getElementById('coachRate').value) || 0);
-  const allowance = isVolunteer ? 0 : (parseFloat(document.getElementById('dailyAllowance').value) || 0);
+  const firstName = (document.getElementById('coachFirstName')! as HTMLInputElement).value.trim();
+  const email = __normalizeEmail((document.getElementById('coachEmail')! as HTMLInputElement).value);
+  const address = (document.getElementById('coachAddress')! as HTMLInputElement).value.trim();
+  const vehicle = (document.getElementById('coachVehicle')! as HTMLInputElement).value.trim();
+  const fiscalPower = (document.getElementById('coachFiscalPower')! as HTMLInputElement).value.trim();
+  const rate = isVolunteer ? 0 : (parseFloat((document.getElementById('coachRate')! as HTMLInputElement).value) || 0);
+  const allowance = isVolunteer ? 0 : (parseFloat((document.getElementById('dailyAllowance')! as HTMLInputElement).value) || 0);
   const kmRate = isVolunteer ? 0 : (__getLegacyKmRateFromFiscalPower(fiscalPower) || 0);
-  const ownerUid = document.getElementById('coachOwnerUid')?.value?.trim() || null;
-  const civilite = document.getElementById('coachCivilite')?.value || 'MR';
+  const ownerUid = (document.getElementById('coachOwnerUid') as HTMLInputElement | null)?.value?.trim() || null;
+  const civilite = (document.getElementById('coachCivilite') as HTMLInputElement | null)?.value || 'MR';
 
   if (!name) { alert('Veuillez saisir un nom.'); return; }
 
   if (email) {
     const existing = __findExistingProfileByEmail(email, { excludeId: editMode ? editingCoachId : null });
-    if (existing) { alert(`Un profil avec l'e-mail ${email} existe d\u00e9j\u00e0.`); return; }
+    if (existing) { alert(`Un profil avec l'e-mail ${email} existe déjà.`); return; }
   }
 
   const coachData = {
     name,
-    // Le champ `role` doit refléter fidèlement le type de profil pour que
-    // getProfileType() fonctionne même si profile_type est null en base.
     role: isVolunteer ? 'benevole' : (isAdminProfile ? 'admin' : 'entraineur'),
     profile_type: profileType,
     civilite,
@@ -145,44 +143,42 @@ export async function saveCoach() {
   const editedId = editingCoachId;
   const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 8000));
 
-  let res;
+  let res: any;
   const dbPromise = wasEditMode
-    ? _supabase.from('profiles').update([coachData]).eq('id', editedId).select()
-    : _supabase.from('profiles').insert([coachData]).select();
+    ? _supabase!.from('profiles').update([coachData]).eq('id', editedId).select()
+    : _supabase!.from('profiles').insert([coachData]).select();
 
   try {
     res = await Promise.race([dbPromise, timeoutPromise]);
-  } catch (e) {
+  } catch (e: any) {
     console.warn('DEBUG saveCoach Supabase timeout, falling back to REST:', e.message);
-    res = await _coachWriteViaRest(coachData, { editingId: editedId });
+    res = await _coachWriteViaRest!(coachData, { editingId: editedId! });
   }
 
-  if (res.error) { alert('Erreur lors de la sauvegarde\u00a0: ' + res.error.message); return; }
-  if (!res.data?.length) { alert('Erreur\u00a0: aucune donn\u00e9e retourn\u00e9e.'); return; }
+  if (res.error) { alert('Erreur lors de la sauvegarde : ' + res.error.message); return; }
+  if (!res.data?.length) { alert('Erreur : aucune donnée retournée.'); return; }
 
   const saved = { id: res.data[0].id, ...res.data[0] };
 
   if (wasEditMode) {
-    setCoaches(coaches.map((c) => (c.id === editedId ? saved : c)));
-    // Si le profil édité est le profil actuellement sélectionné, mettre à jour currentCoach
-    // pour que l'affichage (puissance fiscale, label, barème km, etc.) soit immédiatement correct.
+    setCoaches(coaches!.map((c: any) => (c.id === editedId ? saved : c)));
     if (currentCoach?.id === editedId) {
       setCurrentCoach(saved);
     }
   } else {
-    setCoaches([...coaches, saved]);
+    setCoaches([...coaches!, saved]);
   }
 
-  await _logAuditEvent(
+  await _logAuditEvent!(
     wasEditMode ? 'profile.update' : 'profile.create',
     'user_profile',
     __buildAuditPayload({ coach: saved, entityId: saved.id }),
   );
 
-  document.getElementById('coachModal').classList.remove('active');
+  (document.getElementById('coachModal')!).classList.remove('active');
   clearCoachForm();
   setEditMode(false);
-  setEditingCoachId(null);
+  setEditingCoachId(null as any);
   loadCoaches();
   updateSummary();
   updateCalendar();
@@ -190,17 +186,17 @@ export async function saveCoach() {
 
 // ===== Delete coach =====
 export async function deleteCoach() {
-  if (!currentUser) { alert('Aucun utilisateur connect\u00e9.'); return; }
+  if (!currentUser) { alert('Aucun utilisateur connecté.'); return; }
   const isAdmin = await isCurrentUserAdminDB();
   if (!isAdmin) { alert("Seul l'administrateur peut supprimer un profil."); return; }
-  if (!editingCoachId) { alert('Aucun profil s\u00e9lectionn\u00e9.'); return; }
+  if (!editingCoachId) { alert('Aucun profil sélectionné.'); return; }
 
-  const coach = coaches.find((c) => c.id === editingCoachId);
-  if (!confirm(`Supprimer le profil \u00ab ${coach?.name || editingCoachId} \u00bb ? Cette action est irr\u00e9versible.`)) return;
+  const coach = coaches!.find((c: any) => c.id === editingCoachId);
+  if (!confirm(`Supprimer le profil « ${coach?.name || editingCoachId} » ? Cette action est irréversible.`)) return;
 
   if (coach?.owner_uid) {
     try {
-      const accessToken = await __getFreshAccessToken(_supabase);
+      const accessToken = await __getFreshAccessToken(_supabase!);
       await globalThis.fetch(`${supabaseUrl}/functions/v1/delete-coach-user`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json', apikey: supabaseKey },
@@ -211,31 +207,31 @@ export async function deleteCoach() {
     }
   }
 
-  const { error: e1 } = await _supabase.from('profiles').delete().eq('id', editingCoachId);
-  if (e1) { alert('Erreur lors de la suppression\u00a0: ' + e1.message); return; }
+  const { error: e1 } = await _supabase!.from('profiles').delete().eq('id', editingCoachId);
+  if (e1) { alert('Erreur lors de la suppression : ' + e1.message); return; }
 
-  await _supabase.from('time_data').delete().eq('coach_id', editingCoachId);
+  await _supabase!.from('time_data').delete().eq('coach_id', editingCoachId);
 
-  await _logAuditEvent('profile.delete', 'user_profile', __buildAuditPayload({ coach, entityId: editingCoachId }));
+  await _logAuditEvent!('profile.delete', 'user_profile', __buildAuditPayload({ coach, entityId: editingCoachId }));
 
-  setCoaches(coaches.filter((c) => c.id !== editingCoachId));
-  document.getElementById('coachModal').classList.remove('active');
+  setCoaches(coaches!.filter((c: any) => c.id !== editingCoachId));
+  (document.getElementById('coachModal')!).classList.remove('active');
   clearCoachForm();
   setEditMode(false);
-  setEditingCoachId(null);
+  setEditingCoachId(null as any);
   loadCoaches();
   updateSummary();
   updateCalendar();
 }
 
 // ===== Invite coach =====
-export async function inviteCoach(email) {
-  if (!currentUser) { alert('Aucun utilisateur connect\u00e9.'); return; }
+export async function inviteCoach(email: string) {
+  if (!currentUser) { alert('Aucun utilisateur connecté.'); return; }
   const isAdmin = await isCurrentUserAdminDB();
-  if (!isAdmin) { alert("Seul l'administrateur peut inviter un entra\u00eeneur."); return; }
+  if (!isAdmin) { alert("Seul l'administrateur peut inviter un entraîneur."); return; }
   const normalizedEmail = __normalizeEmail(email);
   if (!normalizedEmail) { alert("Adresse e-mail invalide."); return; }
-  const accessToken = await __getFreshAccessToken(_supabase);
+  const accessToken = await __getFreshAccessToken(_supabase!);
   if (!accessToken) { alert('Session invalide. Reconnectez-vous.'); return; }
   try {
     const res = await globalThis.fetch(`${supabaseUrl}/functions/v1/invite-coach`, {
@@ -244,21 +240,21 @@ export async function inviteCoach(email) {
       body: JSON.stringify({ email: normalizedEmail, redirectTo: window.location.origin + window.location.pathname }),
     });
     const json = await res.json().catch(() => ({}));
-    if (!res.ok) { alert('Erreur lors de l\'invitation\u00a0: ' + (json.error || res.statusText)); return; }
-    alert(`Invitation envoy\u00e9e \u00e0 ${normalizedEmail}.`);
-  } catch (e) {
-    alert('Erreur\u00a0: ' + e.message);
+    if (!res.ok) { alert('Erreur lors de l\'invitation : ' + (json.error || res.statusText)); return; }
+    alert(`Invitation envoyée à ${normalizedEmail}.`);
+  } catch (e: any) {
+    alert('Erreur : ' + e.message);
   }
 }
 
 // ===== Invite admin =====
-export async function inviteAdmin(email) {
-  if (!currentUser) { alert('Aucun utilisateur connect\u00e9.'); return; }
+export async function inviteAdmin(email: string) {
+  if (!currentUser) { alert('Aucun utilisateur connecté.'); return; }
   const isAdmin = await isCurrentUserAdminDB();
   if (!isAdmin) { alert("Seul l'administrateur peut inviter un administrateur."); return; }
   const normalizedEmail = __normalizeEmail(email);
   if (!normalizedEmail) { alert("Adresse e-mail invalide."); return; }
-  const accessToken = await __getFreshAccessToken(_supabase);
+  const accessToken = await __getFreshAccessToken(_supabase!);
   if (!accessToken) { alert('Session invalide. Reconnectez-vous.'); return; }
   try {
     const res = await globalThis.fetch(`${supabaseUrl}/functions/v1/invite-admin`, {
@@ -267,9 +263,9 @@ export async function inviteAdmin(email) {
       body: JSON.stringify({ email: normalizedEmail, redirectTo: window.location.origin + window.location.pathname }),
     });
     const json = await res.json().catch(() => ({}));
-    if (!res.ok) { alert('Erreur lors de l\'invitation admin\u00a0: ' + (json.error || res.statusText)); return; }
-    alert(`Invitation admin envoy\u00e9e \u00e0 ${normalizedEmail}.`);
-  } catch (e) {
-    alert('Erreur\u00a0: ' + e.message);
+    if (!res.ok) { alert('Erreur lors de l\'invitation admin : ' + (json.error || res.statusText)); return; }
+    alert(`Invitation admin envoyée à ${normalizedEmail}.`);
+  } catch (e: any) {
+    alert('Erreur : ' + e.message);
   }
 }

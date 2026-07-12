@@ -7,22 +7,22 @@ import { parseFiscalPower, getMileageScaleBand, getLegacyKmRateFromFiscalPower, 
 import type { Coach } from '../../src/types/index.js';
 
 // ===== In-memory state =====
-export let coaches = [];
-export let timeData = {};
-export let currentCoach = null;
-export let frozenMonths = new Set();
-export let currentUser = null;
-export let currentSession = null;
-export let currentAccessToken = null;
-export let auditLogs = [];
+export let coaches: Coach[] = [];
+export let timeData: Record<string, any> = {};
+export let currentCoach: Coach | null = null;
+export let frozenMonths: Set<string> = new Set();
+export let currentUser: Record<string, any> | null = null;
+export let currentSession: Record<string, any> | null = null;
+export let currentAccessToken: string | null = null;
+export let auditLogs: any[] = [];
 export let __eventListenersSetup = false;
 export let __monthlySummaryPreviewState = { month: null, report: null };
 
 const __now = new Date();
 export let currentMonth = `${__now.getFullYear()}-${String(__now.getMonth() + 1).padStart(2, '0')}`;
-export let selectedDay = null;
+export let selectedDay: string | null = null;
 export let editMode = false;
-export let editingCoachId = null;
+export let editingCoachId: string | null = null;
 
 // ===== State setters =====
 export function setCoaches(v) { coaches = v; }
