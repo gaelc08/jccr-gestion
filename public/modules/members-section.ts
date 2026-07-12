@@ -11,7 +11,7 @@
 
 import {
   setDeps, setMembers, setLastSync, setActiveTab, setMembersVisible,
-  getDeps, getMembers, getActiveTab, isMembersVisible,
+  getDeps, getMembers, getActiveTab, isMembersVisible, getLastSync,
 } from './members-core.ts';
 import type { ServiceDeps } from './members-types.ts';
 import { renderListTab }            from './members-list.ts';
@@ -83,8 +83,6 @@ async function loadAndRenderAll(): Promise<void> {
 async function updateToolbarInfo(): Promise<void> {
   const members = getMembers();
   const syncEl  = document.getElementById('membersSyncInfo');
-  // getLastSync() via import from core
-  const { getLastSync } = await import('./members-core.ts');
   const lastSync = getLastSync();
   if (syncEl) syncEl.textContent = lastSync
     ? `Dernière sync. : ${new Date(lastSync).toLocaleString('fr-FR')}`
