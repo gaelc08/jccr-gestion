@@ -85,6 +85,7 @@
   color: #e2b13c;
   flex-shrink: 0;
   vertical-align: middle;
+  margin-right: 8px; /* Ensure consistent spacing between icon and text */
 }
 .sidebar-nav-btn span {
   min-width: 0;
