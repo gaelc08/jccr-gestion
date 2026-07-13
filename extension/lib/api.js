@@ -83,10 +83,22 @@ async function apiCall(endpoint, options = {}) {
 // --- Fonctions utilitaires publiques ---
 
 /**
- * GET /adherents — récupère tous les adhérents synchronisés
+ * GET /adherents — récupère les adhérents synchronisés.
+ * @param {string} [campaign] - slug d'une campagne : ne charge que cette saison.
+ *                              Sans argument : agrège toutes les saisons connues
+ *                              (chaque adhérent porte alors un champ "season").
  */
-async function getAdherents() {
-  return apiCall("/adherents");
+async function getAdherents(campaign) {
+  const qs = campaign ? `?campaign=${encodeURIComponent(campaign)}` : "";
+  return apiCall(`/adherents${qs}`);
+}
+
+/**
+ * GET /campaigns/members — récupère les adhérents groupés par campagne/saison.
+ * Retourne { campaigns: [ { slug, label, season, count, adherents: [...] } ] }.
+ */
+async function getCampaignMembers() {
+  return apiCall("/campaigns/members");
 }
 
 /**
@@ -164,6 +176,7 @@ if (typeof window !== "undefined") {
     hasApiToken,
     getHaFormSlug,
     getAdherents,
+    getCampaignMembers,
     triggerSync,
     getCampaigns,
     setCurrentCampaign,

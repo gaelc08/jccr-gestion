@@ -128,6 +128,42 @@ body {
   cursor: pointer;
 }
 
+/* Filtre saison (injecté dynamiquement par popup.js) */
+.season-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: #f8f9ff;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 12px;
+}
+.season-filter label {
+  font-weight: 600;
+  color: #555;
+}
+.season-filter select {
+  flex: 1;
+  padding: 4px 8px;
+  font-size: 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+}
+
+/* Bandeau renouvellement (injecté dynamiquement par popup.js) */
+.renewal-notice {
+  padding: 8px 14px;
+  background: #ede7f6;
+  color: #4527a0;
+  font-size: 12px;
+  line-height: 1.4;
+  border-bottom: 1px solid #d1c4e9;
+}
+.renewal-notice.hidden { display: none; }
+.renewal-notice strong { font-weight: 700; }
+
 /* Filtre statut saisie */
 .saisie-filter {
   padding: 5px 14px;
@@ -236,6 +272,17 @@ body {
   padding: 1px 5px;
   border-radius: 3px;
   margin-left: 4px;
+}
+/* Badge saison (25-26 / 26-27) */
+.adherent-item .season-badge {
+  font-size: 9px;
+  background: #e8eaf6;
+  color: #283593;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-weight: 700;
+  margin-left: 4px;
+  letter-spacing: .3px;
 }
 .adherent-item.saisie { opacity: .55; }
 .adherent-item.saisie .name { text-decoration: line-through; }
