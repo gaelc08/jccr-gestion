@@ -63,12 +63,12 @@
 }
 
 .sidebar-nav-btn {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
   width: calc(100% - 24px);
   min-height: 44px;
-  padding: var(--space-3) var(--space-4);
+  padding: 8px 16px !important;
   background: transparent;
   border: none;
   border-radius: var(--radius-md);
@@ -78,7 +78,7 @@
   cursor: pointer;
   transition: background-color 0.15s ease-out, color 0.15s ease-out, padding-left 0.2s;
   margin: 2px var(--space-3);
-  gap: 10px;
+  gap: 10px !important;
 }
 /* Icônes SVG jaunes du menu (style line-icons Feather/Lucide, accent club) */
 .sidebar-nav-btn svg {
