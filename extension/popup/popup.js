@@ -186,13 +186,21 @@ function renderList() {
   filtered.forEach(({ a, idx }) => {
     const item = document.createElement('label');
     const isSaisie = !!a.saisie_ffjda;
-    item.className = 'adherent-item' + (selected.has(idx) ? ' checked' : '') + (isSaisie ? ' saisie' : '');
+    const hasLicence = !!a.ffjda_licence;
+    const reconStatus = a.recon_status || '';
+    item.className = 'adherent-item' + (selected.has(idx) ? ' checked' : '') + (isSaisie ? ' saisie' : '') + (hasLicence ? ' has-licence' : '');
     const sexeWarn = !a.sexe ? ' ⚠' : '';
     const saisieBadge = isSaisie ? '<span class="saisie-badge">✓ Saisie</span>' : '';
+    const licenceBadge = hasLicence ? `<span class="licence-badge">🔑 ${a.ffjda_licence}</span>` : '';
+    const reconBadge = reconStatus === 'matched' ? '<span class="recon-badge matched">✅ Match</span>'
+      : reconStatus === 'corrected' ? '<span class="recon-badge corrected">✏️ Corrigé</span>'
+      : reconStatus === 'name_mismatch' ? '<span class="recon-badge mismatch">⚠️ Nom</span>'
+      : reconStatus === 'unmatched' ? '<span class="recon-badge unmatched">❌ Non matché</span>'
+      : reconStatus === 'unknown' ? '' : '';
     const tierBadge = isIaido(a) ? '<span class="tier-badge iaido">⚔️</span>' : '';
     item.innerHTML = `
       <input type="checkbox" data-origidx="${idx}" ${selected.has(idx) ? 'checked' : ''}>
-      <span class="name">${a.nom} ${a.prenom}${sexeWarn}${tierBadge}${saisieBadge}</span>
+      <span class="name">${a.nom} ${a.prenom}${sexeWarn}${tierBadge}${saisieBadge}${licenceBadge}${reconBadge}</span>
       <span class="ddn">${a.date_naissance || ''}</span>
     `;
     item.querySelector('input').addEventListener('change', e => {

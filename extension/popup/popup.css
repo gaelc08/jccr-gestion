@@ -240,6 +240,31 @@ body {
 .adherent-item.saisie { opacity: .55; }
 .adherent-item.saisie .name { text-decoration: line-through; }
 
+/* Badge licence FFJDA */
+.adherent-item .licence-badge {
+  font-size: 9px;
+  background: #fff3e0;
+  color: #e65100;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-weight: 600;
+  margin-left: 4px;
+  font-family: monospace;
+}
+/* Badge statut réconciliation */
+.adherent-item .recon-badge {
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-weight: 600;
+  margin-left: 2px;
+}
+.adherent-item .recon-badge.matched   { background: #e8f5e9; color: #2e7d32; }
+.adherent-item .recon-badge.corrected  { background: #fff3e0; color: #e65100; }
+.adherent-item .recon-badge.mismatch   { background: #ffebee; color: #c62828; }
+.adherent-item .recon-badge.unmatched  { background: #fce4ec; color: #ad1457; }
+.adherent-item.has-licence { border-left: 3px solid #e65100; }
+
 /* Barre de progression */
 .progress-wrap {
   padding: 8px 14px 6px;
