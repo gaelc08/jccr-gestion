@@ -157,14 +157,23 @@
 }
 .sidebar-label select option { background: #0d1424; color: #e8ecf4; }
 
-.sidebar-admin-title {
+.sidebar-group-title {
   padding: var(--space-2) var(--space-4);
-  color: #e2b13c;
-  font-size: 0.75rem;
-  font-weight: 600;
+  color: #8892a8;
+  font-size: 0.7rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
   margin-bottom: var(--space-1);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.sidebar-group-title svg {
+  color: #8892a8;
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
 }
 
 /* ===== Desktop ≥ 768px : sidebar persistante, contenu décalé ===== */
