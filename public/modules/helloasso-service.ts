@@ -6,6 +6,8 @@
  * not blocked by Cloudflare, unlike the former Supabase Edge Function).
  */
 
+import { supabase } from './supabase-client.js';
+
 const SYNC_API_BASE = 'https://sync.judo-cattenom.fr';
 
 async function _getApiToken() {
@@ -204,9 +206,54 @@ export async function correctMemberName(itemId, firstName, lastName) {
 
 /**
  * Récupère les données de réconciliation (HA + FFJDA côte à côte).
+ * Lit depuis Supabase (table reconciliation_snapshot), mise à jour par le VPS après chaque sync.
  */
 export async function getReconciliation() {
-  return await _apiCall('/reconciliation');
+  try {
+    const { data, error } = await supabase
+      .from('reconciliation_snapshot')
+      .select('*')
+      .order('item_id', { ascending: true, nullsFirst: false });
+
+    if (error) {
+      console.error('Supabase reconciliation query error:', error);
+      throw error;
+    }
+
+    const rows = data || [];
+    
+    // Calculer les stats depuis les données
+    let totalHa = 0, totalFfjda = 0;
+    let matched = 0, nameMismatch = 0, corrected = 0;
+    let unmatched = 0, ffjdaOnly = 0;
+
+    for (const r of rows) {
+      if (r.item_id) totalHa++;
+      if (r.ffjda_licence) totalFfjda++;
+      switch (r.status) {
+        case 'matched': matched++; break;
+        case 'name_mismatch': nameMismatch++; break;
+        case 'corrected': corrected++; break;
+        case 'unmatched': unmatched++; break;
+        case 'ffjda_only': ffjdaOnly++; break;
+      }
+    }
+
+    return {
+      total_ha: totalHa,
+      total_ffjda: totalFfjda,
+      matched,
+      name_mismatch: nameMismatch,
+      corrected,
+      unmatched,
+      ffjda_only: ffjdaOnly,
+      reconciliation: rows,
+    };
+  } catch (e) {
+    // Fallback: si Supabase n'est pas disponible, on appelle le VPS directement
+    console.warn('Supabase reconciliation unavailable, falling back to VPS:', e);
+    return await _apiCall('/reconciliation');
+  }
 }
 
 /**
