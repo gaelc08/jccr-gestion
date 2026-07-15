@@ -1,9 +1,10 @@
-project_id = "nkzsjyzhpvivfgslzltn"
+# ⚠ Ancien environnement dev cloud — voir docs/legacy-dev-supabase.md
+# Fichier conservé comme template pour réimplémentation future
+project_id = ""
 
 [auth]
-# Dev environment URL used in auth e-mails when no redirectTo is provided.
-# Using the main app URL with ?env=dev so auth links work after the cantarero-dev host was retired.
-site_url = "https://gestion.judo-cattenom.fr/?env=dev"
+# (dev cloud mis en pause) Utiliser test.judo-cattenom.fr pour le test
+site_url = "https://test.judo-cattenom.fr"
 
 # Allowed post-auth redirect URLs for dev project.
 additional_redirect_urls = [

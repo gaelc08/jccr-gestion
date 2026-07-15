@@ -83,7 +83,7 @@ Frontend characteristics:
 Environment routing is centralized in `public/modules/env.js`.
 
 Current precedence:
-1. `?env=dev` or `?env=prod`
+1. `?env=dev` or `?env=prod` (⚠ `dev` deprecated — voir `docs/legacy-dev-supabase.md`)
 2. persisted localStorage override `jct.env.override`
 3. hostname detection
 

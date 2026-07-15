@@ -1,8 +1,12 @@
 const PROD_SUPABASE_URL = 'https://ajbpzueanpeukozjhkiv.supabase.co';
 const PROD_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFqYnB6dWVhbnBldWtvempoa2l2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4OTQyMTAsImV4cCI6MjA4ODQ3MDIxMH0.1i1nJ3DlHGVPIWKNjD64ZyHj3cxG4o-ikju-sO0T67A';
 
-const DEV_SUPABASE_URL = 'https://nkzsjyzhpvivfgslzltn.supabase.co';
-const DEV_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5renNqeXpocHZpdmZnc2x6bHRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM0MzQ4NDIsImV4cCI6MjA4OTAxMDg0Mn0.HmvvvQy3YLpc-YpV_WENuWsZz-MbBdknr35yhRvERVg';
+// ⚠ Projet cloud dev mis en pause — voir docs/legacy-dev-supabase.md
+// Les credentials sont gardés pour réimplémentation future.
+// Refs:  DEV_SUPABASE_URL = 'https://nkzsjyzhpvivfgslzltn.supabase.co'
+//        DEV_SUPABASE_KEY = 'eyJhbG...ERVg'
+const DEV_SUPABASE_URL = '' as const;
+const DEV_SUPABASE_KEY = '' as const;
 
 // Test environment: self-hosted Supabase behind Caddy proxy
 const TEST_SUPABASE_URL = 'https://test.judo-cattenom.fr/supabase';
@@ -75,7 +79,7 @@ export const VERSION_INCREMENT = '01';
 export const BUILD_ID = `${VERSION_DATE}-r${VERSION_INCREMENT}`;
 
 if (effectiveEnv === 'dev' && !localDevKeyOverride) {
-  console.info('DEBUG dev env active using remote dev Supabase project defaults.');
+  console.info('DEBUG env=dev: aucun override localStorage — utilisation de PROD par défaut. Voir docs/legacy-dev-supabase.md pour réactiver.');
 }
 
 console.log('DEBUG env:', effectiveEnv, 'supabase:', supabaseUrl);

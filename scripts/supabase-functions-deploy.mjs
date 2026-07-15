@@ -1,7 +1,7 @@
 import { spawnSync } from 'node:child_process';
 
 const targets = {
-  dev: 'nkzsjyzhpvivfgslzltn',
+  dev: '',  // Projet cloud mis en pause — voir docs/legacy-dev-supabase.md
   prod: 'ajbpzueanpeukozjhkiv',
 };
 

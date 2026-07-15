@@ -17,7 +17,7 @@ additional_redirect_urls = [
   "http://localhost:8000/",
   "http://127.0.0.1:8000",
   "http://127.0.0.1:8000/",
-  "https://gaelc08.github.io/judo-coach-tracker/?env=dev",
+  # "https://gaelc08.github.io/judo-coach-tracker/?env=dev",  # dev deprecated
   "https://gaelc08.github.io/judo-coach-tracker/?env=prod",
   "https://gestion.judo-cattenom.fr",
   "https://gestion.judo-cattenom.fr/",

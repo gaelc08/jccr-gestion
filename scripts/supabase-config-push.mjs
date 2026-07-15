@@ -8,7 +8,7 @@ const repoRoot = path.resolve(__dirname, '..');
 
 const targets = {
   dev: {
-    projectRef: 'nkzsjyzhpvivfgslzltn',
+    projectRef: '',  // Projet cloud mis en pause — voir docs/legacy-dev-supabase.md
     configFile: path.join(repoRoot, 'supabase', 'config.dev.toml'),
   },
   prod: {

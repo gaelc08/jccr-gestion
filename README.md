@@ -64,7 +64,7 @@ Then open `http://localhost:8000/`.
 Frontend environment selection is centralized in `public/modules/env.js`.
 
 Resolution order:
-- URL parameter `?env=dev|prod` and persisted override
+- URL parameter `?env=dev|prod` and persisted override (⚠ dev project deprecated, see `docs/legacy-dev-supabase.md`)
 - persisted localStorage override `jct.env.override`
 - hostname auto-detection
 
@@ -84,7 +84,7 @@ Production frontend host:
 
 Useful URLs:
 - `https://gestion.judo-cattenom.fr/` for prod
-- `https://gestion.judo-cattenom.fr/?env=dev` for dev backend from the same frontend host
+- `https://gestion.judo-cattenom.fr/?env=dev` for dev backend (⚠ deprecated, use `https://test.judo-cattenom.fr/` instead)
 
 ## Supabase Commands
 
