@@ -84,31 +84,20 @@ Production frontend host:
 
 Useful URLs:
 - `https://gestion.judo-cattenom.fr/` for prod
-- `https://gestion.judo-cattenom.fr/?env=dev` for dev backend (⚠ deprecated, use `https://test.judo-cattenom.fr/` instead)
+- `https://test.judo-cattenom.fr/` for test environment (NAS container)
 
 ## Supabase Commands
 
-The repository provides safe npm wrappers for environment-targeted backend updates:
-
 ```bash
 # Database migrations
-npm run sb:db:push:dev
-npm run sb:db:push:prod
+npx supabase db push --project-ref ajbpzueanpeukozjhkiv
 
 # Auth/config push
-npm run sb:config:push:dev
-npm run sb:config:push:prod
+npx supabase config push --project-ref ajbpzueanpeukozjhkiv
 
 # Edge Functions deploy
-npm run sb:functions:deploy:dev
-npm run sb:functions:deploy:prod
-
-# Full environment update
-npm run env:dev
-npm run env:prod
+npx supabase functions deploy <fn-name> --project-ref ajbpzueanpeukozjhkiv
 ```
-
-These wrappers are preferred over ad hoc CLI commands because they keep dev and prod targeting explicit.
 
 ## Deployment
 
@@ -117,8 +106,7 @@ Frontend deployment:
 - `public/CNAME` configures the custom domain `gestion.judo-cattenom.fr`
 
 Supabase deployment:
-- `.github/workflows/deploy-supabase.yml` deploys Edge Functions
-- SQL migrations are applied through the Supabase CLI using the npm wrappers above
+- SQL migrations are applied through the Supabase CLI (see commands above)
 
 Current Edge Functions:
 - `alert-admin`

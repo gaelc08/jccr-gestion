@@ -116,13 +116,9 @@ Current Edge Functions under `supabase/functions/`:
 
 Backend configuration files:
 - `supabase/config.toml`
-- `supabase/config.dev.toml`
 - `supabase/config.prod.toml`
 
-Deployment scripts and wrappers:
-- npm scripts in `package.json` provide environment-specific wrappers for database push, config push, and function deploy
-- `scripts/supabase-config-push.mjs` applies environment-specific auth/site URL config safely
-- `scripts/supabase-functions-deploy.mjs` deploys functions to the selected Supabase project
+Supabase commands are run directly via `npx supabase ...` (no npm wrappers).
 
 ## Data Model Summary
 
@@ -239,29 +235,20 @@ Frontend:
 
 Backend:
 - `.github/workflows/deploy-supabase.yml` handles Edge Function deployment
-- schema changes are applied through `supabase/migrations/` using the npm wrappers
+- schema changes are applied through `supabase/migrations/`
 
-Recommended environment-specific commands:
-
-```bash
-npm run sb:db:push:dev
-npm run sb:db:push:prod
-npm run sb:config:push:dev
-npm run sb:config:push:prod
-npm run sb:functions:deploy:dev
-npm run sb:functions:deploy:prod
-```
-
-Combined update commands:
+Recommended commands:
 
 ```bash
-npm run env:dev
-npm run env:prod
+# Push migration to prod
+npx supabase db push --project-ref ajbpzueanpeukozjhkiv
+
+# Deploy Edge Functions
+npx supabase functions deploy <fn-name> --project-ref ajbpzueanpeukozjhkiv
 ```
 
 ## Developer Notes
 
 - prefer repository patterns over introducing frameworks or a build system
 - `public/app-modular.js` remains the main orchestration file even though behavior is increasingly split into `public/modules/`
-- environment-sensitive backend work should use the existing npm wrappers rather than ad hoc commands
 - migrations, RLS, and auth-related changes should be reviewed together because the app depends on their combined behavior
