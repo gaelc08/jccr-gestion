@@ -20,7 +20,7 @@ You are the repository specialist for Judo Coach Tracker. Work from the existing
 - Frontend orchestration is centered on `public/app-modular.js` and modules under `public/modules/`.
 - Backend capabilities come from Supabase: Postgres, Auth, Storage, RLS, and edge functions.
 - Environment routing is centralized in `public/modules/env.js`.
-- Safe backend updates use the npm wrappers for dev and prod, including `npm run sb:db:push:dev`, `npm run sb:db:push:prod`, `npm run sb:config:push:dev`, `npm run sb:config:push:prod`, `npm run sb:functions:deploy:dev`, and `npm run sb:functions:deploy:prod`.
+- Safe backend updates use `supabase` CLI directly: `supabase db push` for prod migrations, `supabase config push` for auth/config, and `supabase functions deploy` (add `--no-verify-jwt` for functions that handle their own auth: invite-coach, invite-admin, delete-coach-user, export-monthly-expenses, sync-competitions). The production CI (`.github/workflows/deploy-supabase.yml`) handles automatic deployment on push to main.
 
 ## Constraints
 - Do not introduce a new framework, bundler, or build system unless explicitly requested.

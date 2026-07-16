@@ -33,5 +33,8 @@ jobs:
           supabase functions deploy invite-coach --project-ref ajbpzueanpeukozjhkiv --no-verify-jwt
           supabase functions deploy invite-admin --project-ref ajbpzueanpeukozjhkiv --no-verify-jwt
           supabase functions deploy delete-coach-user --project-ref ajbpzueanpeukozjhkiv --no-verify-jwt
+          supabase functions deploy alert-admin --project-ref ajbpzueanpeukozjhkiv
+          supabase functions deploy export-monthly-expenses --project-ref ajbpzueanpeukozjhkiv --no-verify-jwt
+          supabase functions deploy sync-competitions --project-ref ajbpzueanpeukozjhkiv --no-verify-jwt
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
