@@ -406,6 +406,9 @@ export function setupAuthListeners(): void {
         if (id === 'adminActionsPanel') {
           el.style.display = 'none';
           el.hidden = true;
+        } else if (id === 'sidebarAdminSection') {
+          el.style.display = isAdmin ? 'block' : 'none';
+          el.hidden = !isAdmin;
         } else if (id === 'adminTopBar') {
           el.style.display = isAdmin ? 'flex' : 'none';
           el.hidden = !isAdmin;
