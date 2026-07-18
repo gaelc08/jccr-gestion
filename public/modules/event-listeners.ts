@@ -372,27 +372,15 @@ export function setupEventListeners(): void {
     const app = document.getElementById('appContainer');
     const header = document.querySelector('.app-header') as HTMLElement | null;
     const headerInner = document.querySelector('.app-header-inner') as HTMLElement | null;
-
-    // DEBUG visuel
-    const dbg = document.getElementById('__sidebar_debug') || (() => {
-      const d = document.createElement('div');
-      d.id = '__sidebar_debug';
-      d.style.cssText = 'position:fixed;bottom:0;right:0;z-index:9999;background:#000;color:#0f0;font:12px monospace;padding:8px 12px;border-radius:6px 0 0 0;max-width:400px;white-space:pre-wrap;pointer-events:none';
-      document.body.appendChild(d);
-      return d;
-    })();
-
     if (w >= 768) {
       const shift = '280px';
       if (app) { app.style.marginLeft = shift; app.style.width = 'calc(100% - 280px)'; }
       if (header) { header.style.marginLeft = shift; header.style.width = 'calc(100% - 280px)'; }
       if (headerInner) { headerInner.style.marginLeft = shift; headerInner.style.width = 'calc(100% - 280px)'; }
-      dbg.textContent = `📐 DESKTOP (${w}px ≥ 768)\nappContainer: ${!!app}\nmarginLeft: ${app?.style.marginLeft || 'N/A'}`;
     } else {
       if (app) { app.style.marginLeft = ''; app.style.width = ''; }
       if (header) { header.style.marginLeft = ''; header.style.width = ''; }
       if (headerInner) { headerInner.style.marginLeft = ''; headerInner.style.width = ''; }
-      dbg.textContent = `📱 MOBILE (${w}px < 768)`;
     }
   };
   _adjustSidebarLayout();
