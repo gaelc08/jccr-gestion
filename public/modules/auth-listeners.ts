@@ -405,11 +405,14 @@ export function setupAuthListeners(): void {
         if (!el) return;
         if (id === 'adminActionsPanel') {
           el.style.display = isAdmin ? 'block' : 'none';
+          el.hidden = !isAdmin;
         } else if (id === 'adminTopBar') {
           el.style.display = isAdmin ? 'flex' : 'none';
+          el.hidden = !isAdmin;
         } else {
           const inSidebar = el.closest('#appSidebar');
           el.style.display = isAdmin ? (inSidebar ? 'flex' : 'inline-block') : 'none';
+          el.hidden = !isAdmin;
         }
       });
 

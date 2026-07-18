@@ -182,6 +182,7 @@
     transform: translateX(0) !important;
     box-shadow: none;
     border-right: 1px solid rgba(226, 177, 60, 0.15);
+    z-index: 50;
   }
 
   .sidebar-overlay {
@@ -206,6 +207,7 @@
 
   .app-body {
     margin-left: 0;
+    padding-left: max(20px, env(safe-area-inset-left, 20px));
   }
 }
 
