@@ -178,9 +178,14 @@ export async function updateCalendar(): Promise<void> {
     const summaryCard  = document.querySelector('.summary.card') as HTMLElement | null;
     if (legendCard)  { legendCard.style.display  = 'none'; legendCard.hidden = true; }
     if (summaryCard) { summaryCard.style.display = 'none'; summaryCard.hidden = true; }
+    calendar.style.display = 'none';
+    calendar.hidden = true;
     updateFreezeUI();
     return;
   }
+
+  calendar.style.display = '';
+  calendar.hidden = false;
 
   const legendCard   = document.querySelector('.legend.card')  as HTMLElement | null;
   const summaryCard  = document.querySelector('.summary.card') as HTMLElement | null;

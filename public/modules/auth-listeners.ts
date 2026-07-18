@@ -482,7 +482,20 @@ export function setupAuthListeners(): void {
           const section = document.getElementById('competitionsSection');
           if (section) { section.style.display = 'block'; section.hidden = false; }
           (m as { showCompetitionsSection?: () => void }).showCompetitionsSection?.();
-        }).catch(() => {});
+        }).catch((err) => {
+          console.error('Failed to show competitions section:', err);
+          const section = document.getElementById('competitionsSection');
+          if (section) {
+            section.style.display = 'block';
+            section.hidden = false;
+            section.innerHTML = `
+              <div class="comp-header"><h2>📅 Agenda</h2></div>
+              <div role="alert" style="color:#c0392b;background:#fdecea;border:1px solid #f5c6c2;border-radius:8px;padding:16px;margin:12px 0;text-align:center;font-weight:600">
+                Impossible de charger l'agenda des compétitions.<br>
+                <span style="font-weight:400">${String((err as Error)?.message ?? err)}</span>
+              </div>`;
+          }
+        });
       }
 
     } else {

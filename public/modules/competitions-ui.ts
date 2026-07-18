@@ -77,6 +77,7 @@ let _filteredNiveau   = '';
 let _filteredCategory = '';
 let _filteredType     = '';
 let _loading          = false;
+let _loadError: string | null = null;
 let _selectedDate: string | null = null;
 let _currentMonth: MonthState | null = null;
 
@@ -224,6 +225,19 @@ async function renderSection(): Promise<void> {
     return;
   }
 
+  // Erreur / aucune donnée après chargement → message visible (pas d'écran vide).
+  if (_loadError || _competitions.length === 0) {
+    const msg = _loadError
+      ? `Impossible de charger les compétitions.<br><span style="font-weight:400">${escapeHtml(_loadError)}</span>`
+      : `Aucune compétition disponible pour le moment.`;
+    container.innerHTML = `
+      <div class="comp-header"><h2>📅 Agenda</h2></div>
+      <div class="comp-status comp-empty" role="alert" style="color:#c0392b;background:#fdecea;border:1px solid #f5c6c2;border-radius:8px;padding:16px;margin:12px 0;text-align:center;font-weight:600">
+        ${msg}
+      </div>`;
+    return;
+  }
+
   const currentMonth  = getCurrentMonth();
   const filtered      = applyFilters(_competitions);
   const monthComps    = getMonthCompetitions(filtered, currentMonth);
@@ -313,12 +327,15 @@ async function handleSync(): Promise<void> {
 
 async function loadCompetitions(): Promise<void> {
   _loading = true;
+  _loadError = null;
   await renderSection();
   try {
     _competitions = (await fetchCompetitions({ upcoming: true })) as any as Competition[];
+    _loadError = null;
   } catch (e) {
     console.error('competitions-ui: loadCompetitions error', e);
     _competitions = [];
+    _loadError = (e as Error)?.message ?? 'Erreur inconnue';
   } finally {
     _loading = false;
     await renderSection();
@@ -328,7 +345,22 @@ async function loadCompetitions(): Promise<void> {
 export async function showCompetitionsSection(): Promise<void> {
   const container = document.getElementById('competitionsSection') as HTMLElement | null;
   if (container) { container.style.display = 'block'; container.hidden = false; }
-  await loadCompetitions();
+  try {
+    await loadCompetitions();
+  } catch (e) {
+    console.error('competitions-ui: showCompetitionsSection error', e);
+    _loading = false;
+    _loadError = (e as Error)?.message ?? 'Erreur inconnue';
+    await renderSection();
+  }
+  // Filet de sécurité : si rien n'est visible, forcer un message d'erreur.
+  if (container && container.textContent?.trim() === '') {
+    container.innerHTML = `
+      <div class="comp-header"><h2>📅 Agenda</h2></div>
+      <div class="comp-status comp-empty" role="alert" style="color:#c0392b;background:#fdecea;border:1px solid #f5c6c2;border-radius:8px;padding:16px;margin:12px 0;text-align:center;font-weight:600">
+        Impossible d'afficher l'agenda des compétitions.
+      </div>`;
+  }
 }
 
 export function hideCompetitionsSection(): void {
