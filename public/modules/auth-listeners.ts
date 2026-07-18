@@ -425,6 +425,16 @@ export function setupAuthListeners(): void {
         if (topMonth && sidebarMonth) topMonth.value = sidebarMonth.value;
       }
 
+      // DEBUG: marquer les limites des sections
+      const _debugMark = (id: string, color: string) => {
+        const el = document.getElementById(id);
+        if (el) el.style.outline = `2px solid ${color}`;
+      };
+      _debugMark('coachGreeting', 'red');
+      _debugMark('adminTopBar', 'lime');
+      _debugMark('competitionsSection', 'cyan');
+      _debugMark('calendar', 'magenta');
+
       if (select) select.disabled = !isAdmin;
       _updateCoachGreeting?.(user as User, null, isAdmin);
 
