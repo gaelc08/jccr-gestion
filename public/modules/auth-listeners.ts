@@ -425,41 +425,6 @@ export function setupAuthListeners(): void {
         if (topMonth && sidebarMonth) topMonth.value = sidebarMonth.value;
       }
 
-      // DEBUG: marquer les limites des sections
-      const _debugMark = (id: string, color: string) => {
-        const el = document.getElementById(id);
-        if (el) el.style.outline = `2px solid ${color}`;
-      };
-      _debugMark('coachGreeting', 'red');
-      _debugMark('adminTopBar', 'lime');
-      _debugMark('competitionsSection', 'cyan');
-      _debugMark('calendar', 'magenta');
-
-      // Cacher le calendrier et afficher l'agenda IMMÉDIATEMENT,
-      // sans attendre le chargement Supabase qui peut prendre du temps.
-      const cal = document.getElementById('calendar');
-      if (cal) { cal.style.display = 'none'; cal.hidden = true; }
-      const legendEl = document.querySelector('.legend.card') as HTMLElement | null;
-      const summaryEl = document.querySelector('.summary.card') as HTMLElement | null;
-      if (legendEl) { legendEl.style.display = 'none'; legendEl.hidden = true; }
-      if (summaryEl) { summaryEl.style.display = 'none'; summaryEl.hidden = true; }
-      // Lancer l'agenda immédiatement
-      import('./competitions-ui.js').then((m) => {
-        const section = document.getElementById('competitionsSection');
-        if (section) { section.style.display = 'block'; section.hidden = false; }
-        (m as { showCompetitionsSection?: () => void }).showCompetitionsSection?.();
-      }).catch((err) => {
-        console.error('Failed to show competitions section:', err);
-        const section = document.getElementById('competitionsSection');
-        if (section) {
-          section.style.display = 'block';
-          section.hidden = false;
-          section.innerHTML = `<div class="comp-header"><h2>📅 Agenda</h2></div>
-            <div role="alert" style="color:#c0392b;background:#fdecea;border:1px solid #f5c6c2;border-radius:8px;padding:16px;margin:12px 0;text-align:center;font-weight:600">
-              Impossible de charger l'agenda des compétitions.</div>`;
-        }
-      });
-
       if (select) select.disabled = !isAdmin;
       _updateCoachGreeting?.(user as User, null, isAdmin);
 
