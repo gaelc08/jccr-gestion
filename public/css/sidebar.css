@@ -193,16 +193,12 @@
     display: none;
   }
 
-  #appContainer {
-    /* garde width:100% du CSS de base — pas de rétrécissement */
-  }
-
+  #appContainer,
   .app-header,
   .app-header-inner {
-    padding-left: 280px !important;
-    margin-left: 0 !important;
-    width: 100% !important;
-    max-width: none !important;
+    margin-left: 280px;
+    width: calc(100% - 280px);
+    max-width: calc(100% - 280px);
   }
 
   .app-header-inner {
@@ -210,7 +206,7 @@
   }
 
   .app-body {
-    margin-left: 280px;
+    margin-left: 0;
     padding-left: max(20px, env(safe-area-inset-left, 20px));
   }
 }
