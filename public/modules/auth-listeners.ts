@@ -477,7 +477,7 @@ export function setupAuthListeners(): void {
       if (!currentCoach) {
         import('./competitions-ui.js').then((m) => {
           const section = document.getElementById('competitionsSection');
-          if (section) section.style.display = 'block';
+          if (section) { section.style.display = 'block'; section.hidden = false; }
           (m as { showCompetitionsSection?: () => void }).showCompetitionsSection?.();
         }).catch(() => {});
       }

@@ -23,10 +23,13 @@ function applyAdminUI(isAdmin) {
     if (!el) return;
     if (id === 'adminActionsPanel') {
       el.style.display = isAdmin ? 'block' : 'none';
+      el.hidden = !isAdmin;
     } else if (id === 'adminTopBar') {
       el.style.display = isAdmin ? 'flex' : 'none';
+      el.hidden = !isAdmin;
     } else {
       el.style.display = isAdmin ? (el.closest('#appSidebar') ? 'block' : 'inline-block') : 'none';
+      el.hidden = !isAdmin;
     }
   });
 }
@@ -177,7 +180,7 @@ export function setupAuthStateChange(supabase, {
       if (!currentCoach) {
         import('./competitions-ui.js').then(m => {
           const section = document.getElementById('competitionsSection') as HTMLInputElement | null;
-          if (section) section.style.display = 'block';
+          if (section) { section.style.display = 'block'; section.hidden = false; }
           m.showCompetitionsSection();
         }).catch(() => {});
       }

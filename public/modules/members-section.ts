@@ -32,10 +32,11 @@ export function toggleMembersSection(show?: boolean): void {
   const next = show !== undefined ? show : !isMembersVisible();
   setMembersVisible(next);
   section.style.display = next ? 'block' : 'none';
+  section.hidden = !next;
   showCalendarElements(!next);
 
   const compSection = document.getElementById('competitionsSection');
-  if (compSection && next) compSection.style.display = 'none';
+  if (compSection && next) { compSection.style.display = 'none'; compSection.hidden = true; }
 
   if (next) void loadAndRenderAll();
 }
@@ -60,7 +61,11 @@ function showCalendarElements(show: boolean): void {
     document.querySelector('.legend.card') as HTMLElement | null,
     document.getElementById('coachGreeting'),
   ];
-  els.forEach((el) => { if (el) el.style.display = show ? '' : 'none'; });
+  els.forEach((el) => {
+    if (!el) return;
+    el.style.display = show ? '' : 'none';
+    el.hidden = !show;
+  });
 }
 
 async function loadAndRenderAll(): Promise<void> {

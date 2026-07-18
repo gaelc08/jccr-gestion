@@ -139,7 +139,7 @@ export function updateCoachGreeting(
 ): void {
   const el = document.getElementById('coachGreeting') as HTMLElement | null;
   if (!el) return;
-  if (!user) { el.textContent = ''; el.style.display = 'none'; return; }
+  if (!user) { el.textContent = ''; el.style.display = 'none'; el.hidden = true; return; }
   const firstName =
     coach?.first_name?.trim() ||
     (user as { user_metadata?: Record<string, string> }).user_metadata?.first_name?.trim() ||
@@ -148,6 +148,7 @@ export function updateCoachGreeting(
   const displayName = firstName || (coach ? __getCoachDisplayName(coach as any) : (user.email || user.id));
   el.textContent = `Bonjour ${displayName},`;
   el.style.display = '';
+  el.hidden = false;
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -175,16 +176,16 @@ export async function updateCalendar(): Promise<void> {
   if (!currentCoach || !currentMonth) {
     const legendCard   = document.querySelector('.legend.card')  as HTMLElement | null;
     const summaryCard  = document.querySelector('.summary.card') as HTMLElement | null;
-    if (legendCard)  legendCard.style.display  = 'none';
-    if (summaryCard) summaryCard.style.display = 'none';
+    if (legendCard)  { legendCard.style.display  = 'none'; legendCard.hidden = true; }
+    if (summaryCard) { summaryCard.style.display = 'none'; summaryCard.hidden = true; }
     updateFreezeUI();
     return;
   }
 
   const legendCard   = document.querySelector('.legend.card')  as HTMLElement | null;
   const summaryCard  = document.querySelector('.summary.card') as HTMLElement | null;
-  if (legendCard)  legendCard.style.display  = '';
-  if (summaryCard) summaryCard.style.display = '';
+  if (legendCard)  { legendCard.style.display  = ''; legendCard.hidden = false; }
+  if (summaryCard) { summaryCard.style.display = ''; summaryCard.hidden = false; }
 
   const [year, month] = currentMonth.split('-').map(Number);
   const daysInMonth = new Date(year, month, 0).getDate();

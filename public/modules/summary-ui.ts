@@ -59,7 +59,10 @@ export function updateFreezeUI(): void {
   const frozen = isCurrentMonthFrozen();
   const banner = document.getElementById('frozenBanner') as HTMLElement | null;
   const btn    = document.getElementById('freezeBtn')    as HTMLButtonElement | null;
-  if (banner) banner.style.display = frozen ? 'block' : 'none';
+  if (banner) {
+    banner.style.display = frozen ? 'block' : 'none';
+    banner.hidden = !frozen;
+  }
   if (btn) {
     // Keep the SVG icon, only update the text in the span
     const span = btn.querySelector('span');

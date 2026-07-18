@@ -326,10 +326,12 @@ async function loadCompetitions(): Promise<void> {
 }
 
 export async function showCompetitionsSection(): Promise<void> {
+  const container = document.getElementById('competitionsSection') as HTMLElement | null;
+  if (container) { container.style.display = 'block'; container.hidden = false; }
   await loadCompetitions();
 }
 
 export function hideCompetitionsSection(): void {
   const container = document.getElementById('competitionsSection') as HTMLElement | null;
-  if (container) container.style.display = 'none';
+  if (container) { container.style.display = 'none'; container.hidden = true; }
 }

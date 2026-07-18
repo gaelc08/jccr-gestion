@@ -142,12 +142,12 @@
     <div class="app-body">
       <div id="coachGreeting" class="coach-greeting" style="display:none"></div>
 
-      <div id="adminActionsPanel" class="card admin-panel" style="display:none">
+      <div id="adminActionsPanel" class="card admin-panel" style="display:none" hidden>
         <!-- Boutons déplacés dans la sidebar (#appSidebar) -->
       </div>
 
       <!-- Admin top bar: profil + mois (mode admin uniquement) -->
-      <div id="adminTopBar" class="admin-top-bar" style="display:none">
+      <div id="adminTopBar" class="admin-top-bar" style="display:none" hidden>
         <label class="admin-top-bar-label">
           <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profil</span>
           <select id="adminTopBarCoachSelect"></select>
@@ -159,11 +159,11 @@
       </div>
 
       <!-- Calendar -->
-      <div id="frozenBanner" class="frozen-banner" style="display:none">🔒 Cette fiche est gelée — les modifications ne sont pas autorisées.</div>
+      <div id="frozenBanner" class="frozen-banner" style="display:none" hidden>🔒 Cette fiche est gelée — les modifications ne sont pas autorisées.</div>
       <div id="calendar" class="calendar card"></div>
 
       <!-- Legend -->
-      <div class="legend card" style="display:none">
+      <div class="legend card" style="display:none" hidden>
         <span class="legend-item"><span class="legend-dot weekend"></span>Week-end</span>
         <span class="legend-item"><span class="legend-dot holiday"></span>Férié</span>
         <span class="legend-item"><span class="legend-dot school-holiday"></span>Vacances scolaires</span>
@@ -173,7 +173,7 @@
       </div>
 
       <!-- Summary -->
-      <div class="summary card" style="display:none">
+      <div class="summary card" style="display:none" hidden>
         <h2 class="summary-title">Récapitulatif mensuel</h2>
         <div class="summary-grid">
           <div class="summary-item" id="summaryHoursItem">
@@ -228,10 +228,10 @@
       </div>
 
 <!-- Competitions section -->
-      <div id="competitionsSection" class="competitions-section" style="display:none"></div>
+<div id="competitionsSection" class="competitions-section" style="display:none" hidden></div>
 
-      <!-- Members section -->
-      <div id="membersSection" class="members-section" style="display:none">
+<!-- Members section -->
+<div id="membersSection" class="members-section" style="display:none" hidden>
         <div class="members-header">
           <h2>Adhérents</h2>
           <p class="members-subtitle">Pointage HelloAsso ↔ FFJDA · Liste consolidée · Groupes</p>

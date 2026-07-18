@@ -74,11 +74,12 @@ function toggleCompetitionsSection(show?: boolean): void {
   if (!section) return;
   _competitionsVisible = show !== undefined ? show : !_competitionsVisible;
   section.style.display = _competitionsVisible ? 'block' : 'none';
+  section.hidden = !_competitionsVisible;
 
   // Hide members section if competitions is shown
   if (_competitionsVisible) {
     const membersSection = document.getElementById('membersSection');
-    if (membersSection) membersSection.style.display = 'none';
+    if (membersSection) { membersSection.style.display = 'none'; membersSection.hidden = true; }
   }
 
   const planningEls: (Element | null)[] = [
