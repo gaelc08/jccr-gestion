@@ -372,7 +372,7 @@ export function setupEventListeners(): void {
     const app = document.getElementById('appContainer');
     const header = document.querySelector('.app-header') as HTMLElement | null;
     const headerInner = document.querySelector('.app-header-inner') as HTMLElement | null;
-    const sidebar = document.getElementById('appSidebar');
+    const body = document.querySelector('.app-body') as HTMLElement | null;
 
     // DEBUG visuel
     const dbg = document.getElementById('__sidebar_debug') || (() => {
@@ -384,15 +384,19 @@ export function setupEventListeners(): void {
     })();
 
     if (w >= 768) {
-      const shift = '280px';
-      if (app) { app.style.marginLeft = shift; app.style.width = 'calc(100% - 280px)'; }
-      if (header) { header.style.marginLeft = shift; header.style.width = 'calc(100% - 280px)'; }
-      if (headerInner) { headerInner.style.marginLeft = shift; headerInner.style.width = 'calc(100% - 280px)'; }
-      dbg.textContent = `📐 DESKTOP (${w}px ≥ 768)\nsidebar: ${!!sidebar}\nappContainer: ${!!app}\nmarginLeft: ${app?.style.marginLeft || 'N/A'}`;
-    } else {
+      // Header: padding-left 280px (pleine largeur, évite overlap sidebar)
+      if (header) { header.style.paddingLeft = '280px'; header.style.marginLeft = '0'; header.style.width = '100%'; }
+      if (headerInner) { headerInner.style.paddingLeft = '280px'; headerInner.style.marginLeft = '0'; headerInner.style.width = '100%'; }
+      // Body: margin-left 280px (contenu à droite de la sidebar)
+      if (body) { body.style.marginLeft = '280px'; }
+      // appContainer: pas de margin, garde la largeur naturelle
       if (app) { app.style.marginLeft = ''; app.style.width = ''; }
-      if (header) { header.style.marginLeft = ''; header.style.width = ''; }
-      if (headerInner) { headerInner.style.marginLeft = ''; headerInner.style.width = ''; }
+      dbg.textContent = `📐 DESKTOP (${w}px ≥ 768)\nheader: ${!!header} paddingLeft set\nbody: ${!!body} marginLeft:280px\nsidebar: ${!!document.getElementById('appSidebar')}`;
+    } else {
+      if (header) { header.style.paddingLeft = ''; header.style.marginLeft = ''; header.style.width = ''; }
+      if (headerInner) { headerInner.style.paddingLeft = ''; headerInner.style.marginLeft = ''; headerInner.style.width = ''; }
+      if (body) { body.style.marginLeft = ''; }
+      if (app) { app.style.marginLeft = ''; app.style.width = ''; }
       dbg.textContent = `📱 MOBILE (${w}px < 768)`;
     }
   };
