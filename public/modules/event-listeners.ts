@@ -365,21 +365,6 @@ export function setupEventListeners(): void {
   });
 
   // Admin section déjà gérée par auth-listeners.ts via adminEls
-
-  // Force le décalage du contenu pour la sidebar desktop
-  const _adjustSidebarLayout = () => {
-    const w = window.innerWidth;
-    if (w >= 768) {
-      const app = document.getElementById('appContainer');
-      if (app) { app.style.marginLeft = '280px'; app.style.width = 'calc(100% - 280px)'; }
-    } else {
-      const app = document.getElementById('appContainer');
-      if (app) { app.style.marginLeft = ''; app.style.width = ''; }
-    }
-  };
-  _adjustSidebarLayout();
-  window.addEventListener('resize', _adjustSidebarLayout);
-
   // Dark mode permanent
   document.documentElement.dataset.theme = 'dark';
 }
