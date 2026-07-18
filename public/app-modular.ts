@@ -2,6 +2,7 @@
 // Imports all modules and wires them together.
 // Do NOT add business logic here; it belongs in the modules.
 
+import './style.css';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 // ===== Environment & Config =====
