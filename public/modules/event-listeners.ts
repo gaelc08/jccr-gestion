@@ -369,18 +369,12 @@ export function setupEventListeners(): void {
   // Force le décalage du contenu pour la sidebar desktop
   const _adjustSidebarLayout = () => {
     const w = window.innerWidth;
-    const app = document.getElementById('appContainer');
-    const header = document.querySelector('.app-header') as HTMLElement | null;
-    const headerInner = document.querySelector('.app-header-inner') as HTMLElement | null;
     if (w >= 768) {
-      const shift = '280px';
-      if (app) { app.style.marginLeft = shift; app.style.width = 'calc(100% - 280px)'; }
-      if (header) { header.style.marginLeft = shift; header.style.width = 'calc(100% - 280px)'; }
-      if (headerInner) { headerInner.style.marginLeft = shift; headerInner.style.width = 'calc(100% - 280px)'; }
+      const app = document.getElementById('appContainer');
+      if (app) { app.style.marginLeft = '280px'; app.style.width = 'calc(100% - 280px)'; }
     } else {
+      const app = document.getElementById('appContainer');
       if (app) { app.style.marginLeft = ''; app.style.width = ''; }
-      if (header) { header.style.marginLeft = ''; header.style.width = ''; }
-      if (headerInner) { headerInner.style.marginLeft = ''; headerInner.style.width = ''; }
     }
   };
   _adjustSidebarLayout();
