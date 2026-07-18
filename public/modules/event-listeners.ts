@@ -364,18 +364,7 @@ export function setupEventListeners(): void {
     btn.addEventListener('click', closeSidebar);
   });
 
-  // Admin section visibility mirror
-  const adminPanelEl   = document.getElementById('adminActionsPanel');
-  const sidebarAdminEl = document.getElementById('sidebarAdminSection') as HTMLElement | null;
-  if (adminPanelEl && sidebarAdminEl) {
-    const syncAdminSection = () => {
-      const vis = adminPanelEl.style.display !== 'none' && adminPanelEl.style.display !== '';
-      sidebarAdminEl.style.display = vis ? 'block' : 'none';
-    };
-    syncAdminSection();
-    new MutationObserver(syncAdminSection).observe(adminPanelEl, { attributes: true, attributeFilter: ['style'] });
-  }
-
+  // Admin section déjà gérée par auth-listeners.ts via adminEls
   // Dark mode permanent
   document.documentElement.dataset.theme = 'dark';
 }

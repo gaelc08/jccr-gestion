@@ -398,7 +398,7 @@ export function setupAuthListeners(): void {
       const adminEls = [
         'adminActionsPanel', 'adminProfileBtn', 'addCoachBtn', 'editCoachBtn', 'inviteAdminBtn',
         'freezeBtn', 'auditLogsBtn', 'helloAssoBtn', 'competitionsBtn', 'exportMonthlyExpensesBtn',
-        'importBtn', 'backupBtn', 'adminTopBar',
+        'importBtn', 'backupBtn', 'adminTopBar', 'sidebarAdminSection',
       ];
       adminEls.forEach((id) => {
         const el = document.getElementById(id);
