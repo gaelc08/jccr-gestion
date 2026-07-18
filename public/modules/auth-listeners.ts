@@ -404,8 +404,8 @@ export function setupAuthListeners(): void {
         const el = document.getElementById(id);
         if (!el) return;
         if (id === 'adminActionsPanel') {
-          el.style.display = isAdmin ? 'block' : 'none';
-          el.hidden = !isAdmin;
+          el.style.display = 'none';
+          el.hidden = true;
         } else if (id === 'adminTopBar') {
           el.style.display = isAdmin ? 'flex' : 'none';
           el.hidden = !isAdmin;
