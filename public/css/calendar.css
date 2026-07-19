@@ -1,7 +1,7 @@
 /* ===== Calendar ===== */
 .calendar {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 8px;
   width: 100%;
   min-width: 0;
@@ -34,6 +34,7 @@
   background: var(--bg-primary);
   color: var(--text-primary);
   min-height: 60px;
+  overflow: hidden;
 }
 
 .calendar-day:hover:not(.disabled) {
