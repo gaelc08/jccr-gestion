@@ -1,5 +1,7 @@
 // members-types.ts — Interfaces et types pour le module membres
 
+export type MemberSource = 'ha' | 'ffjda' | 'both';
+
 export interface HaMember {
   helloasso_id?: unknown;
   id?: unknown;
@@ -12,6 +14,9 @@ export interface HaMember {
   discipline?: string;
   judo_category?: string;
   ffjda_licence?: string;
+  // Source consolidée : 'ha' = HelloAsso seul, 'ffjda' = présent uniquement
+  // dans FFJDA (ffjda_only), 'both' = adhérent HelloAsso saisi FFJDA.
+  source?: MemberSource;
   raw_data?: { saisie_ffjda?: boolean; ffjda_licence?: unknown; [key: string]: unknown };
 }
 

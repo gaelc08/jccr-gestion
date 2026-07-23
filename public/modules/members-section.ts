@@ -1,24 +1,19 @@
 // members-section.ts — Point d'entrée du module membres
 // Ce fichier orchestre les sous-modules ; la logique est dans :
-//   members-types.ts         — interfaces et types
-//   members-core.ts          — état global, helpers, constantes FFJ
-//   members-modal.ts         — modal d'édition de nom (remplace prompt())
-//   members-list.ts          — onglet "Liste"
-//   members-age.ts           — onglet "Par catégorie d'âge"
-//   members-whatsapp.ts      — onglet "Groupes WhatsApp"
-//   members-mail.ts          — onglet "Envois groupes"
-//   members-reconciliation.ts — onglet "Réconciliation"
+//   members-types.ts     — interfaces et types
+//   members-core.ts      — état global, helpers, consolidation HA+FFJDA
+//   members-modal.ts     — modal d'édition de nom (remplace prompt())
+//   members-list.ts      — onglet "Liste consolidée" (union HA + FFJDA)
+//   members-contacts.ts  — onglet "Contacts & groupes" (copie noms / mailto)
 
 import {
   setDeps, setMembers, setLastSync, setActiveTab, setMembersVisible,
   getDeps, getMembers, getActiveTab, isMembersVisible, getLastSync,
+  consolidateMembers,
 } from './members-core.ts';
 import type { ServiceDeps } from './members-types.ts';
-import { renderListTab }            from './members-list.ts';
-import { renderAgeTab }             from './members-age.ts';
-import { renderWhatsappTab }        from './members-whatsapp.ts';
-import { renderMailTab }            from './members-mail.ts';
-import { renderReconciliationTab }  from './members-reconciliation.ts';
+import { renderListTab }     from './members-list.ts';
+import { renderContactsTab } from './members-contacts.ts';
 
 // ─── Public API ──────────────────────────────────────────────────────────────
 
@@ -70,12 +65,16 @@ function showCalendarElements(show: boolean): void {
 
 async function loadAndRenderAll(): Promise<void> {
   try {
-    const [lastSync, members] = await Promise.all([
+    // La réconciliation est optionnelle (aucun import FFJDA → union = HA seul).
+    const reconPromise = getDeps().getReconciliation()
+      .catch(() => null) as Promise<Record<string, unknown> | null>;
+    const [lastSync, haMembers, reconData] = await Promise.all([
       getDeps().getLastSyncTime(),
       getDeps().getHelloAssoMembers(),
+      reconPromise,
     ]);
     setLastSync(lastSync);
-    setMembers(members);
+    setMembers(consolidateMembers(haMembers, reconData));
     void renderActiveTab();
     void updateToolbarInfo();
     void loadCampaigns();
@@ -93,10 +92,13 @@ async function updateToolbarInfo(): Promise<void> {
     ? `Dernière sync. : ${new Date(lastSync).toLocaleString('fr-FR')}`
     : 'Jamais synchronisé';
 
-  const unsaisis  = members.filter((m) => !m.raw_data?.saisie_ffjda).length;
+  // « À saisir » : adhérents HelloAsso pas encore saisis FFJDA (on exclut les
+  // ffjda_only qui sont déjà côté fédération).
+  const haMembers = members.filter((m) => m.source !== 'ffjda');
+  const unsaisis  = haMembers.filter((m) => !m.raw_data?.saisie_ffjda).length;
   const counterEl = document.getElementById('membersCounter');
   if (counterEl) {
-    counterEl.textContent = `${unsaisis}/${members.length} à saisir`;
+    counterEl.textContent = `${unsaisis}/${haMembers.length} à saisir`;
     counterEl.style.color = unsaisis > 0 ? '#e57373' : '#81c784';
   }
 }
@@ -138,11 +140,9 @@ function switchTab(tabId: string): void {
 
 async function renderActiveTab(): Promise<void> {
   switch (getActiveTab()) {
-    case 'list':           return renderListTab();
-    case 'age':            return renderAgeTab();
-    case 'whatsapp':       return renderWhatsappTab();
-    case 'mail':           return renderMailTab();
-    case 'reconciliation': return renderReconciliationTab();
+    case 'contacts': return renderContactsTab();
+    case 'list':
+    default:         return renderListTab();
   }
 }
 
@@ -178,11 +178,6 @@ function wireToolbarEvents(): void {
       } catch { /* ignore */ }
       await loadAndRenderAll();
     };
-  }
-
-  const filterChk = document.getElementById('membersUnsaisieOnly') as HTMLInputElement | null;
-  if (filterChk) {
-    filterChk.onchange = () => { if (getActiveTab() === 'list') void renderListTab(); };
   }
 
   const csvInput = document.getElementById('membersCsvInput') as HTMLInputElement | null;
@@ -225,10 +220,6 @@ function wireToolbarEvents(): void {
       ffjdaInput.value = '';
     };
   }
-
-  document.getElementById('membersReconBtn')?.addEventListener('click', () => {
-    (document.querySelector('.members-tab[data-tab="reconciliation"]') as HTMLButtonElement | null)?.click();
-  });
 
   // API token config
   const tokenInput = document.getElementById('membersTokenInput') as HTMLInputElement | null;

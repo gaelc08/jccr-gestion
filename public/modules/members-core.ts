@@ -1,7 +1,7 @@
 // members-core.ts — État global, types, constantes et helpers partagés
 
-import type { ServiceDeps, HaMember, FfjCategory } from './members-types.ts';
-export type { ServiceDeps, HaMember, FfjCategory };
+import type { ServiceDeps, HaMember, FfjCategory, MemberSource } from './members-types.ts';
+export type { ServiceDeps, HaMember, FfjCategory, MemberSource };
 
 // ─── FFJ Categories ──────────────────────────────────────────────────────────
 
@@ -27,6 +27,59 @@ export function getFfjCategory(dateOfBirth?: string): { label: string; year: num
     if (year >= cat.minYear && year <= cat.maxYear) return { label: cat.label, year };
   }
   return null;
+}
+
+// ─── Sources consolidées (HelloAsso ↔ FFJDA) ─────────────────────────────────
+
+export const SOURCE_LABELS: Record<MemberSource, string> = {
+  ha:    'HelloAsso',
+  ffjda: 'FFJDA',
+  both:  'HA + FFJDA',
+};
+
+const SOURCE_STYLES: Record<MemberSource, string> = {
+  both:  'background:rgba(76,175,80,0.2);color:#81c784',
+  ha:    'background:rgba(226,177,60,0.2);color:#e2b13c',
+  ffjda: 'background:rgba(156,39,176,0.2);color:#ce93d8',
+};
+
+export function deriveSource(m: HaMember): MemberSource {
+  if (m.source) return m.source;
+  return m.raw_data?.saisie_ffjda ? 'both' : 'ha';
+}
+
+export function sourceBadge(source: MemberSource): string {
+  const style = SOURCE_STYLES[source] ?? SOURCE_STYLES.ha;
+  return `<span style="${style};padding:2px 6px;border-radius:3px;font-size:10px;font-weight:600">${esc(SOURCE_LABELS[source] ?? source)}</span>`;
+}
+
+/**
+ * Construit la liste consolidée : union des adhérents HelloAsso (déjà annotés
+ * de leur statut FFJDA via raw_data.saisie_ffjda) et des adhérents présents
+ * uniquement côté FFJDA (status `ffjda_only` de la réconciliation).
+ * `reconData` peut être null (aucun import FFJDA) → on retombe sur HA seul.
+ */
+export function consolidateMembers(
+  haMembers: HaMember[],
+  reconData: Record<string, unknown> | null | undefined,
+): HaMember[] {
+  const consolidated: HaMember[] = haMembers.map((m) => ({ ...m, source: deriveSource(m) }));
+
+  const rows = (reconData?.reconciliation as Array<Record<string, unknown>> | undefined) ?? [];
+  for (const r of rows) {
+    if (String(r.status ?? '') !== 'ffjda_only') continue;
+    consolidated.push({
+      id: r.ffjda_licence ?? r.ffjda_email ?? `${r.ffjda_last_name}-${r.ffjda_first_name}`,
+      first_name: (r.ffjda_first_name as string) ?? '',
+      last_name:  (r.ffjda_last_name as string) ?? '',
+      email:      (r.ffjda_email as string) ?? '',
+      date_of_birth: (r.ffjda_dob as string) ?? '',
+      ffjda_licence: (r.ffjda_licence as string) ?? '',
+      source: 'ffjda',
+      raw_data: { saisie_ffjda: true, ffjda_licence: r.ffjda_licence },
+    });
+  }
+  return consolidated;
 }
 
 // ─── State ───────────────────────────────────────────────────────────────────

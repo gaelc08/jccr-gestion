@@ -216,7 +216,7 @@
 <div id="membersSection" class="members-section" style="display:none" hidden>
         <div class="members-header">
           <h2>Adhérents</h2>
-          <p class="members-subtitle">Pointage HelloAsso ↔ FFJDA · Liste consolidée · Groupes</p>
+          <p class="members-subtitle">Liste consolidée HelloAsso + FFJDA par saison · Contacts &amp; groupes</p>
         </div>
 
         <!-- Toolbar -->
@@ -234,15 +234,11 @@
               <input type="file" id="membersCsvInput" accept=".csv" style="display:none">
             </label>
             <label class="btn-secondary" style="cursor:pointer;background:#1565c0;color:#fff;font-weight:600">
-              CSV FFJDO
+              CSV FFJDA
               <input type="file" id="membersFfjdaCsvInput" accept=".csv" style="display:none">
             </label>
-            <button id="membersReconBtn" class="btn-secondary" style="background:#7b1fa2;color:#fff">Voir les écarts</button>
           </div>
           <div class="members-toolbar-row">
-            <label class="toolbar-label" style="flex-direction:row;align-items:center;gap:6px;font-size:13px;font-weight:600">
-              <input type="checkbox" id="membersUnsaisieOnly"> Non saisis seulement
-            </label>
             <span id="membersCounter" class="members-counter"></span>
             <span id="membersSyncInfo" class="members-sync-info"></span>
           </div>
@@ -266,19 +262,13 @@
 
         <!-- Tabs -->
         <div class="members-tabs" id="membersTabs">
-          <button class="members-tab is-active" data-tab="list">Liste des membres</button>
-          <button class="members-tab" data-tab="age">Par cat&eacute;gorie d&rsquo;&acirc;ge</button>
-          <button class="members-tab" data-tab="whatsapp">Groupes WhatsApp</button>
-          <button class="members-tab" data-tab="mail">Envois group&eacute;s</button>
-          <button class="members-tab" data-tab="reconciliation">R&eacute;conciliation</button>
+          <button class="members-tab is-active" data-tab="list">Liste consolid&eacute;e</button>
+          <button class="members-tab" data-tab="contacts">Contacts &amp; groupes</button>
         </div>
 
         <!-- Tab panels -->
         <div id="membersTabList" class="members-tab-panel is-active"></div>
-        <div id="membersTabAge" class="members-tab-panel"></div>
-        <div id="membersTabWhatsapp" class="members-tab-panel"></div>
-        <div id="membersTabMail" class="members-tab-panel"></div>
-        <div id="membersTabReconciliation" class="members-tab-panel"></div>
+        <div id="membersTabContacts" class="members-tab-panel"></div>
       </div>
     </div>
   </div>
