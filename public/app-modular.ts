@@ -68,7 +68,6 @@ import { setupPWA } from './modules/pwa.js';
 import {
   initCalendarUi,
   updateCalendar,
-  openDayModal,
   saveDay,
   deleteDay,
   loadCoaches as loadCoachesDropdown,
@@ -316,7 +315,6 @@ initEventListeners({
   deleteCoach,
   inviteCoach,
   inviteAdmin,
-  openDayModal,
   saveDay,
   deleteDay,
   toggleFreezeMonth,

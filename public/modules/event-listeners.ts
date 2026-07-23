@@ -36,7 +36,6 @@ export interface EventListenerHandlers {
   deleteCoach?: () => void;
   inviteCoach?: () => void;
   inviteAdmin?: () => void;
-  openDayModal?: (date: string) => void;
   saveDay?: () => void;
   deleteDay?: () => void;
   toggleFreezeMonth?: () => void;
@@ -110,7 +109,7 @@ export function setupEventListeners(): void {
     updateCalendar, updateSummary,
     openCoachModal, saveCoach, deleteCoach,
     inviteCoach, inviteAdmin,
-    openDayModal, saveDay, deleteDay,
+    saveDay, deleteDay,
     toggleFreezeMonth,
     openAuditLogsModal, loadAuditLogs, toggleMembersSection,
     exportDeclarationXLS, exportTimesheetHTML,
@@ -326,15 +325,7 @@ export function setupEventListeners(): void {
   bindClick('helpBtn',            () => document.getElementById('helpModal')?.classList.add('active'));
   bindClick('refreshAuditLogsBtn', () => _handlers.loadAuditLogs?.());
 
-  // Calendar grid (delegated) — frozen check is in openDayModal
-  const calendarGrid = document.getElementById('calendarGrid');
-  if (calendarGrid) {
-    calendarGrid.onclick = async (e) => {
-      const dayEl = (e.target as HTMLElement | null)?.closest('[data-date]');
-      const date = (dayEl as HTMLElement | null)?.dataset?.date;
-      if (date) await openDayModal?.(date);
-    };
-  }
+  // Calendar day clicks are wired directly in calendar-ui.ts (openDayModal).
 
   // Sidebar hamburger
   const sidebarToggle  = document.getElementById('sidebarToggle');

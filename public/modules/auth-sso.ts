@@ -88,16 +88,15 @@ export function setupSSOButton(supabase) {
         });
         window.location.href = `${kcAuthUrl}?${params.toString()}`;
       })
-      .catch(() => {
-        // Fallback sans PKCE
-        const kcAuthUrl = `${kcUrl}/realms/${kcRealm}/protocol/openid-connect/auth`;
-        const params = new URLSearchParams({
-          client_id: kcClient,
-          redirect_uri: window.location.origin + window.location.pathname,
-          response_type: 'code',
-          scope: 'openid email profile',
-        });
-        window.location.href = `${kcAuthUrl}?${params.toString()}`;
+      .catch((err) => {
+        // Fail-closed : ne jamais lancer le flux sans PKCE sur un client
+        // public. Si le challenge échoue (crypto.subtle indisponible, ex.
+        // origine non sécurisée), on annule proprement.
+        console.error('SSO PKCE challenge failed:', err);
+        sessionStorage.removeItem('pkce_verifier');
+        ssoBtn!.disabled = false;
+        ssoBtn!.textContent = 'Connexion SSO';
+        alert('Connexion SSO indisponible sur cette origine (contexte sécurisé requis).');
       });
   });
 }
